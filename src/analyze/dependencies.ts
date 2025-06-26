@@ -1,11 +1,11 @@
-import {analyzePackageModuleType} from './compute-type.js';
 import {pino} from 'pino';
+import {analyzePackageModuleType} from '../compute-type.js';
 import type {
   DependencyStats,
   DependencyAnalyzer,
   PackageJsonLike
-} from './types.js';
-import {FileSystem} from './file-system.js';
+} from '../types.js';
+import {FileSystem} from '../file-system.js';
 
 // Create a logger instance with pretty printing for development
 const logger = pino({
