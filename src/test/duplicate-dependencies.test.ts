@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest';
-import {analyzeDependencies} from '../analyze-dependencies.js';
+import {analyzeDependencies} from '../analyze/dependencies.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {
   createTempDir,

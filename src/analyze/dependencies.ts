@@ -1,12 +1,12 @@
-import {analyzePackageModuleType} from './compute-type.js';
+import {analyzePackageModuleType} from '../compute-type.js';
 import type {
   DependencyStats,
   DependencyAnalyzer,
   PackageJsonLike,
   DependencyNode,
   DuplicateDependency
-} from './types.js';
-import {FileSystem} from './file-system.js';
+} from '../types.js';
+import {FileSystem} from '../file-system.js';
 
 /**
  * This file contains dependency analysis functionality.
@@ -187,17 +187,17 @@ export async function analyzeDependencies(
     const allDeps = { ...depPkg.dependencies, ...depPkg.devDependencies };
     for (const depName of Object.keys(allDeps)) {
       // Find all package.json files for this dependency
-      const depFiles = packageFiles.filter(f => {
+      const depFiles = packageFiles.filter((f: string) => {
         const fileName = f.split('/').pop();
         return fileName === 'package.json' && f.includes(`/node_modules/${depName}/`);
       });
 
       // Also check if there's a symlink or the dependency exists in a different location
-      const allDepFiles = packageFiles.filter(f => {
+      const allDepFiles = packageFiles.filter((f: string) => {
         const fileName = f.split('/').pop();
         if (fileName !== 'package.json') return false;
         const pathParts = f.split('/');
-        return pathParts.some(part => part === depName);
+        return pathParts.some((part: string) => part === depName);
       });
 
       // Use the first one found for traversal (this will be the one closest to root)
