@@ -1,23 +1,13 @@
 import {type CommandContext} from 'gunshi';
 import fs from 'node:fs/promises';
 import * as prompts from '@clack/prompts';
-import {pino} from 'pino';
 import c from 'picocolors';
 import {meta} from './analyze.meta.js';
 import {report} from '../index.js';
+import {logger} from '../cli.js';
 import type {PackType} from '../types.js';
 
 const allowedPackTypes: PackType[] = ['auto', 'npm', 'yarn', 'pnpm', 'bun'];
-const logger = pino({
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      translateTime: 'SYS:standard',
-      ignore: 'pid,hostname'
-    }
-  }
-});
 
 function formatBytes(bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB'];
