@@ -1,14 +1,14 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest';
-import {analyzeDependencies} from '../analyze-dependencies.js';
-import {TarballFileSystem} from '../tarball-file-system.js';
-import {LocalFileSystem} from '../local-file-system.js';
+import {analyzeDependencies} from '../../analyze/dependencies.js';
+import {TarballFileSystem} from '../../tarball-file-system.js';
+import {LocalFileSystem} from '../../local-file-system.js';
 import {
   createTempDir,
   cleanupTempDir,
   createTestPackage,
   createTestPackageWithDependencies,
   type TestPackage
-} from './utils.js';
+} from '../utils.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 

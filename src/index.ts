@@ -1,25 +1,9 @@
-import {publint} from 'publint';
-import {
-  checkPackage,
-  createPackageFromTarballData,
-  ResolutionKind
-} from '@arethetypeswrong/core';
-import {filterProblems, problemKindInfo} from '@arethetypeswrong/core/problems';
 import type {Message, Options} from './types.js';
-import {formatMessage} from 'publint/utils';
-import {detectAndPack} from '#detect-and-pack';
-import {groupProblemsByKind} from '@arethetypeswrong/core/utils';
-import {analyzePackageModuleType} from './compute-type.js';
 import type {PackageModuleType} from './compute-type.js';
-import {
-  analyzeDependencies,
-  type DependencyStats
-} from './analyze-dependencies.js';
-import {LocalFileSystem} from './local-file-system.js';
-import {TarballFileSystem} from './tarball-file-system.js';
-import type {FileSystem} from './file-system.js';
 
 export type {Message, Options, PackageModuleType};
+
+export {report} from './analyze/report.js';
 
 export interface ReportResult {
   info: {

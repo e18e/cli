@@ -191,7 +191,7 @@ export async function analyzeDependencies(
         const fileName = f.split('/').pop();
         return fileName === 'package.json' && f.includes(`/node_modules/${depName}/`);
       });
-      
+
       // Also check if there's a symlink or the dependency exists in a different location
       const allDepFiles = packageFiles.filter(f => {
         const fileName = f.split('/').pop();
@@ -199,11 +199,11 @@ export async function analyzeDependencies(
         const pathParts = f.split('/');
         return pathParts.some(part => part === depName);
       });
-      
+
       // Use the first one found for traversal (this will be the one closest to root)
-      let depFile = depFiles.length > 0 ? depFiles[0] : 
+      let depFile = depFiles.length > 0 ? depFiles[0] :
                     allDepFiles.length > 0 ? allDepFiles[0] : null;
-      
+
       // Fallback: If still not found, search all package.json files for one whose contents have the matching name
       if (!depFile) {
         for (const f of packageFiles) {
@@ -218,7 +218,7 @@ export async function analyzeDependencies(
           }
         }
       }
-      
+
       if (depFile) {
         await traverse(
           depFile,
@@ -245,17 +245,17 @@ export async function analyzeDependencies(
       if (!depPkg.name) continue;
 
       // Check if we already have this exact package in our dependency nodes
-      const alreadyExists = dependencyNodes.some(node => 
+      const alreadyExists = dependencyNodes.some(node =>
         node.packagePath === file
       );
-      
+
       if (!alreadyExists) {
         // Extract path information from the file path
         const pathParts = file.split('/node_modules/');
         if (pathParts.length > 1) {
           const depPath = pathParts[pathParts.length - 1].replace('/package.json', '');
           const parentMatch = pathParts[pathParts.length - 2]?.split('/').pop();
-          
+
           dependencyNodes.push({
             name: depPkg.name,
             version: depPkg.version || 'unknown',

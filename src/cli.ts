@@ -1,10 +1,10 @@
 import {createRequire} from 'node:module';
 import {cli, define, lazy, type LazyCommand} from 'gunshi';
-import * as prompts from '@clack/prompts';
 import c from 'picocolors';
 import {meta as analyzeMeta} from './commands/analyze.meta.js';
 import {meta as migrateMeta} from './commands/migrate.meta.js';
 import {pino} from 'pino';
+import {renderUsage} from 'gunshi/renderer';
 
 const version = createRequire(import.meta.url)('../package.json').version;
 
@@ -22,17 +22,9 @@ export const logger = pino({
 
 const defaultCommand = define({
   args: {},
-  async run() {
-    prompts.intro('Please choose a command to run:');
-    prompts.log.message(
-      [
-        `--analyze (${c.dim('analyzes the package for warnings/errors')})`,
-        `--migrate (${c.dim('migrates packages to their suggested alternatives')})`
-      ].join('\n')
-    );
-    prompts.outro(
-      'Use `<command> --help` to read more about a specific command'
-    );
+  async run(ctx) {
+    const usage = await renderUsage(ctx);
+    console.log(usage);
   }
 });
 
