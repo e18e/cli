@@ -3,7 +3,7 @@ import {join, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {all} from 'module-replacements';
 import {codemods} from 'module-replacements-codemods';
-import {fixableReplacements} from '../commands/fixable-replacements.js';
+import {fixableReplacements} from '../lib/commands/fixable-replacements.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -23,9 +23,9 @@ async function generateFixableReplacements() {
       const to = existing?.to ?? 'TODO';
 
       newCode += `  {\n`;
-      newCode += `    from: "${replacement.moduleName}",\n`;
-      newCode += `    to: "${to}",\n`;
-      newCode += `    factory: codemods["${replacement.moduleName}"]\n`;
+      newCode += `    from: '${replacement.moduleName}',\n`;
+      newCode += `    to: '${to}',\n`;
+      newCode += `    factory: codemods['${replacement.moduleName}']\n`;
       newCode += `  },\n`;
       count++;
     }
@@ -36,12 +36,14 @@ async function generateFixableReplacements() {
   const outputPath = join(
     __dirname,
     '..',
-    'commands',
+    'lib/commands',
     'fixable-replacements.ts'
   );
   await writeFile(outputPath, newCode);
-  
-  console.log(`✅ Generated fixable-replacements.ts with ${count} replacements`);
+
+  console.log(
+    `✅ Generated fixable-replacements.ts with ${count} replacements`
+  );
   console.log(`📁 Output: ${outputPath}`);
 }
 

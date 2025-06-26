@@ -33,7 +33,7 @@
     "format": "prettier --write src",
     "test": "FORCE_COLOR=1 vitest run --coverage",
     "prepublishOnly": "npm run test",
-    "generate-fixable-replacements": "tsx src/scripts/generate-fixable-replacements.ts"
+    "generate-fixable-replacements": "node scripts/generate-fixable-replacements.ts"
   },
   "repository": {
     "type": "git",
