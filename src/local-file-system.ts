@@ -43,8 +43,8 @@ export class LocalFileSystem implements FileSystem {
     }
   }
 
-  async readFile(path: string): Promise<string> {
-    return await readFile(path, 'utf8');
+  async readFile(filePath: string): Promise<string> {
+    return await readFile(path.join(this.#root, filePath), 'utf8');
   }
 
   async getInstallSize(): Promise<number> {
