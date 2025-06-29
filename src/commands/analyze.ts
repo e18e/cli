@@ -1,23 +1,13 @@
 import {type CommandContext} from 'gunshi';
 import fs from 'node:fs/promises';
 import * as prompts from '@clack/prompts';
-import {pino} from 'pino';
 import c from 'picocolors';
 import {meta} from './analyze.meta.js';
 import {report} from '../index.js';
+import {logger} from '../cli.js';
 import type {PackType} from '../types.js';
 
 const allowedPackTypes: PackType[] = ['auto', 'npm', 'yarn', 'pnpm', 'bun'];
-const logger = pino({
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      translateTime: 'SYS:standard',
-      ignore: 'pid,hostname'
-    }
-  }
-});
 
 function formatBytes(bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB'];
@@ -100,8 +90,59 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
     {spacing: 0}
   );
 
+  // Display duplicate dependency information
+  if (dependencies.duplicateCount && dependencies.duplicateCount > 0) {
+    prompts.log.message(
+      `${c.yellow('Duplicates    ')}  ${dependencies.duplicateCount}`,
+      {spacing: 0}
+    );
+  }
+
   prompts.log.info('Results:');
   prompts.log.message('', {spacing: 0});
+
+  // Display duplicate dependencies or a message if none found
+  if (
+    dependencies.duplicateCount &&
+    dependencies.duplicateCount > 0 &&
+    dependencies.duplicateDependencies &&
+    dependencies.duplicateDependencies.length > 0
+  ) {
+    prompts.log.message(c.yellow('Duplicate Dependencies:'), {spacing: 0});
+    for (const duplicate of dependencies.duplicateDependencies) {
+      const severityColor = duplicate.severity === 'exact' ? c.blue : c.yellow;
+
+      prompts.log.message(
+        `  ${severityColor('•')} ${c.bold(duplicate.name)} (${duplicate.versions.length} versions)`,
+        {spacing: 0}
+      );
+
+      // Show version details
+      for (const version of duplicate.versions) {
+        prompts.log.message(
+          `    ${c.gray(version.version)} via ${c.gray(version.path)}`,
+          {spacing: 0}
+        );
+      }
+
+      // Show suggestions
+      if (duplicate.suggestions && duplicate.suggestions.length > 0) {
+        for (const suggestion of duplicate.suggestions) {
+          prompts.log.message(`    ${c.blue('💡')} ${c.gray(suggestion)}`, {
+            spacing: 0
+          });
+        }
+      }
+
+      prompts.log.message('', {spacing: 0});
+    }
+  } else {
+    prompts.log.message(c.green('✅ No duplicated dependencies found.'), {
+      spacing: 0
+    });
+    prompts.log.message('', {spacing: 0});
+  }
+
   // Display tool analysis results
   if (messages.length > 0) {
     const errorMessages = messages.filter((m) => m.severity === 'error');
