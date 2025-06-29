@@ -6,6 +6,11 @@ import {createTempDir, cleanupTempDir, createTestPackage} from './utils.js';
 
 let mockTarballPath: string;
 let tempDir: string;
+const stripVersion = (str: string): string =>
+  str.replace(
+    new RegExp(/\(cli v\d+\.\d+\.\d+(?:-\S+)?\)/, 'g'),
+    '(cli <version>)'
+  );
 
 beforeAll(async () => {
   // Create a temporary directory for the test package
@@ -90,7 +95,7 @@ describe('CLI', () => {
       console.error('CLI Error:', stderr);
     }
     expect(code).toBe(0);
-    expect(stdout).toMatchSnapshot();
+    expect(stripVersion(stdout)).toMatchSnapshot();
     expect(stderr).toBe('');
   });
 
@@ -100,7 +105,7 @@ describe('CLI', () => {
       tempDir
     );
     expect(code).toBe(0);
-    expect(stdout).toMatchSnapshot();
+    expect(stripVersion(stdout)).toMatchSnapshot();
     expect(stderr).toMatchSnapshot();
   });
 });

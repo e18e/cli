@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`CLI > should display package report 1`] = `
-"[36me18e[39m (cli v0.0.1)
+"[36me18e[39m (cli <version>)
 
 [90m┌[39m  Analyzing...
 [90m│[39m
@@ -27,7 +27,7 @@ exports[`CLI > should display package report 1`] = `
 exports[`CLI > should display package report 2`] = `""`;
 
 exports[`CLI > should run successfully with default options 1`] = `
-"[36me18e[39m (cli v0.0.1)
+"[36me18e[39m (cli <version>)
 
 [90m┌[39m  Analyzing...
 [90m│[39m
