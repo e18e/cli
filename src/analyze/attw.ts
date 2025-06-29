@@ -6,11 +6,18 @@ import {
 import {groupProblemsByKind} from '@arethetypeswrong/core/utils';
 import {filterProblems, problemKindInfo} from '@arethetypeswrong/core/problems';
 import {Message} from '../types.js';
+import type {FileSystem} from '../file-system.js';
+import {TarballFileSystem} from '../tarball-file-system.js';
 
-export async function runAttw(tarball: ArrayBuffer) {
+export async function runAttw(fileSystem: FileSystem) {
   const messages: Message[] = [];
 
-  const pkg = createPackageFromTarballData(new Uint8Array(tarball));
+  // Only support tarballs for now
+  if (!(fileSystem instanceof TarballFileSystem)) {
+    return messages;
+  }
+
+  const pkg = createPackageFromTarballData(new Uint8Array(fileSystem.tarball));
   const result = await checkPackage(pkg);
 
   if (result.types === false) {

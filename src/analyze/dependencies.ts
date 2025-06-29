@@ -53,7 +53,7 @@ export async function analyzeDependencies(
   let pkg: PackageJsonLike;
 
   try {
-    pkg = JSON.parse(await fileSystem.readFile(rootDir + '/package.json'));
+    pkg = JSON.parse(await fileSystem.readFile('/package.json'));
   } catch {
     throw new Error('No package.json found.');
   }
