@@ -20,8 +20,9 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   prompts.intro(`Migrating packages...`);
 
   if (interactive) {
-    const additionalTargets = await prompts.multiselect({
+    const additionalTargets = await prompts.autocompleteMultiselect({
       message: 'Select packages to migrate',
+      maxItems: 10,
       options: [...fixableReplacementsTargets].map((target) => ({
         value: target,
         label: target

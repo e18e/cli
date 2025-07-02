@@ -54,7 +54,7 @@
   "homepage": "https://github.com/e18e/cli#readme",
   "dependencies": {
     "@arethetypeswrong/core": "^0.18.2",
-    "@clack/prompts": "https://pkg.pr.new/bombshell-dev/clack/@clack/prompts@276",
+    "@clack/prompts": "https://pkg.pr.new/bombshell-dev/clack/@clack/prompts@9a1412d",
     "@publint/pack": "^0.1.2",
     "fdir": "^6.4.6",
     "gunshi": "^0.26.3",
