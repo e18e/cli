@@ -30,8 +30,6 @@ export async function createTestPackage(
   pkg: TestPackage,
   options: {createNodeModules?: boolean} = {}
 ): Promise<void> {
-  // Ensure the directory exists
-  await fs.mkdir(root, {recursive: true});
   // Create package.json
   await fs.writeFile(
     path.join(root, 'package.json'),

@@ -141,7 +141,7 @@ describe('Duplicate Dependency Detection', () => {
       'node_modules',
       'shared-lib'
     );
-    await fs.mkdir(path.dirname(sharedLibV2Dir), {recursive: true});
+    await fs.mkdir(sharedLibV2Dir, {recursive: true});
     await createTestPackage(sharedLibV2Dir, {
       name: 'shared-lib',
       version: '2.0.0'
