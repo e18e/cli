@@ -91,9 +91,12 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   );
 
   // Display duplicate dependency information
-  if (dependencies.duplicateCount && dependencies.duplicateCount > 0) {
+  if (
+    dependencies.duplicateDependencies &&
+    dependencies.duplicateDependencies.length > 0
+  ) {
     prompts.log.message(
-      `${c.yellow('Duplicates    ')}  ${dependencies.duplicateCount}`,
+      `${c.yellow('Duplicates    ')}  ${dependencies.duplicateDependencies.length}`,
       {spacing: 0}
     );
   }
@@ -103,8 +106,6 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   // Display duplicate dependencies or a message if none found
   if (
-    dependencies.duplicateCount &&
-    dependencies.duplicateCount > 0 &&
     dependencies.duplicateDependencies &&
     dependencies.duplicateDependencies.length > 0
   ) {

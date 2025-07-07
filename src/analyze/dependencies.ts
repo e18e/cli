@@ -18,7 +18,9 @@ export type {DependencyStats, DependencyAnalyzer};
 /**
  * Detects duplicate dependencies from a list of dependency nodes
  */
-function detectDuplicates(dependencyNodes: DependencyNode[]): DuplicateDependency[] {
+function detectDuplicates(
+  dependencyNodes: DependencyNode[]
+): DuplicateDependency[] {
   const duplicates: DuplicateDependency[] = [];
   const packageGroups = new Map<string, DependencyNode[]>();
 
@@ -93,10 +95,7 @@ function generateSuggestions(nodes: DependencyNode[]): string[] {
   // Group by version to identify the most common version
   const versionCounts = new Map<string, number>();
   for (const node of nodes) {
-    versionCounts.set(
-      node.version,
-      (versionCounts.get(node.version) || 0) + 1
-    );
+    versionCounts.set(node.version, (versionCounts.get(node.version) || 0) + 1);
   }
 
   const mostCommonVersion = Array.from(versionCounts.entries()).sort(
@@ -118,6 +117,20 @@ function generateSuggestions(nodes: DependencyNode[]): string[] {
   }
 
   return suggestions;
+}
+
+/**
+ * Attempts to parse a `package.json` file
+ */
+async function parsePackageJson(
+  fileSystem: FileSystem,
+  path: string
+): Promise<PackageJsonLike | null> {
+  try {
+    return JSON.parse(await fileSystem.readFile(path));
+  } catch {
+    return null;
+  }
 }
 
 // Keep the existing tarball analysis for backward compatibility
@@ -143,15 +156,6 @@ export async function analyzeDependencies(
   let esmDependencies = 0;
   const dependencyNodes: DependencyNode[] = [];
 
-  // Helper to parse a package.json file
-  async function parsePackageJson(path: string): Promise<PackageJsonLike | null> {
-    try {
-      return JSON.parse(await fileSystem.readFile(path));
-    } catch {
-      return null;
-    }
-  }
-
   // Recursively traverse dependencies
   async function traverse(
     packagePath: string,
@@ -159,7 +163,7 @@ export async function analyzeDependencies(
     depth: number,
     pathInTree: string
   ) {
-    const depPkg = await parsePackageJson(packagePath);
+    const depPkg = await parsePackageJson(fileSystem, packagePath);
     if (!depPkg || !depPkg.name) return;
 
     // Record this node
@@ -184,44 +188,25 @@ export async function analyzeDependencies(
     }
 
     // Traverse dependencies
-    const allDeps = { ...depPkg.dependencies, ...depPkg.devDependencies };
+    const allDeps = {...depPkg.dependencies, ...depPkg.devDependencies};
     for (const depName of Object.keys(allDeps)) {
-      // Find all package.json files for this dependency
-      const depFiles = packageFiles.filter((f: string) => {
-        const fileName = f.split('/').pop();
-        return fileName === 'package.json' && f.includes(`/node_modules/${depName}/`);
-      });
+      let packageMatch = packageFiles.find((packageFile) =>
+        packageFile.endsWith(`/node_modules/${depName}/package.json`)
+      );
 
-      // Also check if there's a symlink or the dependency exists in a different location
-      const allDepFiles = packageFiles.filter((f: string) => {
-        const fileName = f.split('/').pop();
-        if (fileName !== 'package.json') return false;
-        const pathParts = f.split('/');
-        return pathParts.some((part: string) => part === depName);
-      });
-
-      // Use the first one found for traversal (this will be the one closest to root)
-      let depFile = depFiles.length > 0 ? depFiles[0] :
-                    allDepFiles.length > 0 ? allDepFiles[0] : null;
-
-      // Fallback: If still not found, search all package.json files for one whose contents have the matching name
-      if (!depFile) {
-        for (const f of packageFiles) {
-          try {
-            const depPkg = JSON.parse(await fileSystem.readFile(f));
-            if (depPkg.name === depName) {
-              depFile = f;
-              break;
-            }
-          } catch {
-            // Skip invalid package.json files
+      if (!packageMatch) {
+        for (const packageFile of packageFiles) {
+          const depPkg = await parsePackageJson(fileSystem, packageFile);
+          if (depPkg !== null && depPkg.name === depName) {
+            packageMatch = packageFile;
+            break;
           }
         }
       }
 
-      if (depFile) {
+      if (packageMatch) {
         await traverse(
-          depFile,
+          packageMatch,
           depPkg.name,
           depth + 1,
           pathInTree + ' > ' + depName
@@ -235,32 +220,42 @@ export async function analyzeDependencies(
 
   // Collect all dependency instances for duplicate detection
   // This ensures we find all versions, even those in nested node_modules
+  // TODO (43081j): don't do this. we're re-traversing most files just to
+  // find the ones that don't exist in the parent package's dependency list.
+  // there must be a better way
   for (const file of packageFiles) {
     if (file === rootDir + '/package.json') {
       continue;
     }
 
     try {
-      const depPkg = JSON.parse(await fileSystem.readFile(file));
-      if (!depPkg.name) continue;
+      const depPkg = await parsePackageJson(fileSystem, file);
+      if (!depPkg || !depPkg.name) {
+        continue;
+      }
 
       // Check if we already have this exact package in our dependency nodes
-      const alreadyExists = dependencyNodes.some(node =>
-        node.packagePath === file
+      const alreadyExists = dependencyNodes.some(
+        (node) => node.packagePath === file
       );
 
       if (!alreadyExists) {
         // Extract path information from the file path
         const pathParts = file.split('/node_modules/');
         if (pathParts.length > 1) {
-          const depPath = pathParts[pathParts.length - 1].replace('/package.json', '');
-          const parentMatch = pathParts[pathParts.length - 2]?.split('/').pop();
+          const packageDirName = pathParts[pathParts.length - 1].replace(
+            '/package.json',
+            ''
+          );
+          const parentDirName = pathParts[pathParts.length - 2]
+            ?.split('/')
+            .pop();
 
           dependencyNodes.push({
             name: depPkg.name,
             version: depPkg.version || 'unknown',
-            path: depPath,
-            parent: parentMatch || undefined,
+            path: packageDirName,
+            parent: parentDirName,
             depth: pathParts.length - 1,
             packagePath: file
           });
@@ -282,8 +277,7 @@ export async function analyzeDependencies(
     esmDependencies,
     installSize,
     packageName: pkg.name,
-    version: pkg.version,
-    duplicateCount: duplicateDependencies.length
+    version: pkg.version
   };
 
   if (duplicateDependencies.length > 0) {

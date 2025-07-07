@@ -28,6 +28,7 @@ export interface Message {
 export interface DependencyNode {
   name: string;
   version: string;
+  // TODO (43081j): make this an array or something structured one day
   path: string; // Path in dependency tree (e.g., "root > package-a > package-b")
   parent?: string; // Parent package name
   depth: number; // Depth in dependency tree
@@ -52,7 +53,6 @@ export interface DependencyStats {
   packageName?: string;
   version?: string;
   duplicateDependencies?: DuplicateDependency[];
-  duplicateCount?: number;
 }
 
 export interface DependencyAnalyzer {
