@@ -7,8 +7,9 @@ import type {FileSystem} from '../file-system.js';
 import {Message, Options} from '../types.js';
 import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
+import {runReplacements} from './replacements.js';
 
-export type ReportPlugin = (tarball: ArrayBuffer) => Promise<Message[]>;
+export type ReportPlugin = (fileSystem: FileSystem) => Promise<Message[]>;
 
 export interface ReportResult {
   info: {
@@ -20,13 +21,11 @@ export interface ReportResult {
   dependencies: DependencyStats;
 }
 
-const plugins: ReportPlugin[] = [runAttw, runPublint];
+const plugins: ReportPlugin[] = [runAttw, runPublint, runReplacements];
 
 async function computeInfo(fileSystem: FileSystem) {
-  const rootDir = await fileSystem.getRootDir();
-
   try {
-    const pkgJson = await fileSystem.readFile(rootDir + '/package.json');
+    const pkgJson = await fileSystem.readFile('/package.json');
     const pkg = JSON.parse(pkgJson);
     return {
       name: pkg.name,
@@ -56,13 +55,13 @@ export async function report(options: Options) {
     }
 
     fileSystem = new TarballFileSystem(tarball);
+  }
 
-    for (const plugin of plugins) {
-      const result = await plugin(tarball);
+  for (const plugin of plugins) {
+    const result = await plugin(fileSystem);
 
-      for (const message of result) {
-        messages.push(message);
-      }
+    for (const message of result) {
+      messages.push(message);
     }
   }
 
