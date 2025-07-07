@@ -33,24 +33,6 @@ export interface Message {
   message: string;
 }
 
-export interface DependencyNode {
-  name: string;
-  version: string;
-  // TODO (43081j): make this an array or something structured one day
-  path: string; // Path in dependency tree (e.g., "root > package-a > package-b")
-  parent?: string; // Parent package name
-  depth: number; // Depth in dependency tree
-  packagePath: string; // File system path to package.json
-}
-
-export interface DuplicateDependency {
-  name: string;
-  versions: DependencyNode[];
-  severity: 'exact' | 'conflict' | 'resolvable';
-  potentialSavings?: number;
-  suggestions?: string[];
-}
-
 export interface PackageJsonLike {
   name: string;
   version: string;

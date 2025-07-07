@@ -9,7 +9,9 @@ import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
 import {runDependencyAnalysis} from './dependencies.js';
 
-export type ReportPlugin = (fileSystem: FileSystem) => Promise<Array<Message | Stat>>;
+export type ReportPlugin = (
+  fileSystem: FileSystem
+) => Promise<Array<Message | Stat>>;
 
 export interface ReportResult {
   info: {
@@ -20,7 +22,12 @@ export interface ReportResult {
   messages: Message[];
 }
 
-const plugins: ReportPlugin[] = [runAttw, runPublint, runReplacements, runDependencyAnalysis];
+const plugins: ReportPlugin[] = [
+  runAttw,
+  runPublint,
+  runReplacements,
+  runDependencyAnalysis
+];
 
 async function computeInfo(fileSystem: FileSystem) {
   try {

@@ -13,7 +13,10 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-const FIXTURE_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../../test/fixtures');
+const FIXTURE_DIR = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../../test/fixtures'
+);
 
 // Integration test using a real tarball fixture
 
