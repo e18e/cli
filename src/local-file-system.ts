@@ -37,7 +37,8 @@ export class LocalFileSystem implements FileSystem {
         .withSymlinks()
         .filter((filePath) => filePath.endsWith('/package.json'))
         .crawl(nodeModulesPath);
-      return await crawler.withPromise();
+      const files = await crawler.withPromise();
+      return files.map((file) => `/${path.relative(this.#root, file)}`);
     } catch {
       return [];
     }

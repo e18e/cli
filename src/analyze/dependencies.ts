@@ -141,10 +141,9 @@ export async function analyzeDependencies(
   const rootDir = await fileSystem.getRootDir();
 
   // Find root package.json
-  let pkg: PackageJsonLike;
-  try {
-    pkg = JSON.parse(await fileSystem.readFile('/package.json'));
-  } catch {
+  const pkg = await parsePackageJson(fileSystem, '/package.json');
+
+  if (!pkg) {
     throw new Error('No package.json found.');
   }
 
@@ -216,7 +215,7 @@ export async function analyzeDependencies(
   }
 
   // Start traversal from root
-  await traverse(rootDir + '/package.json', undefined, 0, 'root');
+  await traverse('/package.json', undefined, 0, 'root');
 
   // Collect all dependency instances for duplicate detection
   // This ensures we find all versions, even those in nested node_modules
