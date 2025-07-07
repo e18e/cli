@@ -19,7 +19,15 @@ export interface Options {
   pack?: PackType;
 }
 
+export interface Stat {
+  type: 'stat';
+  name: string;
+  value: string;
+  label?: string;
+}
+
 export interface Message {
+  type: 'message';
   severity: 'error' | 'warning' | 'suggestion';
   score: number;
   message: string;
@@ -41,22 +49,6 @@ export interface DuplicateDependency {
   severity: 'exact' | 'conflict' | 'resolvable';
   potentialSavings?: number;
   suggestions?: string[];
-}
-
-export interface DependencyStats {
-  totalDependencies: number;
-  directDependencies: number;
-  devDependencies: number;
-  cjsDependencies: number;
-  esmDependencies: number;
-  installSize: number;
-  packageName?: string;
-  version?: string;
-  duplicateDependencies?: DuplicateDependency[];
-}
-
-export interface DependencyAnalyzer {
-  analyzeDependencies(root?: string): Promise<DependencyStats>;
 }
 
 export interface PackageJsonLike {

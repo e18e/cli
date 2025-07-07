@@ -1,15 +1,15 @@
 import {detectAndPack} from '#detect-and-pack';
 import {analyzePackageModuleType, PackageModuleType} from '../compute-type.js';
-import {analyzeDependencies, type DependencyStats} from './dependencies.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 import type {FileSystem} from '../file-system.js';
-import {Message, Options} from '../types.js';
+import {Message, Options, Stat} from '../types.js';
 import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
+import {runDependencyAnalysis} from './dependencies.js';
 
-export type ReportPlugin = (fileSystem: FileSystem) => Promise<Message[]>;
+export type ReportPlugin = (fileSystem: FileSystem) => Promise<Array<Message | Stat>>;
 
 export interface ReportResult {
   info: {
@@ -18,10 +18,9 @@ export interface ReportResult {
     type: PackageModuleType;
   };
   messages: Message[];
-  dependencies: DependencyStats;
 }
 
-const plugins: ReportPlugin[] = [runAttw, runPublint, runReplacements];
+const plugins: ReportPlugin[] = [runAttw, runPublint, runReplacements, runDependencyAnalysis];
 
 async function computeInfo(fileSystem: FileSystem) {
   try {
@@ -42,6 +41,7 @@ export async function report(options: Options) {
 
   let fileSystem: FileSystem;
   const messages: Message[] = [];
+  const stats: Stat[] = [];
 
   if (pack === 'none') {
     fileSystem = new LocalFileSystem(root);
@@ -61,12 +61,15 @@ export async function report(options: Options) {
     const result = await plugin(fileSystem);
 
     for (const message of result) {
-      messages.push(message);
+      if (message.type === 'stat') {
+        stats.push(message);
+      } else if (message.type === 'message') {
+        messages.push(message);
+      }
     }
   }
 
   const info = await computeInfo(fileSystem);
-  const dependencies = await analyzeDependencies(fileSystem);
 
-  return {info, messages, dependencies};
+  return {info, messages, stats};
 }

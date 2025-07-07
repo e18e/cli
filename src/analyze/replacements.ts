@@ -57,12 +57,14 @@ export async function runReplacements(fileSystem: FileSystem) {
 
     if (replacement.type === 'none') {
       messages.push({
+        type: 'message',
         severity: 'warning',
         score: 0,
         message: `Module "${name}" can be removed, and native functionality used instead`
       });
     } else if (replacement.type === 'simple') {
       messages.push({
+        type: 'message',
         severity: 'warning',
         score: 0,
         message: `Module "${name}" can be replaced. ${replacement.replacement}.`
@@ -72,6 +74,7 @@ export async function runReplacements(fileSystem: FileSystem) {
       // TODO (43081j): support `nodeVersion` here, check it against the
       // packageJson.engines field, if there is one.
       messages.push({
+        type: 'message',
         severity: 'warning',
         score: 0,
         message: `Module "${name}" can be replaced with native functionality. Use "${replacement.replacement}" instead. You can read more at ${mdnPath}.`
@@ -79,6 +82,7 @@ export async function runReplacements(fileSystem: FileSystem) {
     } else if (replacement.type === 'documented') {
       const docUrl = getDocsUrl(replacement.docPath);
       messages.push({
+        type: 'message',
         severity: 'warning',
         score: 0,
         message: `Module "${name}" can be replaced with a more performant alternative. See the list of available alternatives at ${docUrl}.`

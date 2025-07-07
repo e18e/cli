@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest';
-import {analyzeDependencies} from '../analyze/dependencies.js';
+import {runDependencyAnalysis} from '../analyze/dependencies.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {
   createTempDir,
@@ -57,37 +57,9 @@ describe('Duplicate Dependency Detection', () => {
 
     await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
 
-    const stats = await analyzeDependencies(fileSystem);
+    const stats = await runDependencyAnalysis(fileSystem);
 
-    expect(stats.duplicateDependencies).toEqual([
-      {
-        potentialSavings: 1,
-        name: 'shared-lib',
-        severity: 'exact',
-        suggestions: [
-          'Consider standardizing on version 2.0.0 (used by 2 dependencies)',
-          'Check if newer versions of consuming packages (package-a, package-b) would resolve this duplicate'
-        ],
-        versions: [
-          {
-            name: 'shared-lib',
-            version: '2.0.0',
-            path: 'root > package-a > shared-lib',
-            parent: 'package-a',
-            depth: 2,
-            packagePath: expect.any(String)
-          },
-          {
-            name: 'shared-lib',
-            version: '2.0.0',
-            path: 'root > package-b > shared-lib',
-            parent: 'package-b',
-            depth: 2,
-            packagePath: expect.any(String)
-          }
-        ]
-      }
-    ]);
+    expect(stats).toMatchSnapshot();
   });
 
   it('should detect version conflicts', async () => {
@@ -147,45 +119,9 @@ describe('Duplicate Dependency Detection', () => {
       version: '2.0.0'
     });
 
-    const stats = await analyzeDependencies(fileSystem);
+    const stats = await runDependencyAnalysis(fileSystem);
 
-    expect(stats.duplicateDependencies).toEqual([
-      {
-        name: 'shared-lib',
-        potentialSavings: 2,
-        severity: 'conflict',
-        suggestions: [
-          'Consider standardizing on version 1.0.0 (used by 2 dependencies)',
-          'Check if newer versions of consuming packages (package-a, package-b) would resolve this duplicate'
-        ],
-        versions: [
-          {
-            name: 'shared-lib',
-            packagePath: expect.any(String),
-            depth: 2,
-            parent: 'package-a',
-            path: 'root > package-a > shared-lib',
-            version: '1.0.0'
-          },
-          {
-            name: 'shared-lib',
-            packagePath: expect.any(String),
-            depth: 2,
-            parent: 'package-b',
-            path: 'root > package-b > shared-lib',
-            version: '1.0.0'
-          },
-          {
-            name: 'shared-lib',
-            packagePath: expect.any(String),
-            depth: 2,
-            parent: 'package-b',
-            path: 'shared-lib',
-            version: '2.0.0'
-          }
-        ]
-      }
-    ]);
+    expect(stats).toMatchSnapshot();
   });
 
   it('should not detect duplicates when there are none', async () => {
@@ -206,9 +142,9 @@ describe('Duplicate Dependency Detection', () => {
 
     await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
 
-    const stats = await analyzeDependencies(fileSystem);
+    const stats = await runDependencyAnalysis(fileSystem);
 
-    expect(stats.duplicateDependencies).toBeUndefined();
+    expect(stats).toMatchSnapshot();
   });
 
   it('should generate suggestions for duplicates', async () => {
@@ -244,36 +180,8 @@ describe('Duplicate Dependency Detection', () => {
 
     await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
 
-    const stats = await analyzeDependencies(fileSystem);
+    const stats = await runDependencyAnalysis(fileSystem);
 
-    expect(stats.duplicateDependencies).toEqual([
-      {
-        name: 'shared-lib',
-        potentialSavings: 1,
-        severity: 'exact',
-        suggestions: [
-          'Consider standardizing on version 2.0.0 (used by 2 dependencies)',
-          'Check if newer versions of consuming packages (package-a, package-b) would resolve this duplicate'
-        ],
-        versions: [
-          {
-            depth: 2,
-            name: 'shared-lib',
-            packagePath: expect.any(String),
-            parent: 'package-a',
-            path: 'root > package-a > shared-lib',
-            version: '2.0.0'
-          },
-          {
-            depth: 2,
-            name: 'shared-lib',
-            packagePath: expect.any(String),
-            parent: 'package-b',
-            path: 'root > package-b > shared-lib',
-            version: '2.0.0'
-          }
-        ]
-      }
-    ]);
+    expect(stats).toMatchSnapshot();
   });
 });

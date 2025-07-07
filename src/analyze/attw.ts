@@ -22,6 +22,7 @@ export async function runAttw(fileSystem: FileSystem) {
 
   if (result.types === false) {
     messages.push({
+      type: 'message',
       severity: 'suggestion',
       score: 0,
       message: `No type definitions found.`
@@ -44,6 +45,7 @@ export async function runAttw(fileSystem: FileSystem) {
         for (const [_kind, problems] of problemsForMatrix) {
           for (const problem of problems) {
             messages.push({
+              type: 'message',
               severity: 'error',
               score: 0,
               message:

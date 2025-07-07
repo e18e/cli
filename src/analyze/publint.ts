@@ -14,6 +14,7 @@ export async function runPublint(fileSystem: FileSystem) {
   const result = await publint({pack: {tarball: fileSystem.tarball}});
   for (const problem of result.messages) {
     messages.push({
+      type: 'message',
       severity: problem.type,
       score: 0,
       message: formatMessage(problem, result.pkg) ?? ''

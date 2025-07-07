@@ -1,19 +1,26 @@
+import colors from 'picocolors';
 import {analyzePackageModuleType} from '../compute-type.js';
 import type {
-  DependencyStats,
-  DependencyAnalyzer,
   PackageJsonLike,
   DependencyNode,
-  DuplicateDependency
+  DuplicateDependency,
+  Stat,
+  Message
 } from '../types.js';
 import {FileSystem} from '../file-system.js';
 
-/**
- * This file contains dependency analysis functionality.
- */
+function formatBytes(bytes: number) {
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = bytes;
+  let unitIndex = 0;
 
-// Re-export types
-export type {DependencyStats, DependencyAnalyzer};
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex++;
+  }
+
+  return `${size.toFixed(1)} ${units[unitIndex]}`;
+}
 
 /**
  * Detects duplicate dependencies from a list of dependency nodes
@@ -134,11 +141,12 @@ async function parsePackageJson(
 }
 
 // Keep the existing tarball analysis for backward compatibility
-export async function analyzeDependencies(
+export async function runDependencyAnalysis(
   fileSystem: FileSystem
-): Promise<DependencyStats> {
+): Promise<Array<Message | Stat>> {
   const packageFiles = await fileSystem.listPackageFiles();
   const rootDir = await fileSystem.getRootDir();
+  const messages: Array<Stat | Message> = [];
 
   // Find root package.json
   const pkg = await parsePackageJson(fileSystem, '/package.json');
@@ -268,20 +276,79 @@ export async function analyzeDependencies(
   // Detect duplicates from the collected dependency nodes
   const duplicateDependencies = detectDuplicates(dependencyNodes);
 
-  const result: DependencyStats = {
-    totalDependencies: directDependencies + devDependencies,
-    directDependencies,
-    devDependencies,
-    cjsDependencies,
-    esmDependencies,
-    installSize,
-    packageName: pkg.name,
-    version: pkg.version
-  };
+  messages.push(
+    {
+      type: 'stat',
+      label: 'Total Dependencies',
+      name: 'totalDependencies',
+      value: (directDependencies + devDependencies).toString()
+    },
+    {
+      type: 'stat',
+      label: 'Direct Dependencies',
+      name: 'directDependencies',
+      value: directDependencies.toString()
+    },
+    {
+      type: 'stat',
+      label: 'Dev. Dependencies',
+      name: 'devDependencies',
+      value: devDependencies.toString()
+    },
+    {
+      type: 'stat',
+      label: 'CommonJS Dependencies',
+      name: 'cjsDependencies',
+      value: cjsDependencies.toString()
+    },
+    {
+      type: 'stat',
+      label: 'ESM Dependencies',
+      name: 'esmDependencies',
+      value: esmDependencies.toString()
+    },
+    {
+      type: 'stat',
+      label: 'Install Size',
+      name: 'installSize',
+      value: formatBytes(installSize)
+    },
+    {type: 'stat', label: 'Package Name', name: 'packageName', value: pkg.name},
+    {type: 'stat', label: 'Version', name: 'version', value: pkg.version}
+  );
 
   if (duplicateDependencies.length > 0) {
-    result.duplicateDependencies = duplicateDependencies;
+    messages.push({
+      type: 'stat',
+      name: 'duplicateDependencies',
+      value: duplicateDependencies.length.toString()
+    });
+
+    for (const duplicate of duplicateDependencies) {
+      const severityColor =
+        duplicate.severity === 'exact' ? colors.blue : colors.yellow;
+
+      let message = `${severityColor('[duplicate dependency]')} ${colors.bold(duplicate.name)} has ${duplicate.versions.length} installed versions:`;
+
+      for (const version of duplicate.versions) {
+        message += `\n ${colors.gray(version.version)} via ${colors.gray(version.path)}`;
+      }
+
+      if (duplicate.suggestions && duplicate.suggestions.length > 0) {
+        message += '\nSuggestions:';
+        for (const suggestion of duplicate.suggestions) {
+          message += `    ${colors.blue('💡')} ${colors.gray(suggestion)}`;
+        }
+      }
+
+      messages.push({
+        type: 'message',
+        message,
+        severity: 'warning',
+        score: 0
+      });
+    }
   }
 
-  return result;
+  return messages;
 }
