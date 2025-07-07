@@ -20,13 +20,17 @@ describe('analyzeDependencies (tarball)', () => {
     const tarballBuffer = await fs.readFile(tarballPath);
     const fileSystem = new TarballFileSystem(tarballBuffer.buffer);
     const result = await analyzeDependencies(fileSystem);
-    expect(result).toHaveProperty('duplicateCount', expect.any(Number));
-    if ('duplicateDependencies' in result) {
-      expect(
-        Array.isArray(result.duplicateDependencies) ||
-          result.duplicateDependencies === undefined
-      ).toBe(true);
-    }
+    expect(result).toMatchObject({
+      totalDependencies: expect.any(Number),
+      directDependencies: expect.any(Number),
+      devDependencies: expect.any(Number),
+      cjsDependencies: expect.any(Number),
+      esmDependencies: expect.any(Number),
+      installSize: expect.any(Number),
+      duplicateDependencies: expect.any(Number),
+      packageName: 'test-package',
+      version: '1.0.0'
+    });
   });
 });
 
