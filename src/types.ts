@@ -1,4 +1,5 @@
 import {codemods} from 'module-replacements-codemods';
+import type {FileSystem} from './file-system.js';
 
 export interface PackFile {
   name: string;
@@ -19,15 +20,21 @@ export interface Options {
   pack?: PackType;
 }
 
-export interface Stat {
-  type: 'stat';
+export interface NumericStat {
   name: string;
-  value: string;
   label?: string;
+  value: number;
 }
 
+export interface StringStat {
+  name: string;
+  label?: string;
+  value: string;
+}
+
+export type Stat = NumericStat | StringStat;
+
 export interface Message {
-  type: 'message';
   severity: 'error' | 'warning' | 'suggestion';
   score: number;
   message: string;
@@ -46,3 +53,12 @@ export interface Replacement {
   condition?: (filename: string, source: string) => Promise<boolean>;
   factory: (typeof codemods)[keyof typeof codemods];
 }
+
+export interface ReportPluginResult {
+  stats?: Stat[];
+  messages: Message[];
+}
+
+export type ReportPlugin = (
+  fileSystem: FileSystem
+) => Promise<ReportPluginResult>;

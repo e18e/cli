@@ -5,9 +5,29 @@ import c from 'picocolors';
 import {meta} from './analyze.meta.js';
 import {report} from '../index.js';
 import {logger} from '../cli.js';
-import type {PackType} from '../types.js';
+import type {PackType, Stat} from '../types.js';
 
 const allowedPackTypes: PackType[] = ['auto', 'npm', 'yarn', 'pnpm', 'bun'];
+
+function formatBytes(bytes: number) {
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let size = bytes;
+  let unitIndex = 0;
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex++;
+  }
+
+  return `${size.toFixed(1)} ${units[unitIndex]}`;
+}
+
+function formatStat(stat: Stat): string {
+  if (stat.name === 'installSize' && typeof stat.value === 'number') {
+    return formatBytes(stat.value);
+  }
+  return stat.value.toString();
+}
 
 export async function run(ctx: CommandContext<typeof meta.args>) {
   const root = ctx.positionals[1];
@@ -53,9 +73,24 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   prompts.log.info('Summary');
 
+  let longestStatName = 0;
+
+  // Iterate once to find the longest stat name
   for (const stat of stats) {
+    const statName = stat.label ?? stat.name;
+    if (statName.length > longestStatName) {
+      longestStatName = statName.length;
+    }
+  }
+
+  // Iterate again (unfortunately) to display the stats
+  for (const stat of stats) {
+    const statName = stat.label ?? stat.name;
+    const statValueString = formatStat(stat);
+    const paddingSize =
+      longestStatName - statName.length + statValueString.length + 2;
     prompts.log.message(
-      `${c.cyan(`${stat.label ?? stat.name}    `)}  ${stat.value}`,
+      `${c.cyan(`${statName}`)}${statValueString.padStart(paddingSize)}`,
       {spacing: 0}
     );
   }

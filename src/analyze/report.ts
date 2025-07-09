@@ -1,26 +1,13 @@
 import {detectAndPack} from '#detect-and-pack';
-import {analyzePackageModuleType, PackageModuleType} from '../compute-type.js';
+import {analyzePackageModuleType} from '../compute-type.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 import type {FileSystem} from '../file-system.js';
-import {Message, Options, Stat} from '../types.js';
+import {Message, Options, ReportPlugin, Stat} from '../types.js';
 import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
 import {runDependencyAnalysis} from './dependencies.js';
-
-export type ReportPlugin = (
-  fileSystem: FileSystem
-) => Promise<Array<Message | Stat>>;
-
-export interface ReportResult {
-  info: {
-    name: string;
-    version: string;
-    type: PackageModuleType;
-  };
-  messages: Message[];
-}
 
 const plugins: ReportPlugin[] = [
   runAttw,
@@ -49,6 +36,7 @@ export async function report(options: Options) {
   let fileSystem: FileSystem;
   const messages: Message[] = [];
   const stats: Stat[] = [];
+  const seenStatKeys = new Set<string>();
 
   if (pack === 'none') {
     fileSystem = new LocalFileSystem(root);
@@ -67,11 +55,17 @@ export async function report(options: Options) {
   for (const plugin of plugins) {
     const result = await plugin(fileSystem);
 
-    for (const message of result) {
-      if (message.type === 'stat') {
-        stats.push(message);
-      } else if (message.type === 'message') {
-        messages.push(message);
+    for (const message of result.messages) {
+      messages.push(message);
+    }
+
+    if (result.stats) {
+      for (const stat of result.stats) {
+        if (seenStatKeys.has(stat.name)) {
+          continue;
+        }
+        seenStatKeys.add(stat.name);
+        stats.push(stat);
       }
     }
   }

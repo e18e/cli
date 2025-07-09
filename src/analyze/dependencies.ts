@@ -1,6 +1,11 @@
 import colors from 'picocolors';
 import {analyzePackageModuleType} from '../compute-type.js';
-import type {PackageJsonLike, Stat, Message} from '../types.js';
+import type {
+  PackageJsonLike,
+  ReportPluginResult,
+  Message,
+  Stat
+} from '../types.js';
 import {FileSystem} from '../file-system.js';
 
 interface DependencyNode {
@@ -19,19 +24,6 @@ interface DuplicateDependency {
   severity: 'exact' | 'conflict' | 'resolvable';
   potentialSavings?: number;
   suggestions?: string[];
-}
-
-function formatBytes(bytes: number) {
-  const units = ['B', 'KB', 'MB', 'GB'];
-  let size = bytes;
-  let unitIndex = 0;
-
-  while (size >= 1024 && unitIndex < units.length - 1) {
-    size /= 1024;
-    unitIndex++;
-  }
-
-  return `${size.toFixed(1)} ${units[unitIndex]}`;
 }
 
 /**
@@ -155,10 +147,10 @@ async function parsePackageJson(
 // Keep the existing tarball analysis for backward compatibility
 export async function runDependencyAnalysis(
   fileSystem: FileSystem
-): Promise<Array<Message | Stat>> {
+): Promise<ReportPluginResult> {
   const packageFiles = await fileSystem.listPackageFiles();
   const rootDir = await fileSystem.getRootDir();
-  const messages: Array<Stat | Message> = [];
+  const messages: Message[] = [];
 
   // Find root package.json
   const pkg = await parsePackageJson(fileSystem, '/package.json');
@@ -168,8 +160,35 @@ export async function runDependencyAnalysis(
   }
 
   const installSize = await fileSystem.getInstallSize();
-  const directDependencies = Object.keys(pkg.dependencies || {}).length;
+  const prodDependencies = Object.keys(pkg.dependencies || {}).length;
   const devDependencies = Object.keys(pkg.devDependencies || {}).length;
+  const stats: Stat[] = [
+    {
+      name: 'packageName',
+      label: 'Package Name',
+      value: pkg.name
+    },
+    {
+      name: 'version',
+      label: 'Version',
+      value: pkg.version
+    },
+    {
+      name: 'installSize',
+      label: 'Install Size',
+      value: installSize
+    },
+    {
+      name: 'prodDependencies',
+      label: 'Prod. Dependencies',
+      value: prodDependencies
+    },
+    {
+      name: 'devDependencies',
+      label: 'Dev. Dependencies',
+      value: devDependencies
+    }
+  ];
 
   let cjsDependencies = 0;
   let esmDependencies = 0;
@@ -288,52 +307,22 @@ export async function runDependencyAnalysis(
   // Detect duplicates from the collected dependency nodes
   const duplicateDependencies = detectDuplicates(dependencyNodes);
 
-  messages.push(
-    {
-      type: 'stat',
-      label: 'Total Dependencies',
-      name: 'totalDependencies',
-      value: (directDependencies + devDependencies).toString()
-    },
-    {
-      type: 'stat',
-      label: 'Direct Dependencies',
-      name: 'directDependencies',
-      value: directDependencies.toString()
-    },
-    {
-      type: 'stat',
-      label: 'Dev. Dependencies',
-      name: 'devDependencies',
-      value: devDependencies.toString()
-    },
-    {
-      type: 'stat',
-      label: 'CommonJS Dependencies',
-      name: 'cjsDependencies',
-      value: cjsDependencies.toString()
-    },
-    {
-      type: 'stat',
-      label: 'ESM Dependencies',
-      name: 'esmDependencies',
-      value: esmDependencies.toString()
-    },
-    {
-      type: 'stat',
-      label: 'Install Size',
-      name: 'installSize',
-      value: formatBytes(installSize)
-    },
-    {type: 'stat', label: 'Package Name', name: 'packageName', value: pkg.name},
-    {type: 'stat', label: 'Version', name: 'version', value: pkg.version}
-  );
+  stats.push({
+    name: 'cjsDependencies',
+    label: 'CJS Dependencies',
+    value: cjsDependencies
+  });
+  stats.push({
+    name: 'esmDependencies',
+    label: 'ESM Dependencies',
+    value: esmDependencies
+  });
 
   if (duplicateDependencies.length > 0) {
-    messages.push({
-      type: 'stat',
+    stats.push({
       name: 'duplicateDependencies',
-      value: duplicateDependencies.length.toString()
+      label: 'Duplicate Dependencies',
+      value: duplicateDependencies.length
     });
 
     for (const duplicate of duplicateDependencies) {
@@ -354,7 +343,6 @@ export async function runDependencyAnalysis(
       }
 
       messages.push({
-        type: 'message',
         message,
         severity: 'warning',
         score: 0
@@ -362,5 +350,5 @@ export async function runDependencyAnalysis(
     }
   }
 
-  return messages;
+  return {stats, messages};
 }
