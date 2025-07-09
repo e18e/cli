@@ -1,4 +1,5 @@
 import {codemods} from 'module-replacements-codemods';
+import type {FileSystem} from './file-system.js';
 
 export interface PackFile {
   name: string;
@@ -19,44 +20,18 @@ export interface Options {
   pack?: PackType;
 }
 
+export interface StatLike<T> {
+  name: string;
+  label?: string;
+  value: T;
+}
+
+export type Stat = StatLike<number> | StatLike<string>;
+
 export interface Message {
   severity: 'error' | 'warning' | 'suggestion';
   score: number;
   message: string;
-}
-
-export interface DependencyNode {
-  name: string;
-  version: string;
-  // TODO (43081j): make this an array or something structured one day
-  path: string; // Path in dependency tree (e.g., "root > package-a > package-b")
-  parent?: string; // Parent package name
-  depth: number; // Depth in dependency tree
-  packagePath: string; // File system path to package.json
-}
-
-export interface DuplicateDependency {
-  name: string;
-  versions: DependencyNode[];
-  severity: 'exact' | 'conflict' | 'resolvable';
-  potentialSavings?: number;
-  suggestions?: string[];
-}
-
-export interface DependencyStats {
-  totalDependencies: number;
-  directDependencies: number;
-  devDependencies: number;
-  cjsDependencies: number;
-  esmDependencies: number;
-  installSize: number;
-  packageName?: string;
-  version?: string;
-  duplicateDependencies?: DuplicateDependency[];
-}
-
-export interface DependencyAnalyzer {
-  analyzeDependencies(root?: string): Promise<DependencyStats>;
 }
 
 export interface PackageJsonLike {
@@ -72,3 +47,12 @@ export interface Replacement {
   condition?: (filename: string, source: string) => Promise<boolean>;
   factory: (typeof codemods)[keyof typeof codemods];
 }
+
+export interface ReportPluginResult {
+  stats?: Stat[];
+  messages: Message[];
+}
+
+export type ReportPlugin = (
+  fileSystem: FileSystem
+) => Promise<ReportPluginResult>;

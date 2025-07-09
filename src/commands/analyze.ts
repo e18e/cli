@@ -5,7 +5,7 @@ import c from 'picocolors';
 import {meta} from './analyze.meta.js';
 import {report} from '../index.js';
 import {logger} from '../cli.js';
-import type {PackType} from '../types.js';
+import type {PackType, Stat} from '../types.js';
 
 const allowedPackTypes: PackType[] = ['auto', 'npm', 'yarn', 'pnpm', 'bun'];
 
@@ -20,6 +20,13 @@ function formatBytes(bytes: number) {
   }
 
   return `${size.toFixed(1)} ${units[unitIndex]}`;
+}
+
+function formatStat(stat: Stat): string {
+  if (stat.name === 'installSize' && typeof stat.value === 'number') {
+    return formatBytes(stat.value);
+  }
+  return stat.value.toString();
 }
 
 export async function run(ctx: CommandContext<typeof meta.args>) {
@@ -62,87 +69,34 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   }
 
   // Then analyze the tarball
-  const {dependencies, messages} = await report({root, pack});
+  const {stats, messages} = await report({root, pack});
 
   prompts.log.info('Summary');
-  prompts.log.message(
-    `${c.cyan('Total deps    ')}  ${dependencies.totalDependencies}`,
-    {spacing: 0}
-  );
-  prompts.log.message(
-    `${c.cyan('Direct deps   ')}  ${dependencies.directDependencies}`,
-    {spacing: 0}
-  );
-  prompts.log.message(
-    `${c.cyan('Dev deps      ')}  ${dependencies.devDependencies}`,
-    {spacing: 0}
-  );
-  prompts.log.message(
-    `${c.cyan('CJS deps      ')}  ${dependencies.cjsDependencies}`,
-    {spacing: 0}
-  );
-  prompts.log.message(
-    `${c.cyan('ESM deps      ')}  ${dependencies.esmDependencies}`,
-    {spacing: 0}
-  );
-  prompts.log.message(
-    `${c.cyan('Install size  ')}  ${formatBytes(dependencies.installSize)}`,
-    {spacing: 0}
-  );
 
-  // Display duplicate dependency information
-  if (
-    dependencies.duplicateDependencies &&
-    dependencies.duplicateDependencies.length > 0
-  ) {
+  let longestStatName = 0;
+
+  // Iterate once to find the longest stat name
+  for (const stat of stats) {
+    const statName = stat.label ?? stat.name;
+    if (statName.length > longestStatName) {
+      longestStatName = statName.length;
+    }
+  }
+
+  // Iterate again (unfortunately) to display the stats
+  for (const stat of stats) {
+    const statName = stat.label ?? stat.name;
+    const statValueString = formatStat(stat);
+    const paddingSize =
+      longestStatName - statName.length + statValueString.length + 2;
     prompts.log.message(
-      `${c.yellow('Duplicates    ')}  ${dependencies.duplicateDependencies.length}`,
+      `${c.cyan(`${statName}`)}${statValueString.padStart(paddingSize)}`,
       {spacing: 0}
     );
   }
 
   prompts.log.info('Results:');
   prompts.log.message('', {spacing: 0});
-
-  // Display duplicate dependencies or a message if none found
-  if (
-    dependencies.duplicateDependencies &&
-    dependencies.duplicateDependencies.length > 0
-  ) {
-    prompts.log.message(c.yellow('Duplicate Dependencies:'), {spacing: 0});
-    for (const duplicate of dependencies.duplicateDependencies) {
-      const severityColor = duplicate.severity === 'exact' ? c.blue : c.yellow;
-
-      prompts.log.message(
-        `  ${severityColor('•')} ${c.bold(duplicate.name)} (${duplicate.versions.length} versions)`,
-        {spacing: 0}
-      );
-
-      // Show version details
-      for (const version of duplicate.versions) {
-        prompts.log.message(
-          `    ${c.gray(version.version)} via ${c.gray(version.path)}`,
-          {spacing: 0}
-        );
-      }
-
-      // Show suggestions
-      if (duplicate.suggestions && duplicate.suggestions.length > 0) {
-        for (const suggestion of duplicate.suggestions) {
-          prompts.log.message(`    ${c.blue('💡')} ${c.gray(suggestion)}`, {
-            spacing: 0
-          });
-        }
-      }
-
-      prompts.log.message('', {spacing: 0});
-    }
-  } else {
-    prompts.log.message(c.green('✅ No duplicated dependencies found.'), {
-      spacing: 0
-    });
-    prompts.log.message('', {spacing: 0});
-  }
 
   // Display tool analysis results
   if (messages.length > 0) {

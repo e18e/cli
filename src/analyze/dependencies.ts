@@ -1,19 +1,30 @@
+import colors from 'picocolors';
 import {analyzePackageModuleType} from '../compute-type.js';
 import type {
-  DependencyStats,
-  DependencyAnalyzer,
   PackageJsonLike,
-  DependencyNode,
-  DuplicateDependency
+  ReportPluginResult,
+  Message,
+  Stat
 } from '../types.js';
 import {FileSystem} from '../file-system.js';
 
-/**
- * This file contains dependency analysis functionality.
- */
+interface DependencyNode {
+  name: string;
+  version: string;
+  // TODO (43081j): make this an array or something structured one day
+  path: string; // Path in dependency tree (e.g., "root > package-a > package-b")
+  parent?: string; // Parent package name
+  depth: number; // Depth in dependency tree
+  packagePath: string; // File system path to package.json
+}
 
-// Re-export types
-export type {DependencyStats, DependencyAnalyzer};
+interface DuplicateDependency {
+  name: string;
+  versions: DependencyNode[];
+  severity: 'exact' | 'conflict' | 'resolvable';
+  potentialSavings?: number;
+  suggestions?: string[];
+}
 
 /**
  * Detects duplicate dependencies from a list of dependency nodes
@@ -134,11 +145,12 @@ async function parsePackageJson(
 }
 
 // Keep the existing tarball analysis for backward compatibility
-export async function analyzeDependencies(
+export async function runDependencyAnalysis(
   fileSystem: FileSystem
-): Promise<DependencyStats> {
+): Promise<ReportPluginResult> {
   const packageFiles = await fileSystem.listPackageFiles();
   const rootDir = await fileSystem.getRootDir();
+  const messages: Message[] = [];
 
   // Find root package.json
   const pkg = await parsePackageJson(fileSystem, '/package.json');
@@ -148,8 +160,35 @@ export async function analyzeDependencies(
   }
 
   const installSize = await fileSystem.getInstallSize();
-  const directDependencies = Object.keys(pkg.dependencies || {}).length;
+  const prodDependencies = Object.keys(pkg.dependencies || {}).length;
   const devDependencies = Object.keys(pkg.devDependencies || {}).length;
+  const stats: Stat[] = [
+    {
+      name: 'packageName',
+      label: 'Package Name',
+      value: pkg.name
+    },
+    {
+      name: 'version',
+      label: 'Version',
+      value: pkg.version
+    },
+    {
+      name: 'installSize',
+      label: 'Install Size',
+      value: installSize
+    },
+    {
+      name: 'prodDependencies',
+      label: 'Prod. Dependencies',
+      value: prodDependencies
+    },
+    {
+      name: 'devDependencies',
+      label: 'Dev. Dependencies',
+      value: devDependencies
+    }
+  ];
 
   let cjsDependencies = 0;
   let esmDependencies = 0;
@@ -268,20 +307,48 @@ export async function analyzeDependencies(
   // Detect duplicates from the collected dependency nodes
   const duplicateDependencies = detectDuplicates(dependencyNodes);
 
-  const result: DependencyStats = {
-    totalDependencies: directDependencies + devDependencies,
-    directDependencies,
-    devDependencies,
-    cjsDependencies,
-    esmDependencies,
-    installSize,
-    packageName: pkg.name,
-    version: pkg.version
-  };
+  stats.push({
+    name: 'cjsDependencies',
+    label: 'CJS Dependencies',
+    value: cjsDependencies
+  });
+  stats.push({
+    name: 'esmDependencies',
+    label: 'ESM Dependencies',
+    value: esmDependencies
+  });
 
   if (duplicateDependencies.length > 0) {
-    result.duplicateDependencies = duplicateDependencies;
+    stats.push({
+      name: 'duplicateDependencies',
+      label: 'Duplicate Dependencies',
+      value: duplicateDependencies.length
+    });
+
+    for (const duplicate of duplicateDependencies) {
+      const severityColor =
+        duplicate.severity === 'exact' ? colors.blue : colors.yellow;
+
+      let message = `${severityColor('[duplicate dependency]')} ${colors.bold(duplicate.name)} has ${duplicate.versions.length} installed versions:`;
+
+      for (const version of duplicate.versions) {
+        message += `\n ${colors.gray(version.version)} via ${colors.gray(version.path)}`;
+      }
+
+      if (duplicate.suggestions && duplicate.suggestions.length > 0) {
+        message += '\nSuggestions:';
+        for (const suggestion of duplicate.suggestions) {
+          message += `    ${colors.blue('💡')} ${colors.gray(suggestion)}`;
+        }
+      }
+
+      messages.push({
+        message,
+        severity: 'warning',
+        score: 0
+      });
+    }
   }
 
-  return result;
+  return {stats, messages};
 }

@@ -5,37 +5,41 @@ import {
 } from '@arethetypeswrong/core';
 import {groupProblemsByKind} from '@arethetypeswrong/core/utils';
 import {filterProblems, problemKindInfo} from '@arethetypeswrong/core/problems';
-import {Message} from '../types.js';
+import {ReportPluginResult} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 
-export async function runAttw(fileSystem: FileSystem) {
-  const messages: Message[] = [];
+export async function runAttw(
+  fileSystem: FileSystem
+): Promise<ReportPluginResult> {
+  const result: ReportPluginResult = {
+    messages: []
+  };
 
   // Only support tarballs for now
   if (!(fileSystem instanceof TarballFileSystem)) {
-    return messages;
+    return result;
   }
 
   const pkg = createPackageFromTarballData(new Uint8Array(fileSystem.tarball));
-  const result = await checkPackage(pkg);
+  const attwResult = await checkPackage(pkg);
 
-  if (result.types === false) {
-    messages.push({
+  if (attwResult.types === false) {
+    result.messages.push({
       severity: 'suggestion',
       score: 0,
       message: `No type definitions found.`
     });
   } else {
-    const subpaths = Object.keys(result.entrypoints);
+    const subpaths = Object.keys(attwResult.entrypoints);
 
     for (const subpath of subpaths) {
-      const resolutions = result.entrypoints[subpath].resolutions;
+      const resolutions = attwResult.entrypoints[subpath].resolutions;
 
       for (const resolutionKind in resolutions) {
         const problemsForMatrix = Object.entries(
           groupProblemsByKind(
-            filterProblems(result, {
+            filterProblems(attwResult, {
               resolutionKind: resolutionKind as ResolutionKind,
               entrypoint: subpath
             })
@@ -43,7 +47,7 @@ export async function runAttw(fileSystem: FileSystem) {
         );
         for (const [_kind, problems] of problemsForMatrix) {
           for (const problem of problems) {
-            messages.push({
+            result.messages.push({
               severity: 'error',
               score: 0,
               message:
@@ -56,5 +60,5 @@ export async function runAttw(fileSystem: FileSystem) {
     }
   }
 
-  return messages;
+  return result;
 }

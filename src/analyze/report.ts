@@ -1,27 +1,20 @@
 import {detectAndPack} from '#detect-and-pack';
-import {analyzePackageModuleType, PackageModuleType} from '../compute-type.js';
-import {analyzeDependencies, type DependencyStats} from './dependencies.js';
+import {analyzePackageModuleType} from '../compute-type.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 import type {FileSystem} from '../file-system.js';
-import {Message, Options} from '../types.js';
+import {Message, Options, ReportPlugin, Stat} from '../types.js';
 import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
+import {runDependencyAnalysis} from './dependencies.js';
 
-export type ReportPlugin = (fileSystem: FileSystem) => Promise<Message[]>;
-
-export interface ReportResult {
-  info: {
-    name: string;
-    version: string;
-    type: PackageModuleType;
-  };
-  messages: Message[];
-  dependencies: DependencyStats;
-}
-
-const plugins: ReportPlugin[] = [runAttw, runPublint, runReplacements];
+const plugins: ReportPlugin[] = [
+  runAttw,
+  runPublint,
+  runReplacements,
+  runDependencyAnalysis
+];
 
 async function computeInfo(fileSystem: FileSystem) {
   try {
@@ -42,6 +35,8 @@ export async function report(options: Options) {
 
   let fileSystem: FileSystem;
   const messages: Message[] = [];
+  const stats: Stat[] = [];
+  const seenStatKeys = new Set<string>();
 
   if (pack === 'none') {
     fileSystem = new LocalFileSystem(root);
@@ -60,13 +55,22 @@ export async function report(options: Options) {
   for (const plugin of plugins) {
     const result = await plugin(fileSystem);
 
-    for (const message of result) {
+    for (const message of result.messages) {
       messages.push(message);
+    }
+
+    if (result.stats) {
+      for (const stat of result.stats) {
+        if (seenStatKeys.has(stat.name)) {
+          continue;
+        }
+        seenStatKeys.add(stat.name);
+        stats.push(stat);
+      }
     }
   }
 
   const info = await computeInfo(fileSystem);
-  const dependencies = await analyzeDependencies(fileSystem);
 
-  return {info, messages, dependencies};
+  return {info, messages, stats};
 }

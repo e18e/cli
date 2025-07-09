@@ -1,0 +1,216 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Duplicate Dependency Detection > should detect exact duplicate dependencies 1`] = `
+{
+  "messages": [
+    {
+      "message": "[34m[duplicate dependency][39m [1mshared-lib[22m has 2 installed versions:
+ [90m2.0.0[39m via [90mroot > package-a > shared-lib[39m
+ [90m2.0.0[39m via [90mroot > package-b > shared-lib[39m
+Suggestions:    [34m💡[39m [90mConsider standardizing on version 2.0.0 (used by 2 dependencies)[39m    [34m💡[39m [90mCheck if newer versions of consuming packages (package-a, package-b) would resolve this duplicate[39m",
+      "score": 0,
+      "severity": "warning",
+    },
+  ],
+  "stats": [
+    {
+      "label": "Package Name",
+      "name": "packageName",
+      "value": "test-package",
+    },
+    {
+      "label": "Version",
+      "name": "version",
+      "value": "1.0.0",
+    },
+    {
+      "label": "Install Size",
+      "name": "installSize",
+      "value": 244,
+    },
+    {
+      "label": "Prod. Dependencies",
+      "name": "prodDependencies",
+      "value": 2,
+    },
+    {
+      "label": "Dev. Dependencies",
+      "name": "devDependencies",
+      "value": 0,
+    },
+    {
+      "label": "CJS Dependencies",
+      "name": "cjsDependencies",
+      "value": 4,
+    },
+    {
+      "label": "ESM Dependencies",
+      "name": "esmDependencies",
+      "value": 0,
+    },
+    {
+      "label": "Duplicate Dependencies",
+      "name": "duplicateDependencies",
+      "value": 1,
+    },
+  ],
+}
+`;
+
+exports[`Duplicate Dependency Detection > should detect version conflicts 1`] = `
+{
+  "messages": [
+    {
+      "message": "[33m[duplicate dependency][39m [1mshared-lib[22m has 3 installed versions:
+ [90m1.0.0[39m via [90mroot > package-a > shared-lib[39m
+ [90m1.0.0[39m via [90mroot > package-b > shared-lib[39m
+ [90m2.0.0[39m via [90mshared-lib[39m
+Suggestions:    [34m💡[39m [90mConsider standardizing on version 1.0.0 (used by 2 dependencies)[39m    [34m💡[39m [90mCheck if newer versions of consuming packages (package-a, package-b) would resolve this duplicate[39m",
+      "score": 0,
+      "severity": "warning",
+    },
+  ],
+  "stats": [
+    {
+      "label": "Package Name",
+      "name": "packageName",
+      "value": "test-package",
+    },
+    {
+      "label": "Version",
+      "name": "version",
+      "value": "1.0.0",
+    },
+    {
+      "label": "Install Size",
+      "name": "installSize",
+      "value": 292,
+    },
+    {
+      "label": "Prod. Dependencies",
+      "name": "prodDependencies",
+      "value": 2,
+    },
+    {
+      "label": "Dev. Dependencies",
+      "name": "devDependencies",
+      "value": 0,
+    },
+    {
+      "label": "CJS Dependencies",
+      "name": "cjsDependencies",
+      "value": 4,
+    },
+    {
+      "label": "ESM Dependencies",
+      "name": "esmDependencies",
+      "value": 0,
+    },
+    {
+      "label": "Duplicate Dependencies",
+      "name": "duplicateDependencies",
+      "value": 1,
+    },
+  ],
+}
+`;
+
+exports[`Duplicate Dependency Detection > should generate suggestions for duplicates 1`] = `
+{
+  "messages": [
+    {
+      "message": "[34m[duplicate dependency][39m [1mshared-lib[22m has 2 installed versions:
+ [90m2.0.0[39m via [90mroot > package-a > shared-lib[39m
+ [90m2.0.0[39m via [90mroot > package-b > shared-lib[39m
+Suggestions:    [34m💡[39m [90mConsider standardizing on version 2.0.0 (used by 2 dependencies)[39m    [34m💡[39m [90mCheck if newer versions of consuming packages (package-a, package-b) would resolve this duplicate[39m",
+      "score": 0,
+      "severity": "warning",
+    },
+  ],
+  "stats": [
+    {
+      "label": "Package Name",
+      "name": "packageName",
+      "value": "test-package",
+    },
+    {
+      "label": "Version",
+      "name": "version",
+      "value": "1.0.0",
+    },
+    {
+      "label": "Install Size",
+      "name": "installSize",
+      "value": 244,
+    },
+    {
+      "label": "Prod. Dependencies",
+      "name": "prodDependencies",
+      "value": 2,
+    },
+    {
+      "label": "Dev. Dependencies",
+      "name": "devDependencies",
+      "value": 0,
+    },
+    {
+      "label": "CJS Dependencies",
+      "name": "cjsDependencies",
+      "value": 4,
+    },
+    {
+      "label": "ESM Dependencies",
+      "name": "esmDependencies",
+      "value": 0,
+    },
+    {
+      "label": "Duplicate Dependencies",
+      "name": "duplicateDependencies",
+      "value": 1,
+    },
+  ],
+}
+`;
+
+exports[`Duplicate Dependency Detection > should not detect duplicates when there are none 1`] = `
+{
+  "messages": [],
+  "stats": [
+    {
+      "label": "Package Name",
+      "name": "packageName",
+      "value": "test-package",
+    },
+    {
+      "label": "Version",
+      "name": "version",
+      "value": "1.0.0",
+    },
+    {
+      "label": "Install Size",
+      "name": "installSize",
+      "value": 47,
+    },
+    {
+      "label": "Prod. Dependencies",
+      "name": "prodDependencies",
+      "value": 1,
+    },
+    {
+      "label": "Dev. Dependencies",
+      "name": "devDependencies",
+      "value": 0,
+    },
+    {
+      "label": "CJS Dependencies",
+      "name": "cjsDependencies",
+      "value": 1,
+    },
+    {
+      "label": "ESM Dependencies",
+      "name": "esmDependencies",
+      "value": 0,
+    },
+  ],
+}
+`;
