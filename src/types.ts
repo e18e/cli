@@ -20,19 +20,13 @@ export interface Options {
   pack?: PackType;
 }
 
-export interface NumericStat {
+export interface StatLike<T> {
   name: string;
   label?: string;
-  value: number;
+  value: T;
 }
 
-export interface StringStat {
-  name: string;
-  label?: string;
-  value: string;
-}
-
-export type Stat = NumericStat | StringStat;
+export type Stat = StatLike<number> | StatLike<string>;
 
 export interface Message {
   severity: 'error' | 'warning' | 'suggestion';
