@@ -2,6 +2,23 @@ import {Message} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {spawn} from 'node:child_process';
+import {existsSync} from 'node:fs';
+import {join} from 'node:path';
+
+async function which(cmd: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    const proc = spawn('command', ['-v', cmd]);
+    let output = '';
+    proc.stdout.on('data', (data) => (output += data.toString()));
+    proc.on('close', (code) => {
+      if (code === 0) {
+        resolve(output.trim());
+      } else {
+        resolve(null);
+      }
+    });
+  });
+}
 
 export async function runKnip(fileSystem: FileSystem) {
   const messages: Message[] = [];
@@ -12,34 +29,44 @@ export async function runKnip(fileSystem: FileSystem) {
   }
 
   try {
-    // Get the root directory
     const rootDir = await fileSystem.getRootDir();
-    
-    // Check if knip is available by trying to spawn it
+
+    const localKnip = join(rootDir, 'node_modules', '.bin', 'knip');
+    let knipAvailable = false;
+    if (existsSync(localKnip)) {
+      knipAvailable = true;
+    } else {
+      const globalKnip = await which('knip');
+      if (globalKnip) {
+        knipAvailable = true;
+      }
+    }
+    if (!knipAvailable) {
+      return messages;
+    }
+
+    const npxPath = await which('npx');
+    if (!npxPath) {
+      return messages;
+    }
+
     const result = await new Promise<{stdout: string; stderr: string; code: number | null}>((resolve) => {
-      const proc = spawn('npx', ['knip', '--reporter', 'json'], {
+      const proc = spawn(npxPath, ['knip', '--reporter', 'json'], {
         cwd: rootDir,
         stdio: ['ignore', 'pipe', 'pipe']
       });
-      
       let stdout = '';
       let stderr = '';
-      
       proc.stdout.on('data', (data) => (stdout += data.toString()));
       proc.stderr.on('data', (data) => (stderr += data.toString()));
-      
       proc.on('close', (code) => resolve({stdout, stderr, code}));
     });
-
-
 
     // If knip ran successfully, parse the results
     // Knip returns code 1 when it finds issues, which is normal
     if (result.code === 0 || result.code === 1) {
       try {
         const knipResult = JSON.parse(result.stdout);
-        
-        // Process knip results and convert to messages
         if (knipResult.files && knipResult.files.length > 0) {
           for (const file of knipResult.files) {
             messages.push({
@@ -49,10 +76,8 @@ export async function runKnip(fileSystem: FileSystem) {
             });
           }
         }
-
         if (knipResult.issues && knipResult.issues.length > 0) {
           for (const issue of knipResult.issues) {
-            // Handle dependencies
             if (issue.dependencies && issue.dependencies.length > 0) {
               for (const dep of issue.dependencies) {
                 messages.push({
@@ -62,8 +87,6 @@ export async function runKnip(fileSystem: FileSystem) {
                 });
               }
             }
-
-            // Handle devDependencies
             if (issue.devDependencies && issue.devDependencies.length > 0) {
               for (const dep of issue.devDependencies) {
                 messages.push({
@@ -73,8 +96,6 @@ export async function runKnip(fileSystem: FileSystem) {
                 });
               }
             }
-
-            // Handle exports
             if (issue.exports && issue.exports.length > 0) {
               for (const exp of issue.exports) {
                 messages.push({
@@ -86,8 +107,6 @@ export async function runKnip(fileSystem: FileSystem) {
             }
           }
         }
-
-        // If no issues found, add a positive message
         if (messages.length === 0) {
           messages.push({
             severity: 'suggestion',
@@ -95,24 +114,17 @@ export async function runKnip(fileSystem: FileSystem) {
             message: 'knip analysis passed - no unused dependencies, exports, or files found.'
           });
         }
-             } catch {
-         // If JSON parsing fails, knip might have output non-JSON content
-         // This could happen if knip is not properly configured
-         messages.push({
-           severity: 'warning',
-           score: 0,
-           message: 'knip analysis completed but results could not be parsed.'
-         });
-       }
+      } catch {
+        messages.push({
+          severity: 'warning',
+          score: 0,
+          message: 'knip analysis completed but results could not be parsed.'
+        });
+      }
     } else {
-      // knip ran but returned an error code
-      // Check if it's a "no package.json" error, which is expected for empty directories
       if (result.stderr && result.stderr.includes('Unable to find package.json')) {
-        // This is expected for directories without a package.json, so don't add any messages
         return messages;
       }
-      
-      // For other errors, add a warning message
       if (result.stderr) {
         messages.push({
           severity: 'warning',
@@ -121,12 +133,10 @@ export async function runKnip(fileSystem: FileSystem) {
         });
       }
     }
-
   } catch {
-    // knip is not available as a peer dependency
+    // knip is not available as a peer dependency or another error occurred
     // This is expected behavior, so we don't add any error messages
     // The plugin simply doesn't run when knip is not available
   }
-
   return messages;
 } 
