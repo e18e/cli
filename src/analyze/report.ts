@@ -8,6 +8,7 @@ import {Message, Options} from '../types.js';
 import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
+import {runKnip} from './knip.js';
 
 export type ReportPlugin = (fileSystem: FileSystem) => Promise<Message[]>;
 
@@ -21,7 +22,7 @@ export interface ReportResult {
   dependencies: DependencyStats;
 }
 
-const plugins: ReportPlugin[] = [runAttw, runPublint, runReplacements];
+let plugins: ReportPlugin[] = [runAttw, runPublint, runReplacements, runKnip];
 
 async function computeInfo(fileSystem: FileSystem) {
   try {
@@ -38,10 +39,34 @@ async function computeInfo(fileSystem: FileSystem) {
 }
 
 export async function report(options: Options) {
-  const {root = process.cwd(), pack = 'auto'} = options ?? {};
+  const {root = process.cwd(), pack = 'auto', features} = options ?? {};
 
   let fileSystem: FileSystem;
   const messages: Message[] = [];
+
+  const enabledFeatures = features ? features.split(',').map(f => f.trim()) : [];
+  
+  // Rebuild plugins array based on enabled features
+  if (enabledFeatures.length === 0) {
+    plugins = [runAttw, runPublint, runReplacements, runKnip];
+  } else {
+    // Only add plugins for explicitly enabled features
+    const selectedPlugins: ReportPlugin[] = [];
+    
+    if (enabledFeatures.includes('types')) {
+      selectedPlugins.push(runAttw);
+    }
+    if (enabledFeatures.includes('publish')) {
+      selectedPlugins.push(runPublint);
+    }
+    if (enabledFeatures.includes('unused')) {
+      selectedPlugins.push(runKnip);
+    }
+    // runReplacements is always included as it's a core analysis
+    selectedPlugins.push(runReplacements);
+    
+    plugins = selectedPlugins;
+  }
 
   if (pack === 'none') {
     fileSystem = new LocalFileSystem(root);

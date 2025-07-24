@@ -22,6 +22,10 @@ export const meta = {
       choices: ['debug', 'info', 'warn', 'error'],
       default: 'info',
       description: 'Set the log level (debug | info | warn | error)'
+    },
+    features: {
+      type: 'string',
+      description: 'Comma-separated list of features to enable (e.g., unused,publish,types)'
     }
   }
 } as const;

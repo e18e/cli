@@ -17,6 +17,7 @@ export type PackType =
 export interface Options {
   root?: string;
   pack?: PackType;
+  features?: string;
 }
 
 export interface Message {

@@ -7,7 +7,7 @@ import {report} from '../index.js';
 import {logger} from '../cli.js';
 import type {PackType} from '../types.js';
 
-const allowedPackTypes: PackType[] = ['auto', 'npm', 'yarn', 'pnpm', 'bun'];
+const allowedPackTypes: PackType[] = ['auto', 'npm', 'yarn', 'pnpm', 'bun', 'none'];
 
 function formatBytes(bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB'];
@@ -26,6 +26,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   const root = ctx.positionals[1];
   let pack: PackType = ctx.values.pack;
   const logLevel = ctx.values['log-level'];
+  const features = ctx.values.features;
 
   // Set the logger level based on the option
   logger.level = logLevel;
@@ -46,6 +47,10 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
       if (stat.isFile()) {
         const buffer = await fs.readFile(root);
         pack = {tarball: buffer.buffer};
+      } else if (stat.isDirectory()) {
+        // If it's a directory, use it as the root for local file system
+        // Set pack to 'none' to use LocalFileSystem
+        pack = 'none';
       } else {
         // Not a file, exit
         prompts.cancel(
@@ -62,7 +67,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   }
 
   // Then analyze the tarball
-  const {dependencies, messages} = await report({root, pack});
+  const {dependencies, messages} = await report({root, pack, features});
 
   prompts.log.info('Summary');
   prompts.log.message(
