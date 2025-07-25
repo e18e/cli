@@ -7,7 +7,7 @@ import {join} from 'node:path';
 
 async function which(cmd: string): Promise<string | null> {
   return new Promise((resolve) => {
-    const proc = spawn('command', ['-v', cmd]);
+    const proc = spawn('which', [cmd]);
     let output = '';
     proc.stdout.on('data', (data) => (output += data.toString()));
     proc.on('close', (code) => {
@@ -16,6 +16,9 @@ async function which(cmd: string): Promise<string | null> {
       } else {
         resolve(null);
       }
+    });
+    proc.on('error', () => {
+      resolve(null);
     });
   });
 }
@@ -60,6 +63,7 @@ export async function runKnip(fileSystem: FileSystem) {
       proc.stdout.on('data', (data) => (stdout += data.toString()));
       proc.stderr.on('data', (data) => (stderr += data.toString()));
       proc.on('close', (code) => resolve({stdout, stderr, code}));
+      proc.on('error', () => resolve({stdout: '', stderr: 'Process error', code: 1}));
     });
 
     // If knip ran successfully, parse the results
