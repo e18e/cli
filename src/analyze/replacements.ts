@@ -1,6 +1,7 @@
 import * as replacements from 'module-replacements';
-import {PackageJsonLike, ReportPluginResult} from '../types.js';
+import {ReportPluginResult} from '../types.js';
 import type {FileSystem} from '../file-system.js';
+import {getPackageJson} from '../file-system-utils.js';
 
 /**
  * Generates a standard URL to the docs of a given rule
@@ -27,25 +28,9 @@ export async function runReplacements(
     messages: []
   };
 
-  let packageJsonText: string;
+  const packageJson = await getPackageJson(fileSystem);
 
-  try {
-    packageJsonText = await fileSystem.readFile('/package.json');
-  } catch {
-    // No package.json found
-    return result;
-  }
-
-  let packageJson: PackageJsonLike;
-
-  try {
-    packageJson = JSON.parse(packageJsonText);
-  } catch {
-    // Not parseable
-    return result;
-  }
-
-  if (!packageJson.dependencies) {
+  if (!packageJson || !packageJson.dependencies) {
     // No dependencies
     return result;
   }

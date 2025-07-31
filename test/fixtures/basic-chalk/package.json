@@ -1,5 +1,10 @@
 {
   "name": "foo",
+  "type": "module",
   "private": true,
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "main": "lib/main.js",
+  "dependencies": {
+    "chalk": "^4.0.0"
+  }
 }
