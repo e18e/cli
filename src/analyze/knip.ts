@@ -1,4 +1,4 @@
-import {Message} from '../types.js';
+import {ReportPluginResult} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {spawn} from 'node:child_process';
@@ -23,12 +23,14 @@ async function which(cmd: string): Promise<string | null> {
   });
 }
 
-export async function runKnip(fileSystem: FileSystem) {
-  const messages: Message[] = [];
+export async function runKnip(fileSystem: FileSystem): Promise<ReportPluginResult> {
+  const result: ReportPluginResult = {
+    messages: []
+  };
 
   // Only support local file system for knip (it needs to run in the actual project directory)
   if (!(fileSystem instanceof LocalFileSystem)) {
-    return messages;
+    return result;
   }
 
   try {
@@ -45,15 +47,15 @@ export async function runKnip(fileSystem: FileSystem) {
       }
     }
     if (!knipAvailable) {
-      return messages;
+      return result;
     }
 
     const npxPath = await which('npx');
     if (!npxPath) {
-      return messages;
+      return result;
     }
 
-    const result = await new Promise<{stdout: string; stderr: string; code: number | null}>((resolve) => {
+    const spawnResult = await new Promise<{stdout: string; stderr: string; code: number | null}>((resolve) => {
       const proc = spawn(npxPath, ['knip', '--reporter', 'json'], {
         cwd: rootDir,
         stdio: ['ignore', 'pipe', 'pipe']
@@ -68,12 +70,12 @@ export async function runKnip(fileSystem: FileSystem) {
 
     // If knip ran successfully, parse the results
     // Knip returns code 1 when it finds issues, which is normal
-    if (result.code === 0 || result.code === 1) {
+    if (spawnResult.code === 0 || spawnResult.code === 1) {
       try {
-        const knipResult = JSON.parse(result.stdout);
+        const knipResult = JSON.parse(spawnResult.stdout);
         if (knipResult.files && knipResult.files.length > 0) {
           for (const file of knipResult.files) {
-            messages.push({
+            result.messages.push({
               severity: 'warning',
               score: 0,
               message: `[knip] files: ${file} (unused)`
@@ -84,7 +86,7 @@ export async function runKnip(fileSystem: FileSystem) {
           for (const issue of knipResult.issues) {
             if (issue.dependencies && issue.dependencies.length > 0) {
               for (const dep of issue.dependencies) {
-                messages.push({
+                result.messages.push({
                   severity: 'warning',
                   score: 0,
                   message: `[knip] dependencies: ${dep.name} (unused)`
@@ -93,7 +95,7 @@ export async function runKnip(fileSystem: FileSystem) {
             }
             if (issue.devDependencies && issue.devDependencies.length > 0) {
               for (const dep of issue.devDependencies) {
-                messages.push({
+                result.messages.push({
                   severity: 'warning',
                   score: 0,
                   message: `[knip] devDependencies: ${dep.name} (unused)`
@@ -102,7 +104,7 @@ export async function runKnip(fileSystem: FileSystem) {
             }
             if (issue.exports && issue.exports.length > 0) {
               for (const exp of issue.exports) {
-                messages.push({
+                result.messages.push({
                   severity: 'warning',
                   score: 0,
                   message: `[knip] exports: ${exp} (unused)`
@@ -111,29 +113,29 @@ export async function runKnip(fileSystem: FileSystem) {
             }
           }
         }
-        if (messages.length === 0) {
-          messages.push({
+        if (result.messages.length === 0) {
+          result.messages.push({
             severity: 'suggestion',
             score: 0,
             message: 'knip analysis passed - no unused dependencies, exports, or files found.'
           });
         }
       } catch {
-        messages.push({
+        result.messages.push({
           severity: 'warning',
           score: 0,
           message: 'knip analysis completed but results could not be parsed.'
         });
       }
     } else {
-      if (result.stderr && result.stderr.includes('Unable to find package.json')) {
-        return messages;
+      if (spawnResult.stderr && spawnResult.stderr.includes('Unable to find package.json')) {
+        return result;
       }
-      if (result.stderr) {
-        messages.push({
+      if (spawnResult.stderr) {
+        result.messages.push({
           severity: 'warning',
           score: 0,
-          message: `knip analysis failed: ${result.stderr.trim()}`
+          message: `knip analysis failed: ${spawnResult.stderr.trim()}`
         });
       }
     }
@@ -142,5 +144,5 @@ export async function runKnip(fileSystem: FileSystem) {
     // This is expected behavior, so we don't add any error messages
     // The plugin simply doesn't run when knip is not available
   }
-  return messages;
+  return result;
 } 

@@ -67,7 +67,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   }
 
   // Then analyze the tarball
-  const {dependencies, messages} = await report({root, pack, features});
+  const {stats, messages} = await report({root, pack, features});
 
   prompts.log.info('Summary');
 

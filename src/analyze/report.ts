@@ -1,5 +1,5 @@
 import {detectAndPack} from '#detect-and-pack';
-import {analyzePackageModuleType} from '../compute-type.js';
+import {analyzePackageModuleType, PackageModuleType} from '../compute-type.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 import type {FileSystem} from '../file-system.js';
@@ -8,8 +8,7 @@ import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
 import {runKnip} from './knip.js';
-
-export type ReportPlugin = (fileSystem: FileSystem) => Promise<Message[]>;
+import {runDependencyAnalysis} from './dependencies.js';
 
 export interface ReportResult {
   info: {
@@ -18,19 +17,10 @@ export interface ReportResult {
     type: PackageModuleType;
   };
   messages: Message[];
-  dependencies: DependencyStats;
+  stats: Stats;
 }
 
-const defaultPlugins: ReportPlugin[] = [runAttw, runPublint, runReplacements, runKnip];
-
-import {runDependencyAnalysis} from './dependencies.js';
-
-const plugins: ReportPlugin[] = [
-  runAttw,
-  runPublint,
-  runReplacements,
-  runDependencyAnalysis
-];
+const defaultPlugins: ReportPlugin[] = [runAttw, runPublint, runReplacements, runKnip, runDependencyAnalysis];
 
 async function computeInfo(fileSystem: FileSystem) {
   try {
@@ -85,6 +75,8 @@ export async function report(options: Options) {
     }
     // runReplacements is always included as it's a core analysis
     selectedPlugins.push(runReplacements);
+    // runDependencyAnalysis is always included as it's a core analysis
+    selectedPlugins.push(runDependencyAnalysis);
     
     plugins = selectedPlugins;
   }

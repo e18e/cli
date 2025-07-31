@@ -11,9 +11,9 @@ describe('knip plugin', () => {
     const mockTarball = new ArrayBuffer(0);
     const fileSystem = new TarballFileSystem(mockTarball);
     
-    const messages = await runKnip(fileSystem);
+    const result = await runKnip(fileSystem);
     
-    expect(messages).toEqual([]);
+    expect(result).toEqual({messages: []});
   });
 
   it('should handle missing knip gracefully for local file system', async () => {
@@ -29,11 +29,11 @@ describe('knip plugin', () => {
       });
       
       const fileSystem = new LocalFileSystem(tempDir);
-      const messages = await runKnip(fileSystem);
+      const result = await runKnip(fileSystem);
       
       // Should return empty messages when knip is not available
       // (which is the expected behavior for a fresh environment)
-      expect(Array.isArray(messages)).toBe(true);
+      expect(result).toEqual({messages: []});
     } finally {
       // Clean up
       await fs.rm(tempDir, {recursive: true, force: true});
