@@ -3,7 +3,7 @@ import {analyzePackageModuleType} from '../compute-type.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 import type {FileSystem} from '../file-system.js';
-import {Message, Options, ReportPlugin, Stat} from '../types.js';
+import {Message, Options, ReportPlugin, Stat, Stats} from '../types.js';
 import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
@@ -35,7 +35,19 @@ export async function report(options: Options) {
 
   let fileSystem: FileSystem;
   const messages: Message[] = [];
-  const stats: Stat[] = [];
+  const extraStats: Stat[] = [];
+  let stats: Stats = {
+    name: 'unknown',
+    version: 'unknown',
+    dependencyCount: {
+      production: 0,
+      development: 0,
+      cjs: 0,
+      duplicate: 0,
+      esm: 0
+    },
+    extraStats
+  };
   const seenStatKeys = new Set<string>();
 
   if (pack === 'none') {
@@ -60,12 +72,19 @@ export async function report(options: Options) {
     }
 
     if (result.stats) {
-      for (const stat of result.stats) {
-        if (seenStatKeys.has(stat.name)) {
-          continue;
+      stats = {
+        ...stats,
+        ...result.stats,
+        extraStats
+      };
+      if (result.stats.extraStats) {
+        for (const stat of result.stats.extraStats) {
+          if (seenStatKeys.has(stat.name)) {
+            continue;
+          }
+          seenStatKeys.add(stat.name);
+          result.stats.extraStats.push(stat);
         }
-        seenStatKeys.add(stat.name);
-        stats.push(stat);
       }
     }
   }

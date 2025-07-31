@@ -4,7 +4,7 @@ import type {
   PackageJsonLike,
   ReportPluginResult,
   Message,
-  Stat
+  Stats
 } from '../types.js';
 import {FileSystem} from '../file-system.js';
 
@@ -162,33 +162,18 @@ export async function runDependencyAnalysis(
   const installSize = await fileSystem.getInstallSize();
   const prodDependencies = Object.keys(pkg.dependencies || {}).length;
   const devDependencies = Object.keys(pkg.devDependencies || {}).length;
-  const stats: Stat[] = [
-    {
-      name: 'packageName',
-      label: 'Package Name',
-      value: pkg.name
-    },
-    {
-      name: 'version',
-      label: 'Version',
-      value: pkg.version
-    },
-    {
-      name: 'installSize',
-      label: 'Install Size',
-      value: installSize
-    },
-    {
-      name: 'prodDependencies',
-      label: 'Prod. Dependencies',
-      value: prodDependencies
-    },
-    {
-      name: 'devDependencies',
-      label: 'Dev. Dependencies',
-      value: devDependencies
+  const stats: Stats = {
+    name: pkg.name,
+    version: pkg.version,
+    installSize,
+    dependencyCount: {
+      production: prodDependencies,
+      development: devDependencies,
+      esm: 0,
+      cjs: 0,
+      duplicate: 0
     }
-  ];
+  };
 
   let cjsDependencies = 0;
   let esmDependencies = 0;
@@ -307,23 +292,11 @@ export async function runDependencyAnalysis(
   // Detect duplicates from the collected dependency nodes
   const duplicateDependencies = detectDuplicates(dependencyNodes);
 
-  stats.push({
-    name: 'cjsDependencies',
-    label: 'CJS Dependencies',
-    value: cjsDependencies
-  });
-  stats.push({
-    name: 'esmDependencies',
-    label: 'ESM Dependencies',
-    value: esmDependencies
-  });
+  stats.dependencyCount.cjs = cjsDependencies;
+  stats.dependencyCount.esm = esmDependencies;
 
   if (duplicateDependencies.length > 0) {
-    stats.push({
-      name: 'duplicateDependencies',
-      label: 'Duplicate Dependencies',
-      value: duplicateDependencies.length
-    });
+    stats.dependencyCount.duplicate = duplicateDependencies.length;
 
     for (const duplicate of duplicateDependencies) {
       const severityColor =

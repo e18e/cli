@@ -28,6 +28,20 @@ export interface StatLike<T> {
 
 export type Stat = StatLike<number> | StatLike<string>;
 
+export interface Stats {
+  name: string;
+  version: string;
+  installSize?: number;
+  dependencyCount: {
+    production: number;
+    development: number;
+    cjs: number;
+    esm: number;
+    duplicate: number;
+  };
+  extraStats?: Stat[];
+}
+
 export interface Message {
   severity: 'error' | 'warning' | 'suggestion';
   score: number;
@@ -49,7 +63,7 @@ export interface Replacement {
 }
 
 export interface ReportPluginResult {
-  stats?: Stat[];
+  stats?: Stats;
   messages: Message[];
 }
 

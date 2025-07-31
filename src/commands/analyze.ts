@@ -5,7 +5,7 @@ import c from 'picocolors';
 import {meta} from './analyze.meta.js';
 import {report} from '../index.js';
 import {logger} from '../cli.js';
-import type {PackType, Stat} from '../types.js';
+import type {PackType} from '../types.js';
 
 const allowedPackTypes: PackType[] = ['auto', 'npm', 'yarn', 'pnpm', 'bun'];
 
@@ -20,13 +20,6 @@ function formatBytes(bytes: number) {
   }
 
   return `${size.toFixed(1)} ${units[unitIndex]}`;
-}
-
-function formatStat(stat: Stat): string {
-  if (stat.name === 'installSize' && typeof stat.value === 'number') {
-    return formatBytes(stat.value);
-  }
-  return stat.value.toString();
 }
 
 export async function run(ctx: CommandContext<typeof meta.args>) {
@@ -73,26 +66,54 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   prompts.log.info('Summary');
 
-  let longestStatName = 0;
+  const totalDeps =
+    stats.dependencyCount.production + stats.dependencyCount.development;
+  const esmPercentage =
+    totalDeps > 0
+      ? Math.floor((stats.dependencyCount.esm / totalDeps) * 100)
+      : 0;
+  const summaryPairs: Array<[string, string]> = [
+    ['Package Name', stats.name],
+    ['Version', stats.version],
+    [
+      'Install Size',
+      stats.installSize === undefined
+        ? 'Unknown'
+        : formatBytes(stats.installSize)
+    ],
+    [
+      'Dependencies',
+      `${totalDeps} (${stats.dependencyCount.production} production, ${stats.dependencyCount.development} development)`
+    ],
+    [
+      'ES Modules',
+      `${esmPercentage}% (${stats.dependencyCount.esm} ESM, ${stats.dependencyCount.cjs} CJS)`
+    ]
+  ];
 
-  // Iterate once to find the longest stat name
-  for (const stat of stats) {
-    const statName = stat.label ?? stat.name;
-    if (statName.length > longestStatName) {
-      longestStatName = statName.length;
+  // Iterate again (unfortunately) to display the stats
+  if (stats.extraStats) {
+    for (const stat of stats.extraStats) {
+      const statName = stat.label ?? stat.name;
+      const statValueString = stat.value.toString();
+      summaryPairs.push([statName, statValueString]);
     }
   }
 
-  // Iterate again (unfortunately) to display the stats
-  for (const stat of stats) {
-    const statName = stat.label ?? stat.name;
-    const statValueString = formatStat(stat);
-    const paddingSize =
-      longestStatName - statName.length + statValueString.length + 2;
-    prompts.log.message(
-      `${c.cyan(`${statName}`)}${statValueString.padStart(paddingSize)}`,
-      {spacing: 0}
-    );
+  let longestStatName = 0;
+
+  // Iterate once to find the longest stat name
+  for (const [label] of summaryPairs) {
+    if (label.length > longestStatName) {
+      longestStatName = label.length;
+    }
+  }
+
+  for (const [label, value] of summaryPairs) {
+    const paddingSize = longestStatName - label.length + value.length + 2;
+    prompts.log.message(`${c.cyan(`${label}`)}${value.padStart(paddingSize)}`, {
+      spacing: 0
+    });
   }
 
   prompts.log.info('Results:');
