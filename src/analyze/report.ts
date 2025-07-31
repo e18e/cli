@@ -22,7 +22,7 @@ export interface ReportResult {
   dependencies: DependencyStats;
 }
 
-let plugins: ReportPlugin[] = [runAttw, runPublint, runReplacements, runKnip];
+const defaultPlugins: ReportPlugin[] = [runAttw, runPublint, runReplacements, runKnip];
 
 async function computeInfo(fileSystem: FileSystem) {
   try {
@@ -46,10 +46,9 @@ export async function report(options: Options) {
 
   const enabledFeatures = features ? features.split(',').map(f => f.trim()) : [];
   
-  // Rebuild plugins array based on enabled features
-  if (enabledFeatures.length === 0) {
-    plugins = [runAttw, runPublint, runReplacements, runKnip];
-  } else {
+  let plugins = defaultPlugins;
+  
+  if (enabledFeatures.length > 0) {
     // Only add plugins for explicitly enabled features
     const selectedPlugins: ReportPlugin[] = [];
     
