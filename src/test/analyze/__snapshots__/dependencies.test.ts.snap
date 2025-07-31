@@ -3,214 +3,89 @@
 exports[`analyzeDependencies (local) > should analyze dependencies correctly 1`] = `
 {
   "messages": [],
-  "stats": [
-    {
-      "label": "Package Name",
-      "name": "packageName",
-      "value": "test-package",
+  "stats": {
+    "dependencyCount": {
+      "cjs": 2,
+      "development": 1,
+      "duplicate": 0,
+      "esm": 1,
+      "production": 2,
     },
-    {
-      "label": "Version",
-      "name": "version",
-      "value": "1.0.0",
-    },
-    {
-      "label": "Install Size",
-      "name": "installSize",
-      "value": 299,
-    },
-    {
-      "label": "Prod. Dependencies",
-      "name": "prodDependencies",
-      "value": 2,
-    },
-    {
-      "label": "Dev. Dependencies",
-      "name": "devDependencies",
-      "value": 1,
-    },
-    {
-      "label": "CJS Dependencies",
-      "name": "cjsDependencies",
-      "value": 2,
-    },
-    {
-      "label": "ESM Dependencies",
-      "name": "esmDependencies",
-      "value": 1,
-    },
-  ],
+    "installSize": 299,
+    "name": "test-package",
+    "version": "1.0.0",
+  },
 }
 `;
 
 exports[`analyzeDependencies (local) > should handle empty project 1`] = `
 {
   "messages": [],
-  "stats": [
-    {
-      "label": "Package Name",
-      "name": "packageName",
-      "value": "test-package",
+  "stats": {
+    "dependencyCount": {
+      "cjs": 0,
+      "development": 0,
+      "duplicate": 0,
+      "esm": 0,
+      "production": 0,
     },
-    {
-      "label": "Version",
-      "name": "version",
-      "value": "1.0.0",
-    },
-    {
-      "label": "Install Size",
-      "name": "installSize",
-      "value": 0,
-    },
-    {
-      "label": "Prod. Dependencies",
-      "name": "prodDependencies",
-      "value": 0,
-    },
-    {
-      "label": "Dev. Dependencies",
-      "name": "devDependencies",
-      "value": 0,
-    },
-    {
-      "label": "CJS Dependencies",
-      "name": "cjsDependencies",
-      "value": 0,
-    },
-    {
-      "label": "ESM Dependencies",
-      "name": "esmDependencies",
-      "value": 0,
-    },
-  ],
+    "installSize": 0,
+    "name": "test-package",
+    "version": "1.0.0",
+  },
 }
 `;
 
 exports[`analyzeDependencies (local) > should handle missing node_modules 1`] = `
 {
   "messages": [],
-  "stats": [
-    {
-      "label": "Package Name",
-      "name": "packageName",
-      "value": "test-package",
+  "stats": {
+    "dependencyCount": {
+      "cjs": 0,
+      "development": 0,
+      "duplicate": 0,
+      "esm": 0,
+      "production": 1,
     },
-    {
-      "label": "Version",
-      "name": "version",
-      "value": "1.0.0",
-    },
-    {
-      "label": "Install Size",
-      "name": "installSize",
-      "value": 0,
-    },
-    {
-      "label": "Prod. Dependencies",
-      "name": "prodDependencies",
-      "value": 1,
-    },
-    {
-      "label": "Dev. Dependencies",
-      "name": "devDependencies",
-      "value": 0,
-    },
-    {
-      "label": "CJS Dependencies",
-      "name": "cjsDependencies",
-      "value": 0,
-    },
-    {
-      "label": "ESM Dependencies",
-      "name": "esmDependencies",
-      "value": 0,
-    },
-  ],
+    "installSize": 0,
+    "name": "test-package",
+    "version": "1.0.0",
+  },
 }
 `;
 
 exports[`analyzeDependencies (local) > should handle symlinks 1`] = `
 {
   "messages": [],
-  "stats": [
-    {
-      "label": "Package Name",
-      "name": "packageName",
-      "value": "test-package",
+  "stats": {
+    "dependencyCount": {
+      "cjs": 0,
+      "development": 0,
+      "duplicate": 0,
+      "esm": 1,
+      "production": 1,
     },
-    {
-      "label": "Version",
-      "name": "version",
-      "value": "1.0.0",
-    },
-    {
-      "label": "Install Size",
-      "name": "installSize",
-      "value": 72,
-    },
-    {
-      "label": "Prod. Dependencies",
-      "name": "prodDependencies",
-      "value": 1,
-    },
-    {
-      "label": "Dev. Dependencies",
-      "name": "devDependencies",
-      "value": 0,
-    },
-    {
-      "label": "CJS Dependencies",
-      "name": "cjsDependencies",
-      "value": 0,
-    },
-    {
-      "label": "ESM Dependencies",
-      "name": "esmDependencies",
-      "value": 1,
-    },
-  ],
+    "installSize": 72,
+    "name": "test-package",
+    "version": "1.0.0",
+  },
 }
 `;
 
 exports[`analyzeDependencies (tarball) > should analyze a real tarball fixture 1`] = `
 {
   "messages": [],
-  "stats": [
-    {
-      "label": "Package Name",
-      "name": "packageName",
-      "value": "test-package",
+  "stats": {
+    "dependencyCount": {
+      "cjs": 0,
+      "development": 0,
+      "duplicate": 0,
+      "esm": 0,
+      "production": 0,
     },
-    {
-      "label": "Version",
-      "name": "version",
-      "value": "1.0.0",
-    },
-    {
-      "label": "Install Size",
-      "name": "installSize",
-      "value": 226,
-    },
-    {
-      "label": "Prod. Dependencies",
-      "name": "prodDependencies",
-      "value": 0,
-    },
-    {
-      "label": "Dev. Dependencies",
-      "name": "devDependencies",
-      "value": 0,
-    },
-    {
-      "label": "CJS Dependencies",
-      "name": "cjsDependencies",
-      "value": 0,
-    },
-    {
-      "label": "ESM Dependencies",
-      "name": "esmDependencies",
-      "value": 0,
-    },
-  ],
+    "installSize": 226,
+    "name": "test-package",
+    "version": "1.0.0",
+  },
 }
 `;

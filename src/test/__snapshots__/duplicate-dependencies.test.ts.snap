@@ -12,48 +12,18 @@ Suggestions:    [34m💡[39m [90mConsider standardizing on version 2.0.0 (use
       "severity": "warning",
     },
   ],
-  "stats": [
-    {
-      "label": "Package Name",
-      "name": "packageName",
-      "value": "test-package",
+  "stats": {
+    "dependencyCount": {
+      "cjs": 4,
+      "development": 0,
+      "duplicate": 1,
+      "esm": 0,
+      "production": 2,
     },
-    {
-      "label": "Version",
-      "name": "version",
-      "value": "1.0.0",
-    },
-    {
-      "label": "Install Size",
-      "name": "installSize",
-      "value": 244,
-    },
-    {
-      "label": "Prod. Dependencies",
-      "name": "prodDependencies",
-      "value": 2,
-    },
-    {
-      "label": "Dev. Dependencies",
-      "name": "devDependencies",
-      "value": 0,
-    },
-    {
-      "label": "CJS Dependencies",
-      "name": "cjsDependencies",
-      "value": 4,
-    },
-    {
-      "label": "ESM Dependencies",
-      "name": "esmDependencies",
-      "value": 0,
-    },
-    {
-      "label": "Duplicate Dependencies",
-      "name": "duplicateDependencies",
-      "value": 1,
-    },
-  ],
+    "installSize": 244,
+    "name": "test-package",
+    "version": "1.0.0",
+  },
 }
 `;
 
@@ -70,48 +40,18 @@ Suggestions:    [34m💡[39m [90mConsider standardizing on version 1.0.0 (use
       "severity": "warning",
     },
   ],
-  "stats": [
-    {
-      "label": "Package Name",
-      "name": "packageName",
-      "value": "test-package",
+  "stats": {
+    "dependencyCount": {
+      "cjs": 4,
+      "development": 0,
+      "duplicate": 1,
+      "esm": 0,
+      "production": 2,
     },
-    {
-      "label": "Version",
-      "name": "version",
-      "value": "1.0.0",
-    },
-    {
-      "label": "Install Size",
-      "name": "installSize",
-      "value": 292,
-    },
-    {
-      "label": "Prod. Dependencies",
-      "name": "prodDependencies",
-      "value": 2,
-    },
-    {
-      "label": "Dev. Dependencies",
-      "name": "devDependencies",
-      "value": 0,
-    },
-    {
-      "label": "CJS Dependencies",
-      "name": "cjsDependencies",
-      "value": 4,
-    },
-    {
-      "label": "ESM Dependencies",
-      "name": "esmDependencies",
-      "value": 0,
-    },
-    {
-      "label": "Duplicate Dependencies",
-      "name": "duplicateDependencies",
-      "value": 1,
-    },
-  ],
+    "installSize": 292,
+    "name": "test-package",
+    "version": "1.0.0",
+  },
 }
 `;
 
@@ -127,90 +67,35 @@ Suggestions:    [34m💡[39m [90mConsider standardizing on version 2.0.0 (use
       "severity": "warning",
     },
   ],
-  "stats": [
-    {
-      "label": "Package Name",
-      "name": "packageName",
-      "value": "test-package",
+  "stats": {
+    "dependencyCount": {
+      "cjs": 4,
+      "development": 0,
+      "duplicate": 1,
+      "esm": 0,
+      "production": 2,
     },
-    {
-      "label": "Version",
-      "name": "version",
-      "value": "1.0.0",
-    },
-    {
-      "label": "Install Size",
-      "name": "installSize",
-      "value": 244,
-    },
-    {
-      "label": "Prod. Dependencies",
-      "name": "prodDependencies",
-      "value": 2,
-    },
-    {
-      "label": "Dev. Dependencies",
-      "name": "devDependencies",
-      "value": 0,
-    },
-    {
-      "label": "CJS Dependencies",
-      "name": "cjsDependencies",
-      "value": 4,
-    },
-    {
-      "label": "ESM Dependencies",
-      "name": "esmDependencies",
-      "value": 0,
-    },
-    {
-      "label": "Duplicate Dependencies",
-      "name": "duplicateDependencies",
-      "value": 1,
-    },
-  ],
+    "installSize": 244,
+    "name": "test-package",
+    "version": "1.0.0",
+  },
 }
 `;
 
 exports[`Duplicate Dependency Detection > should not detect duplicates when there are none 1`] = `
 {
   "messages": [],
-  "stats": [
-    {
-      "label": "Package Name",
-      "name": "packageName",
-      "value": "test-package",
+  "stats": {
+    "dependencyCount": {
+      "cjs": 1,
+      "development": 0,
+      "duplicate": 0,
+      "esm": 0,
+      "production": 1,
     },
-    {
-      "label": "Version",
-      "name": "version",
-      "value": "1.0.0",
-    },
-    {
-      "label": "Install Size",
-      "name": "installSize",
-      "value": 47,
-    },
-    {
-      "label": "Prod. Dependencies",
-      "name": "prodDependencies",
-      "value": 1,
-    },
-    {
-      "label": "Dev. Dependencies",
-      "name": "devDependencies",
-      "value": 0,
-    },
-    {
-      "label": "CJS Dependencies",
-      "name": "cjsDependencies",
-      "value": 1,
-    },
-    {
-      "label": "ESM Dependencies",
-      "name": "esmDependencies",
-      "value": 0,
-    },
-  ],
+    "installSize": 47,
+    "name": "test-package",
+    "version": "1.0.0",
+  },
 }
 `;
