@@ -6,18 +6,36 @@ import {glob} from 'tinyglobby';
 import {readFile, writeFile} from 'node:fs/promises';
 import {fixableReplacements} from './fixable-replacements.js';
 import type {Replacement} from '../types.js';
-
-const fixableReplacementsTargets = new Set(
-  fixableReplacements.map((rep) => rep.from)
-);
+import {LocalFileSystem} from '../local-file-system.js';
+import {getPackageJson} from '../file-system-utils.js';
 
 export async function run(ctx: CommandContext<typeof meta.args>) {
   const [_commandName, ...targetModules] = ctx.positionals;
   const dryRun = ctx.values['dry-run'] === true;
   const interactive = ctx.values.interactive === true;
   const include = ctx.values.include;
+  const fileSystem = new LocalFileSystem(process.cwd());
+  const packageJson = await getPackageJson(fileSystem);
 
   prompts.intro(`Migrating packages...`);
+
+  if (!packageJson) {
+    prompts.cancel(
+      'Error: No package.json found in the current directory. Please run this command in a project directory.'
+    );
+    return;
+  }
+
+  const dependencies = {
+    ...packageJson.dependencies,
+    ...packageJson.devDependencies
+  };
+
+  const fixableReplacementsTargets = new Set(
+    fixableReplacements
+      .filter((rep) => Object.hasOwn(dependencies, rep.from))
+      .map((rep) => rep.from)
+  );
 
   if (interactive) {
     const additionalTargets = await prompts.autocompleteMultiselect({

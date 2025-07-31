@@ -1,10 +1,9 @@
 import {detectAndPack} from '#detect-and-pack';
-import {analyzePackageModuleType, PackageModuleType} from '../compute-type.js';
-import {analyzeDependencies, type DependencyStats} from './dependencies.js';
+import {analyzePackageModuleType} from '../compute-type.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 import type {FileSystem} from '../file-system.js';
-import {Message, Options} from '../types.js';
+import {Message, Options, ReportPlugin, Stat, Stats} from '../types.js';
 import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
@@ -23,6 +22,15 @@ export interface ReportResult {
 }
 
 const defaultPlugins: ReportPlugin[] = [runAttw, runPublint, runReplacements, runKnip];
+
+import {runDependencyAnalysis} from './dependencies.js';
+
+const plugins: ReportPlugin[] = [
+  runAttw,
+  runPublint,
+  runReplacements,
+  runDependencyAnalysis
+];
 
 async function computeInfo(fileSystem: FileSystem) {
   try {
@@ -43,6 +51,20 @@ export async function report(options: Options) {
 
   let fileSystem: FileSystem;
   const messages: Message[] = [];
+  const extraStats: Stat[] = [];
+  let stats: Stats = {
+    name: 'unknown',
+    version: 'unknown',
+    dependencyCount: {
+      production: 0,
+      development: 0,
+      cjs: 0,
+      duplicate: 0,
+      esm: 0
+    },
+    extraStats
+  };
+  const seenStatKeys = new Set<string>();
 
   const enabledFeatures = features ? features.split(',').map(f => f.trim()) : [];
   
@@ -84,13 +106,29 @@ export async function report(options: Options) {
   for (const plugin of plugins) {
     const result = await plugin(fileSystem);
 
-    for (const message of result) {
+    for (const message of result.messages) {
       messages.push(message);
+    }
+
+    if (result.stats) {
+      stats = {
+        ...stats,
+        ...result.stats,
+        extraStats
+      };
+      if (result.stats.extraStats) {
+        for (const stat of result.stats.extraStats) {
+          if (seenStatKeys.has(stat.name)) {
+            continue;
+          }
+          seenStatKeys.add(stat.name);
+          result.stats.extraStats.push(stat);
+        }
+      }
     }
   }
 
   const info = await computeInfo(fileSystem);
-  const dependencies = await analyzeDependencies(fileSystem);
 
-  return {info, messages, dependencies};
+  return {info, messages, stats};
 }

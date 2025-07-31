@@ -1,6 +1,6 @@
-import type {Message, Options, DependencyStats} from './types.js';
+import type {Message, Options, Stat} from './types.js';
 import type {PackageModuleType} from './compute-type.js';
 
-export type {Message, Options, PackageModuleType, DependencyStats};
+export type {Message, Options, PackageModuleType, Stat};
 
 export {report} from './analyze/report.js';

@@ -1,5 +1,5 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest';
-import {analyzeDependencies} from '../../analyze/dependencies.js';
+import {runDependencyAnalysis} from '../../analyze/dependencies.js';
 import {TarballFileSystem} from '../../tarball-file-system.js';
 import {LocalFileSystem} from '../../local-file-system.js';
 import {
@@ -11,26 +11,22 @@ import {
 } from '../utils.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+
+const FIXTURE_DIR = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../../test/fixtures'
+);
 
 // Integration test using a real tarball fixture
 
 describe('analyzeDependencies (tarball)', () => {
   it('should analyze a real tarball fixture', async () => {
-    const tarballPath = path.join(__dirname, 'fixtures', 'test-package.tgz');
+    const tarballPath = path.join(FIXTURE_DIR, 'test-package.tgz');
     const tarballBuffer = await fs.readFile(tarballPath);
     const fileSystem = new TarballFileSystem(tarballBuffer.buffer);
-    const result = await analyzeDependencies(fileSystem);
-    expect(result).toMatchObject({
-      totalDependencies: expect.any(Number),
-      directDependencies: expect.any(Number),
-      devDependencies: expect.any(Number),
-      cjsDependencies: expect.any(Number),
-      esmDependencies: expect.any(Number),
-      installSize: expect.any(Number),
-      duplicateDependencies: expect.any(Number),
-      packageName: 'test-package',
-      version: '1.0.0'
-    });
+    const result = await runDependencyAnalysis(fileSystem);
+    expect(result).toMatchSnapshot();
   });
 });
 
@@ -53,19 +49,8 @@ describe('analyzeDependencies (local)', () => {
       version: '1.0.0'
     });
 
-    const stats = await analyzeDependencies(fileSystem);
-    expect(stats).toEqual({
-      totalDependencies: 0,
-      directDependencies: 0,
-      devDependencies: 0,
-      cjsDependencies: 0,
-      esmDependencies: 0,
-      installSize: 0,
-      packageName: 'test-package',
-      version: '1.0.0',
-      duplicateCount: 0
-    });
-    expect(stats.duplicateDependencies).toBeUndefined();
+    const stats = await runDependencyAnalysis(fileSystem);
+    expect(stats).toMatchSnapshot();
   });
 
   it('should analyze dependencies correctly', async () => {
@@ -107,19 +92,8 @@ describe('analyzeDependencies (local)', () => {
 
     await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
 
-    const stats = await analyzeDependencies(fileSystem);
-    expect(stats).toEqual({
-      totalDependencies: 3,
-      directDependencies: 2,
-      devDependencies: 1,
-      cjsDependencies: 2, // cjs-package and dev-package
-      esmDependencies: 1, // esm-package
-      installSize: expect.any(Number),
-      packageName: 'test-package',
-      version: '1.0.0',
-      duplicateCount: 0
-    });
-    expect(stats.duplicateDependencies).toBeUndefined();
+    const stats = await runDependencyAnalysis(fileSystem);
+    expect(stats).toMatchSnapshot();
   });
 
   it('should handle symlinks', async () => {
@@ -152,19 +126,8 @@ describe('analyzeDependencies (local)', () => {
       'dir'
     );
 
-    const stats = await analyzeDependencies(fileSystem);
-    expect(stats).toEqual({
-      totalDependencies: 1,
-      directDependencies: 1,
-      devDependencies: 0,
-      cjsDependencies: 0,
-      esmDependencies: 1,
-      installSize: expect.any(Number),
-      packageName: 'test-package',
-      version: '1.0.0',
-      duplicateCount: 0
-    });
-    expect(stats.duplicateDependencies).toBeUndefined();
+    const stats = await runDependencyAnalysis(fileSystem);
+    expect(stats).toMatchSnapshot();
   });
 
   it('should handle missing node_modules', async () => {
@@ -176,18 +139,7 @@ describe('analyzeDependencies (local)', () => {
       }
     });
 
-    const stats = await analyzeDependencies(fileSystem);
-    expect(stats).toEqual({
-      totalDependencies: 1,
-      directDependencies: 1,
-      devDependencies: 0,
-      cjsDependencies: 0,
-      esmDependencies: 0,
-      installSize: 0,
-      packageName: 'test-package',
-      version: '1.0.0',
-      duplicateCount: 0
-    });
-    expect(stats.duplicateDependencies).toBeUndefined();
+    const stats = await runDependencyAnalysis(fileSystem);
+    expect(stats).toMatchSnapshot();
   });
 });

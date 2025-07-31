@@ -1,6 +1,7 @@
 import * as replacements from 'module-replacements';
-import {Message, PackageJsonLike} from '../types.js';
+import {ReportPluginResult} from '../types.js';
 import type {FileSystem} from '../file-system.js';
+import {getPackageJson} from '../file-system-utils.js';
 
 /**
  * Generates a standard URL to the docs of a given rule
@@ -20,30 +21,18 @@ export function getMdnUrl(path: string): string {
   return `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/${path}`;
 }
 
-export async function runReplacements(fileSystem: FileSystem) {
-  const messages: Message[] = [];
+export async function runReplacements(
+  fileSystem: FileSystem
+): Promise<ReportPluginResult> {
+  const result: ReportPluginResult = {
+    messages: []
+  };
 
-  let packageJsonText: string;
+  const packageJson = await getPackageJson(fileSystem);
 
-  try {
-    packageJsonText = await fileSystem.readFile('/package.json');
-  } catch {
-    // No package.json found
-    return messages;
-  }
-
-  let packageJson: PackageJsonLike;
-
-  try {
-    packageJson = JSON.parse(packageJsonText);
-  } catch {
-    // Not parseable
-    return messages;
-  }
-
-  if (!packageJson.dependencies) {
+  if (!packageJson || !packageJson.dependencies) {
     // No dependencies
-    return messages;
+    return result;
   }
 
   for (const name of Object.keys(packageJson.dependencies)) {
@@ -56,13 +45,13 @@ export async function runReplacements(fileSystem: FileSystem) {
     }
 
     if (replacement.type === 'none') {
-      messages.push({
+      result.messages.push({
         severity: 'warning',
         score: 0,
         message: `Module "${name}" can be removed, and native functionality used instead`
       });
     } else if (replacement.type === 'simple') {
-      messages.push({
+      result.messages.push({
         severity: 'warning',
         score: 0,
         message: `Module "${name}" can be replaced. ${replacement.replacement}.`
@@ -71,14 +60,14 @@ export async function runReplacements(fileSystem: FileSystem) {
       const mdnPath = getMdnUrl(replacement.mdnPath);
       // TODO (43081j): support `nodeVersion` here, check it against the
       // packageJson.engines field, if there is one.
-      messages.push({
+      result.messages.push({
         severity: 'warning',
         score: 0,
         message: `Module "${name}" can be replaced with native functionality. Use "${replacement.replacement}" instead. You can read more at ${mdnPath}.`
       });
     } else if (replacement.type === 'documented') {
       const docUrl = getDocsUrl(replacement.docPath);
-      messages.push({
+      result.messages.push({
         severity: 'warning',
         score: 0,
         message: `Module "${name}" can be replaced with a more performant alternative. See the list of available alternatives at ${docUrl}.`
@@ -86,5 +75,5 @@ export async function runReplacements(fileSystem: FileSystem) {
     }
   }
 
-  return messages;
+  return result;
 }

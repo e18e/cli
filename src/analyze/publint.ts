@@ -1,24 +1,28 @@
 import {publint} from 'publint';
 import {formatMessage} from 'publint/utils';
-import {Message} from '../types.js';
+import {ReportPluginResult} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 
-export async function runPublint(fileSystem: FileSystem) {
-  const messages: Message[] = [];
+export async function runPublint(
+  fileSystem: FileSystem
+): Promise<ReportPluginResult> {
+  const result: ReportPluginResult = {
+    messages: []
+  };
 
   if (!(fileSystem instanceof TarballFileSystem)) {
-    return messages;
+    return result;
   }
 
-  const result = await publint({pack: {tarball: fileSystem.tarball}});
-  for (const problem of result.messages) {
-    messages.push({
+  const publintResult = await publint({pack: {tarball: fileSystem.tarball}});
+  for (const problem of publintResult.messages) {
+    result.messages.push({
       severity: problem.type,
       score: 0,
-      message: formatMessage(problem, result.pkg) ?? ''
+      message: formatMessage(problem, publintResult.pkg) ?? ''
     });
   }
 
-  return messages;
+  return result;
 }

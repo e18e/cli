@@ -70,84 +70,61 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   const {dependencies, messages} = await report({root, pack, features});
 
   prompts.log.info('Summary');
-  prompts.log.message(
-    `${c.cyan('Total deps    ')}  ${dependencies.totalDependencies}`,
-    {spacing: 0}
-  );
-  prompts.log.message(
-    `${c.cyan('Direct deps   ')}  ${dependencies.directDependencies}`,
-    {spacing: 0}
-  );
-  prompts.log.message(
-    `${c.cyan('Dev deps      ')}  ${dependencies.devDependencies}`,
-    {spacing: 0}
-  );
-  prompts.log.message(
-    `${c.cyan('CJS deps      ')}  ${dependencies.cjsDependencies}`,
-    {spacing: 0}
-  );
-  prompts.log.message(
-    `${c.cyan('ESM deps      ')}  ${dependencies.esmDependencies}`,
-    {spacing: 0}
-  );
-  prompts.log.message(
-    `${c.cyan('Install size  ')}  ${formatBytes(dependencies.installSize)}`,
-    {spacing: 0}
-  );
 
-  // Display duplicate dependency information
-  if (
-    dependencies.duplicateDependencies &&
-    dependencies.duplicateDependencies.length > 0
-  ) {
-    prompts.log.message(
-      `${c.yellow('Duplicates    ')}  ${dependencies.duplicateDependencies.length}`,
-      {spacing: 0}
-    );
+  const totalDeps =
+    stats.dependencyCount.production + stats.dependencyCount.development;
+  const totalDeepDeps =
+    stats.dependencyCount.cjs + stats.dependencyCount.esm;
+  const esmPercentage =
+    totalDeepDeps > 0
+      ? Math.floor((stats.dependencyCount.esm / totalDeepDeps) * 100)
+      : 0;
+  const summaryPairs: Array<[string, string]> = [
+    ['Package Name', stats.name],
+    ['Version', stats.version],
+    [
+      'Install Size',
+      stats.installSize === undefined
+        ? 'Unknown'
+        : formatBytes(stats.installSize)
+    ],
+    [
+      'Dependencies',
+      `${totalDeps} (${stats.dependencyCount.production} production, ${stats.dependencyCount.development} development)`
+    ],
+    [
+      'ES Modules',
+      `${esmPercentage}% (${stats.dependencyCount.esm} ESM, ${stats.dependencyCount.cjs} CJS)`
+    ]
+  ];
+
+  // Iterate again (unfortunately) to display the stats
+  if (stats.extraStats) {
+    for (const stat of stats.extraStats) {
+      const statName = stat.label ?? stat.name;
+      const statValueString = stat.value.toString();
+      summaryPairs.push([statName, statValueString]);
+    }
+  }
+
+  let longestStatName = 0;
+
+  // Iterate once to find the longest stat name
+  for (const [label] of summaryPairs) {
+    if (label.length > longestStatName) {
+      longestStatName = label.length;
+    }
+  }
+
+  for (const [label, value] of summaryPairs) {
+    const paddingSize = longestStatName - label.length + value.length + 2;
+    prompts.log.message(`${c.cyan(`${label}`)}${value.padStart(paddingSize)}`, {
+      spacing: 0
+    });
   }
 
   prompts.log.info('Results:');
   prompts.log.message('', {spacing: 0});
-
-  // Display duplicate dependencies or a message if none found
-  if (
-    dependencies.duplicateDependencies &&
-    dependencies.duplicateDependencies.length > 0
-  ) {
-    prompts.log.message(c.yellow('Duplicate Dependencies:'), {spacing: 0});
-    for (const duplicate of dependencies.duplicateDependencies) {
-      const severityColor = duplicate.severity === 'exact' ? c.blue : c.yellow;
-
-      prompts.log.message(
-        `  ${severityColor('•')} ${c.bold(duplicate.name)} (${duplicate.versions.length} versions)`,
-        {spacing: 0}
-      );
-
-      // Show version details
-      for (const version of duplicate.versions) {
-        prompts.log.message(
-          `    ${c.gray(version.version)} via ${c.gray(version.path)}`,
-          {spacing: 0}
-        );
-      }
-
-      // Show suggestions
-      if (duplicate.suggestions && duplicate.suggestions.length > 0) {
-        for (const suggestion of duplicate.suggestions) {
-          prompts.log.message(`    ${c.blue('💡')} ${c.gray(suggestion)}`, {
-            spacing: 0
-          });
-        }
-      }
-
-      prompts.log.message('', {spacing: 0});
-    }
-  } else {
-    prompts.log.message(c.green('✅ No duplicated dependencies found.'), {
-      spacing: 0
-    });
-    prompts.log.message('', {spacing: 0});
-  }
 
   // Display tool analysis results
   if (messages.length > 0) {
