@@ -37,7 +37,7 @@ export class TarballFileSystem implements FileSystem {
   async readFile(filePath: string): Promise<string> {
     const {files} = await this.#getUnpackResult();
 
-    const cleanPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
+    const normalizedPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
 
     const fullPath = path.posix.join(await this.getRootDir(), cleanPath);
 
