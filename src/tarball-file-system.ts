@@ -39,7 +39,7 @@ export class TarballFileSystem implements FileSystem {
 
     const normalizedPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
 
-    const fullPath = path.posix.join(await this.getRootDir(), cleanPath);
+    const fullPath = path.posix.join(await this.getRootDir(), normalizedPath);
 
     const file = files.find((f) => f.name === fullPath);
     if (!file) {
