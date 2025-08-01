@@ -4,6 +4,7 @@ import * as fs from 'node:fs/promises';
 import {type Logger, pino} from 'pino';
 import {fdir} from 'fdir';
 import {readFile, stat} from 'node:fs/promises';
+import {normalizePath} from './utils/path.js';
 
 export class LocalFileSystem implements FileSystem {
   #root: string;
@@ -35,10 +36,13 @@ export class LocalFileSystem implements FileSystem {
       const crawler = new fdir()
         .withFullPaths()
         .withSymlinks()
-        .filter((filePath) => filePath.endsWith('/package.json'))
+        .filter((filePath) => normalizePath(filePath).endsWith('/package.json'))
         .crawl(nodeModulesPath);
       const files = await crawler.withPromise();
-      return files.map((file) => `/${path.relative(this.#root, file)}`);
+      return files.map((file) => {
+        const relativePath = path.relative(this.#root, file);
+        return '/' + normalizePath(relativePath);
+      });
     } catch {
       return [];
     }

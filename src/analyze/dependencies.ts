@@ -7,6 +7,7 @@ import type {
   Stats
 } from '../types.js';
 import {FileSystem} from '../file-system.js';
+import {normalizePath} from '../utils/path.js';
 
 interface DependencyNode {
   name: string;
@@ -214,7 +215,7 @@ export async function runDependencyAnalysis(
     const allDeps = {...depPkg.dependencies, ...depPkg.devDependencies};
     for (const depName of Object.keys(allDeps)) {
       let packageMatch = packageFiles.find((packageFile) =>
-        packageFile.endsWith(`/node_modules/${depName}/package.json`)
+        normalizePath(packageFile).endsWith(`/node_modules/${depName}/package.json`)
       );
 
       if (!packageMatch) {
@@ -247,7 +248,8 @@ export async function runDependencyAnalysis(
   // find the ones that don't exist in the parent package's dependency list.
   // there must be a better way
   for (const file of packageFiles) {
-    if (file === rootDir + '/package.json') {
+    const rootPackageJsonPath = normalizePath(rootDir) + '/package.json';
+    if (file === rootPackageJsonPath) {
       continue;
     }
 
@@ -264,7 +266,8 @@ export async function runDependencyAnalysis(
 
       if (!alreadyExists) {
         // Extract path information from the file path
-        const pathParts = file.split('/node_modules/');
+        const normalizedFile = normalizePath(file);
+        const pathParts = normalizedFile.split('/node_modules/');
         if (pathParts.length > 1) {
           const packageDirName = pathParts[pathParts.length - 1].replace(
             '/package.json',
