@@ -36,11 +36,7 @@ export class TarballFileSystem implements FileSystem {
 
   async readFile(filePath: string): Promise<string> {
     const {files} = await this.#getUnpackResult();
-
-    const normalizedPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
-
-    const fullPath = path.posix.join(await this.getRootDir(), normalizedPath);
-
+    const fullPath = path.posix.join(await this.getRootDir(), filePath);
     const file = files.find((f) => f.name === fullPath);
     if (!file) {
       throw new Error(`File not found: ${filePath}`);
