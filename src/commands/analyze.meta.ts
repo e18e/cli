@@ -11,8 +11,7 @@ export const meta = {
         'npm',
         'yarn',
         'pnpm',
-        'bun',
-        'none'
+        'bun'
       ] satisfies PackType[],
       default: 'auto',
       description: `Package manager to use for packing`

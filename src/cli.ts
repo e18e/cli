@@ -3,22 +3,9 @@ import {cli, define, lazy, type LazyCommand} from 'gunshi';
 import c from 'picocolors';
 import {meta as analyzeMeta} from './commands/analyze.meta.js';
 import {meta as migrateMeta} from './commands/migrate.meta.js';
-import {pino} from 'pino';
 import {renderUsage} from 'gunshi/renderer';
 
 const version = createRequire(import.meta.url)('../package.json').version;
-
-// Create a logger instance with pretty printing for development
-export const logger = pino({
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      translateTime: 'SYS:standard',
-      ignore: 'pid,hostname'
-    }
-  }
-});
 
 const defaultCommand = define({
   args: {},

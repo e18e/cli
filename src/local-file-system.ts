@@ -1,27 +1,17 @@
 import type {FileSystem} from './file-system.js';
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
-import {type Logger, pino} from 'pino';
+import {fileSystemLogger} from './logger.js';
 import {fdir} from 'fdir';
 import {readFile, stat} from 'node:fs/promises';
 import {normalizePath} from './utils/path.js';
 
 export class LocalFileSystem implements FileSystem {
   #root: string;
-  #logger: Logger;
+  #logger = fileSystemLogger;
 
   constructor(root: string) {
     this.#root = root;
-    this.#logger = pino({
-      transport: {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-          translateTime: 'SYS:standard',
-          ignore: 'pid,hostname'
-        }
-      }
-    });
   }
 
   async getRootDir(): Promise<string> {
