@@ -1,8 +1,13 @@
 import debug from 'debug';
 
+// Function to enable debug programmatically
+export function enableDebug(pattern: string = 'e18e:*') {
+  debug.enable(pattern);
+}
+
 // Create debug instances for different parts of the application
 const cliDebug = debug('e18e:cli');
-const fileSystemDebug = debug('e18e:filesystem');
+const fileSystemDebug = debug('e18e:cli:filesystem');
 
 // Export the debug instances for use in different modules
 export const logger = {
@@ -19,8 +24,4 @@ export const fileSystemLogger = {
   error: fileSystemDebug
 };
 
-// Enable debug output based on DEBUG environment variable
-// This allows users to enable debug logging by setting DEBUG=e18e:*
-if (process.env.DEBUG) {
-  debug.enable(process.env.DEBUG);
-} 
+ 

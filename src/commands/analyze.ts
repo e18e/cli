@@ -5,6 +5,7 @@ import c from 'picocolors';
 import {meta} from './analyze.meta.js';
 import {report} from '../index.js';
 import type {PackType} from '../types.js';
+import {enableDebug} from '../logger.js';
 
 const allowedPackTypes: PackType[] = ['auto', 'npm', 'yarn', 'pnpm', 'bun'];
 
@@ -26,9 +27,9 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   let pack: PackType = ctx.values.pack;
   const logLevel = ctx.values['log-level'];
 
-  // Set debug environment variable based on log level
+  // Enable debug output based on log level
   if (logLevel === 'debug') {
-    process.env.DEBUG = 'e18e:*';
+    enableDebug('e18e:*');
   }
 
   prompts.intro('Analyzing...');
