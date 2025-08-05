@@ -15,3 +15,8 @@ updates:
       directory: '/'
       schedule:
           interval: weekly
+      open-pull-requests-limit: 5
+      groups:
+        github-actions:
+          patterns:
+            - "*"
