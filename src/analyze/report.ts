@@ -1,5 +1,5 @@
 import {detectAndPack} from '#detect-and-pack';
-import {analyzePackageModuleType} from '../compute-type.js';
+import {analyzePackageModuleType, PackageModuleType} from '../compute-type.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 import type {FileSystem} from '../file-system.js';
@@ -7,14 +7,20 @@ import {Message, Options, ReportPlugin, Stat, Stats} from '../types.js';
 import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
+import {runKnip} from './knip.js';
 import {runDependencyAnalysis} from './dependencies.js';
 
-const plugins: ReportPlugin[] = [
-  runAttw,
-  runPublint,
-  runReplacements,
-  runDependencyAnalysis
-];
+export interface ReportResult {
+  info: {
+    name: string;
+    version: string;
+    type: PackageModuleType;
+  };
+  messages: Message[];
+  stats: Stats;
+}
+
+const defaultPlugins: ReportPlugin[] = [runAttw, runPublint, runReplacements, runKnip, runDependencyAnalysis];
 
 async function computeInfo(fileSystem: FileSystem) {
   try {
@@ -31,7 +37,7 @@ async function computeInfo(fileSystem: FileSystem) {
 }
 
 export async function report(options: Options) {
-  const {root = process.cwd(), pack = 'auto'} = options ?? {};
+  const {root = process.cwd(), pack = 'auto', features} = options ?? {};
 
   let fileSystem: FileSystem;
   const messages: Message[] = [];
@@ -49,6 +55,31 @@ export async function report(options: Options) {
     extraStats
   };
   const seenStatKeys = new Set<string>();
+
+  const enabledFeatures = features ? features.split(',').map(f => f.trim()) : [];
+  
+  let plugins = defaultPlugins;
+  
+  if (enabledFeatures.length > 0) {
+    // Only add plugins for explicitly enabled features
+    const selectedPlugins: ReportPlugin[] = [];
+    
+    if (enabledFeatures.includes('types')) {
+      selectedPlugins.push(runAttw);
+    }
+    if (enabledFeatures.includes('publish')) {
+      selectedPlugins.push(runPublint);
+    }
+    if (enabledFeatures.includes('unused')) {
+      selectedPlugins.push(runKnip);
+    }
+    // runReplacements is always included as it's a core analysis
+    selectedPlugins.push(runReplacements);
+    // runDependencyAnalysis is always included as it's a core analysis
+    selectedPlugins.push(runDependencyAnalysis);
+    
+    plugins = selectedPlugins;
+  }
 
   if (pack === 'none') {
     fileSystem = new LocalFileSystem(root);
