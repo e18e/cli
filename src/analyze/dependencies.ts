@@ -215,7 +215,9 @@ export async function runDependencyAnalysis(
     const allDeps = {...depPkg.dependencies, ...depPkg.devDependencies};
     for (const depName of Object.keys(allDeps)) {
       let packageMatch = packageFiles.find((packageFile) =>
-        normalizePath(packageFile).endsWith(`/node_modules/${depName}/package.json`)
+        normalizePath(packageFile).endsWith(
+          `/node_modules/${depName}/package.json`
+        )
       );
 
       if (!packageMatch) {

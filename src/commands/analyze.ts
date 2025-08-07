@@ -70,8 +70,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   const totalDeps =
     stats.dependencyCount.production + stats.dependencyCount.development;
-  const totalDeepDeps =
-    stats.dependencyCount.cjs + stats.dependencyCount.esm;
+  const totalDeepDeps = stats.dependencyCount.cjs + stats.dependencyCount.esm;
   const esmPercentage =
     totalDeepDeps > 0
       ? Math.floor((stats.dependencyCount.esm / totalDeepDeps) * 100)

@@ -23,5 +23,3 @@ export const fileSystemLogger = {
   warn: fileSystemDebug,
   error: fileSystemDebug
 };
-
- 
