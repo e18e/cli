@@ -1,6 +1,6 @@
 import {describe, it, expect} from 'vitest';
-import {runAttw} from '../analyze/attw.js';
-import {LocalFileSystem} from '../local-file-system.js';
+import {runAttw} from '../../analyze/attw.js';
+import {LocalFileSystem} from '../../local-file-system.js';
 import * as path from 'node:path';
 
 describe('ATTW TypeScript Configuration', () => {
