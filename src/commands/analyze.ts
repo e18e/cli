@@ -45,7 +45,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
       const stat = await fs.stat(root);
       if (stat.isFile()) {
         const buffer = await fs.readFile(root);
-        pack = {tarball: buffer.buffer};
+        pack = {tarball: buffer.buffer as ArrayBuffer};
       } else {
         // Not a file, exit
         prompts.cancel(
