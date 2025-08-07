@@ -24,7 +24,7 @@ describe('analyzeDependencies (tarball)', () => {
   it('should analyze a real tarball fixture', async () => {
     const tarballPath = path.join(FIXTURE_DIR, 'test-package.tgz');
     const tarballBuffer = await fs.readFile(tarballPath);
-    const fileSystem = new TarballFileSystem(tarballBuffer.buffer);
+    const fileSystem = new TarballFileSystem(tarballBuffer.buffer as ArrayBuffer);
     const result = await runDependencyAnalysis(fileSystem);
     expect(result).toMatchSnapshot();
   });
