@@ -72,4 +72,13 @@ export class LocalFileSystem implements FileSystem {
 
     return installSize;
   }
+
+  async hasTypeScriptConfig(): Promise<boolean> {
+    try {
+      await fs.access(path.join(this.#root, 'tsconfig.json'));
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }

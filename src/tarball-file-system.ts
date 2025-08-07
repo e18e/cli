@@ -48,4 +48,11 @@ export class TarballFileSystem implements FileSystem {
     const {files} = await this.#getUnpackResult();
     return files.reduce((acc, file) => acc + file.data.byteLength, 0);
   }
+
+  async hasTypeScriptConfig(): Promise<boolean> {
+    const {files} = await this.#getUnpackResult();
+    const rootDir = await this.getRootDir();
+    const tsconfigPath = path.posix.join(rootDir, 'tsconfig.json');
+    return files.some((file) => file.name === tsconfigPath);
+  }
 }
