@@ -26,6 +26,8 @@ function isNodeEngineCompatible(
   requiredNode: string | undefined,
   enginesNode: string | undefined
 ): boolean {
+  if (!requiredNode || !enginesNode) return true;
+
   const requiredRange = validRange(requiredNode) ?? `>=${requiredNode}`;
   const requiredMin = minVersion(requiredRange);
   if (!requiredMin) return true;
