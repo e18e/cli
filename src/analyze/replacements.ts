@@ -88,7 +88,7 @@ export async function runReplacements(
       const mdnPath = getMdnUrl(replacement.mdnPath);
       const requires =
         replacement.nodeVersion && !enginesNode
-          ? `Required Node >= ${replacement.nodeVersion}`
+          ? ` Required Node >= ${replacement.nodeVersion}.`
           : '';
       result.messages.push({
         severity: 'warning',
