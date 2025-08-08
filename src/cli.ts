@@ -25,9 +25,8 @@ const migrateCommand = async () => {
 };
 
 const subCommands = new Map<string, LazyCommand<any>>([
-  // TODO (43081j): get rid of these casts
-  ['analyze', lazy(analyzeCommand, analyzeMeta) as LazyCommand<any>],
-  ['migrate', lazy(migrateCommand, migrateMeta) as LazyCommand<any>]
+  ['analyze', lazy(analyzeCommand, analyzeMeta)],
+  ['migrate', lazy(migrateCommand, migrateMeta)]
 ]);
 
 cli(process.argv.slice(2), defaultCommand, {
