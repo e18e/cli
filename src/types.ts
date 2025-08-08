@@ -53,6 +53,10 @@ export interface PackageJsonLike {
   version: string;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
+  engines?: {
+    node?: string;
+    [engineName: string]: string | undefined;
+  };
 }
 
 export interface Replacement {
