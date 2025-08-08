@@ -62,11 +62,14 @@ describe('TarballFileSystem', () => {
   describe('TypeScript Configuration Detection', () => {
     it('should return false when tsconfig.json does not exist in tarball', async () => {
       // Create a minimal package.json for the tarball
-      await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({
-        name: 'test-package',
-        version: '1.0.0'
-      }));
-      
+      await fs.writeFile(
+        path.join(tempDir, 'package.json'),
+        JSON.stringify({
+          name: 'test-package',
+          version: '1.0.0'
+        })
+      );
+
       const tarball = await detectAndPack(tempDir, 'npm');
       const fileSystem = new TarballFileSystem(tarball);
       const hasConfig = await fileSystem.fileExists('/tsconfig.json');
@@ -75,11 +78,14 @@ describe('TarballFileSystem', () => {
 
     it('should return true when tsconfig.json exists in tarball', async () => {
       // Create a minimal package.json for the tarball
-      await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({
-        name: 'test-package',
-        version: '1.0.0'
-      }));
-      
+      await fs.writeFile(
+        path.join(tempDir, 'package.json'),
+        JSON.stringify({
+          name: 'test-package',
+          version: '1.0.0'
+        })
+      );
+
       await fs.writeFile(path.join(tempDir, 'tsconfig.json'), '{}');
       const tarball = await detectAndPack(tempDir, 'npm');
       const fileSystem = new TarballFileSystem(tarball);
@@ -91,11 +97,14 @@ describe('TarballFileSystem', () => {
   describe('File Existence', () => {
     it('should return false when file does not exist in tarball', async () => {
       // Create a minimal package.json for the tarball
-      await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({
-        name: 'test-package',
-        version: '1.0.0'
-      }));
-      
+      await fs.writeFile(
+        path.join(tempDir, 'package.json'),
+        JSON.stringify({
+          name: 'test-package',
+          version: '1.0.0'
+        })
+      );
+
       const tarball = await detectAndPack(tempDir, 'npm');
       const fileSystem = new TarballFileSystem(tarball);
       const exists = await fileSystem.fileExists('/nonexistent.txt');
@@ -104,11 +113,14 @@ describe('TarballFileSystem', () => {
 
     it('should return true when file exists in tarball', async () => {
       // Create a minimal package.json for the tarball
-      await fs.writeFile(path.join(tempDir, 'package.json'), JSON.stringify({
-        name: 'test-package',
-        version: '1.0.0'
-      }));
-      
+      await fs.writeFile(
+        path.join(tempDir, 'package.json'),
+        JSON.stringify({
+          name: 'test-package',
+          version: '1.0.0'
+        })
+      );
+
       await fs.writeFile(path.join(tempDir, 'test.txt'), 'content');
       const tarball = await detectAndPack(tempDir, 'npm');
       const fileSystem = new TarballFileSystem(tarball);
