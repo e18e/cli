@@ -20,14 +20,14 @@ describe('LocalFileSystem', () => {
   describe('TypeScript Configuration Detection', () => {
     it('should return false when tsconfig.json does not exist', async () => {
       const fileSystem = new LocalFileSystem(tempDir);
-      const hasConfig = await fileSystem.hasTypeScriptConfig();
+      const hasConfig = await fileSystem.fileExists('/tsconfig.json');
       expect(hasConfig).toBe(false);
     });
 
     it('should return true when tsconfig.json exists', async () => {
       await fs.writeFile(path.join(tempDir, 'tsconfig.json'), '{}');
       const fileSystem = new LocalFileSystem(tempDir);
-      const hasConfig = await fileSystem.hasTypeScriptConfig();
+      const hasConfig = await fileSystem.fileExists('/tsconfig.json');
       expect(hasConfig).toBe(true);
     });
   });
@@ -69,7 +69,7 @@ describe('TarballFileSystem', () => {
       
       const tarball = await detectAndPack(tempDir, 'npm');
       const fileSystem = new TarballFileSystem(tarball);
-      const hasConfig = await fileSystem.hasTypeScriptConfig();
+      const hasConfig = await fileSystem.fileExists('/tsconfig.json');
       expect(hasConfig).toBe(false);
     });
 
@@ -83,7 +83,7 @@ describe('TarballFileSystem', () => {
       await fs.writeFile(path.join(tempDir, 'tsconfig.json'), '{}');
       const tarball = await detectAndPack(tempDir, 'npm');
       const fileSystem = new TarballFileSystem(tarball);
-      const hasConfig = await fileSystem.hasTypeScriptConfig();
+      const hasConfig = await fileSystem.fileExists('/tsconfig.json');
       expect(hasConfig).toBe(true);
     });
   });

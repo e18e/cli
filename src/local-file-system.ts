@@ -73,10 +73,6 @@ export class LocalFileSystem implements FileSystem {
     return installSize;
   }
 
-  async hasTypeScriptConfig(): Promise<boolean> {
-    return this.fileExists('/tsconfig.json');
-  }
-
   async fileExists(filePath: string): Promise<boolean> {
     try {
       await fs.access(path.join(this.#root, filePath));

@@ -17,7 +17,7 @@ export async function runAttw(
   };
 
   // Only run attw when TypeScript is configured
-  const hasTypeScriptConfig = await fileSystem.hasTypeScriptConfig();
+  const hasTypeScriptConfig = await fileSystem.fileExists('/tsconfig.json');
   if (!hasTypeScriptConfig) {
     return result;
   }
