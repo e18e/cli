@@ -20,16 +20,19 @@ export async function detectAndPack(
     packageManager = detected;
   }
 
-  const tarballPath = await packAsTarball(root, {
-    packageManager,
-    ignoreScripts: true,
-    destination: await getTempPackDir()
-  });
+  const destination = await getTempPackDir();
+  let tarballPath: string | undefined;
 
   try {
+    tarballPath = await packAsTarball(root, {
+      packageManager,
+      ignoreScripts: true,
+      destination
+    });
     return (await fs.readFile(tarballPath)).buffer as ArrayBuffer;
   } finally {
-    await fs.unlink(tarballPath);
+    if (tarballPath) await fs.unlink(tarballPath);
+    await fs.rm(destination, {recursive: true, force: true});
   }
 }
 
