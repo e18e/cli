@@ -6,7 +6,7 @@ import type {
   Message,
   Stats
 } from '../types.js';
-import {FileSystem} from '../file-system.js';
+import type {FileSystem} from '../file-system.js';
 import {normalizePath} from '../utils/path.js';
 
 interface DependencyNode {
@@ -153,6 +153,22 @@ export async function runDependencyAnalysis(
   const rootDir = await fileSystem.getRootDir();
   const messages: Message[] = [];
 
+  const rootDirNorm = normalizePath(rootDir);
+  const virtualToRaw = new Map<string, string>();
+  const packageFilesVirtual = new Set<string>();
+  for (const raw of packageFiles) {
+    const rawNorm = normalizePath(raw);
+    let virtual = rawNorm;
+    if (virtual.startsWith(rootDirNorm + '/')) {
+      virtual = virtual.slice(rootDirNorm.length + 1);
+    }
+    if (virtual.startsWith('/')) {
+      virtual = virtual.slice(1);
+    }
+    packageFilesVirtual.add(virtual);
+    virtualToRaw.set(virtual, rawNorm);
+  }
+
   // Find root package.json
   const pkg = await parsePackageJson(fileSystem, '/package.json');
 
@@ -182,12 +198,13 @@ export async function runDependencyAnalysis(
 
   // Recursively traverse dependencies
   async function traverse(
-    packagePath: string,
+    packagePathRaw: string,
+    packagePathVirtual: string,
     parent: string | undefined,
     depth: number,
     pathInTree: string
   ) {
-    const depPkg = await parsePackageJson(fileSystem, packagePath);
+    const depPkg = await parsePackageJson(fileSystem, packagePathRaw);
     if (!depPkg || !depPkg.name) return;
 
     // Record this node
@@ -197,7 +214,7 @@ export async function runDependencyAnalysis(
       path: pathInTree,
       parent,
       depth,
-      packagePath
+      packagePath: packagePathRaw
     });
 
     // Only count CJS/ESM for non-root packages
@@ -212,89 +229,62 @@ export async function runDependencyAnalysis(
     }
 
     // Traverse dependencies
-    const allDeps = {...depPkg.dependencies, ...depPkg.devDependencies};
+    const allDeps = {
+      ...(depPkg.dependencies || {}),
+      ...(depPkg.devDependencies || {})
+    };
+
+    const visited = new Set<string>();
+
+    function dirOfVirtual(p: string): string {
+      if (p.endsWith('/package.json'))
+        return p.slice(0, -'/package.json'.length);
+      if (p === 'package.json') return '';
+      const idx = p.lastIndexOf('/');
+      return idx === -1 ? '' : p.slice(0, idx);
+    }
+
+    function parentDirVirtual(dir: string): string {
+      const idx = dir.lastIndexOf('/');
+      return idx === -1 ? '' : dir.slice(0, idx);
+    }
+
+    function resolveDepVirtual(
+      depName: string,
+      fromVirtual: string
+    ): string | undefined {
+      let cur = dirOfVirtual(fromVirtual);
+      while (true) {
+        const prefix = cur ? cur + '/' : '';
+        const candidate = `${prefix}node_modules/${depName}/package.json`;
+        if (packageFilesVirtual.has(candidate)) return candidate;
+        if (cur === '') break;
+        cur = parentDirVirtual(cur);
+      }
+      return undefined;
+    }
+
     for (const depName of Object.keys(allDeps)) {
-      let packageMatch = packageFiles.find((packageFile) =>
-        normalizePath(packageFile).endsWith(
-          `/node_modules/${depName}/package.json`
-        )
+      const resolvedVirtual = resolveDepVirtual(depName, packagePathVirtual);
+      if (!resolvedVirtual) continue;
+      if (visited.has(resolvedVirtual)) continue;
+      visited.add(resolvedVirtual);
+
+      const raw = virtualToRaw.get(resolvedVirtual) ?? resolvedVirtual;
+      await traverse(
+        raw,
+        resolvedVirtual,
+        depPkg.name,
+        depth + 1,
+        pathInTree + ' > ' + depName
       );
-
-      if (!packageMatch) {
-        for (const packageFile of packageFiles) {
-          const depPkg = await parsePackageJson(fileSystem, packageFile);
-          if (depPkg !== null && depPkg.name === depName) {
-            packageMatch = packageFile;
-            break;
-          }
-        }
-      }
-
-      if (packageMatch) {
-        await traverse(
-          packageMatch,
-          depPkg.name,
-          depth + 1,
-          pathInTree + ' > ' + depName
-        );
-      }
     }
   }
 
-  // Start traversal from root
-  await traverse('/package.json', undefined, 0, 'root');
+  // Start traversal from root using '/package.json' and a normalized virtual 'package.json'
+  await traverse('/package.json', 'package.json', undefined, 0, 'root');
 
-  // Collect all dependency instances for duplicate detection
-  // This ensures we find all versions, even those in nested node_modules
-  // TODO (43081j): don't do this. we're re-traversing most files just to
-  // find the ones that don't exist in the parent package's dependency list.
-  // there must be a better way
-  for (const file of packageFiles) {
-    const rootPackageJsonPath = normalizePath(rootDir) + '/package.json';
-    if (file === rootPackageJsonPath) {
-      continue;
-    }
-
-    try {
-      const depPkg = await parsePackageJson(fileSystem, file);
-      if (!depPkg || !depPkg.name) {
-        continue;
-      }
-
-      // Check if we already have this exact package in our dependency nodes
-      const alreadyExists = dependencyNodes.some(
-        (node) => node.packagePath === file
-      );
-
-      if (!alreadyExists) {
-        // Extract path information from the file path
-        const normalizedFile = normalizePath(file);
-        const pathParts = normalizedFile.split('/node_modules/');
-        if (pathParts.length > 1) {
-          const packageDirName = pathParts[pathParts.length - 1].replace(
-            '/package.json',
-            ''
-          );
-          const parentDirName = pathParts[pathParts.length - 2]
-            ?.split('/')
-            .pop();
-
-          dependencyNodes.push({
-            name: depPkg.name,
-            version: depPkg.version || 'unknown',
-            path: packageDirName,
-            parent: parentDirName,
-            depth: pathParts.length - 1,
-            packagePath: file
-          });
-        }
-      }
-    } catch {
-      // Skip invalid package.json files
-    }
-  }
-
-  // Detect duplicates from the collected dependency nodes
+  // Detect duplicates from collected nodes
   const duplicateDependencies = detectDuplicates(dependencyNodes);
 
   stats.dependencyCount.cjs = cjsDependencies;
