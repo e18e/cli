@@ -122,9 +122,11 @@ describe('analyzeDependencies (local)', () => {
     });
 
     // Create a symlink to the real package
-    const linkPath = path.join(tempDir, 'node_modules', 'linked-package');
-    const symlinkType = process.platform === 'win32' ? 'junction' : 'dir';
-    await fs.symlink(realPkg, linkPath, symlinkType);
+    await fs.symlink(
+      realPkg,
+      path.join(tempDir, 'node_modules', 'linked-package'),
+      'dir'
+    );
 
     const stats = await runDependencyAnalysis(fileSystem);
     expect(stats).toMatchSnapshot();
