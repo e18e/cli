@@ -72,4 +72,13 @@ export class LocalFileSystem implements FileSystem {
 
     return installSize;
   }
+
+  async fileExists(filePath: string): Promise<boolean> {
+    try {
+      await fs.access(path.join(this.#root, filePath));
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }

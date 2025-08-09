@@ -16,6 +16,12 @@ export async function runAttw(
     messages: []
   };
 
+  // Only run attw when TypeScript is configured
+  const hasTypeScriptConfig = await fileSystem.fileExists('/tsconfig.json');
+  if (!hasTypeScriptConfig) {
+    return result;
+  }
+
   // Only support tarballs for now
   if (!(fileSystem instanceof TarballFileSystem)) {
     return result;
