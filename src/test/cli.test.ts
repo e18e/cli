@@ -3,6 +3,7 @@ import {spawn} from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import {createTempDir, cleanupTempDir, createTestPackage} from './utils.js';
+import {pack as packAsTarball} from '@publint/pack';
 
 let mockTarballPath: string;
 let tempDir: string;
@@ -46,21 +47,12 @@ beforeAll(async () => {
     })
   );
 
-  // Run npm pack to create a tarball
-  const {stdout} = await new Promise<{stdout: string}>((resolve, reject) => {
-    const proc = spawn('npm', ['pack'], {cwd: tempDir});
-    let stdout = '';
-    proc.stdout.on('data', (data) => (stdout += data.toString()));
-    proc.on('close', (code) => {
-      if (code === 0) resolve({stdout});
-      else reject(new Error(`npm pack failed with code ${code}`));
-    });
+  // Pack the test package into a tarball (cross-platform, no external npm spawn)
+  mockTarballPath = await packAsTarball(tempDir, {
+    packageManager: 'npm',
+    ignoreScripts: true,
+    destination: tempDir
   });
-
-  // The tarball is created in the current directory, so move it to our temp dir
-  const tarballName = stdout.trim();
-  mockTarballPath = path.join(tempDir, tarballName);
-  await fs.rename(path.join(tempDir, tarballName), mockTarballPath);
 });
 
 afterAll(async () => {
@@ -81,6 +73,10 @@ function runCliProcess(
     let stderr = '';
     proc.stdout.on('data', (data) => (stdout += data.toString()));
     proc.stderr.on('data', (data) => (stderr += data.toString()));
+    proc.on('error', (err) => {
+      stderr += String(err);
+      resolve({stdout, stderr, code: 1});
+    });
     proc.on('close', (code) => resolve({stdout, stderr, code}));
   });
 }
