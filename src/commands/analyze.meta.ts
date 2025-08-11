@@ -26,7 +26,8 @@ export const meta = {
     'custom-manifests': {
       type: 'string',
       array: true,
-      description: 'Path(s) to custom manifest file(s) for module replacements analysis'
+      description:
+        'Path(s) to custom manifest file(s) for module replacements analysis'
     }
   }
 } as const;

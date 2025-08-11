@@ -65,7 +65,7 @@ export async function report(options: Options) {
   }
 
   for (const plugin of plugins) {
-    const result = await (plugin === runReplacements 
+    const result = await (plugin === runReplacements
       ? runReplacements(fileSystem, customManifests)
       : plugin(fileSystem));
 
