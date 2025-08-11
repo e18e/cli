@@ -7,7 +7,14 @@ import {report} from '../index.js';
 import type {PackType} from '../types.js';
 import {enableDebug} from '../logger.js';
 
-const allowedPackTypes: PackType[] = ['auto', 'npm', 'yarn', 'pnpm', 'bun'];
+const allowedPackTypes: PackType[] = [
+  'auto',
+  'npm',
+  'yarn',
+  'pnpm',
+  'bun',
+  'none'
+];
 
 function formatBytes(bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB'];
