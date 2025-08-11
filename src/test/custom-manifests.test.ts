@@ -88,7 +88,7 @@ describe('Custom Manifests', () => {
     const hasChalkMessage = result.messages.some((msg) =>
       msg.message.includes('chalk')
     );
-    
+
     // Note: express won't be found since it's not in the test fixture dependencies
     // but chalk should be found
     expect(hasChalkMessage).toBe(true);
