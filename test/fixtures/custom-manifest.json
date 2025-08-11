@@ -1,0 +1,31 @@
+{
+  "replacements": [
+    {
+      "moduleName": "chalk",
+      "type": "simple",
+      "replacement": "Use picocolors, kleur, or native console styling"
+    },
+    {
+      "moduleName": "lodash",
+      "type": "simple",
+      "replacement": "Use native JavaScript methods or specific lodash functions"
+    },
+    {
+      "moduleName": "moment",
+      "type": "native",
+      "replacement": "Intl.DateTimeFormat or Date methods",
+      "mdnPath": "Global_Objects/Intl/DateTimeFormat"
+    },
+    {
+      "moduleName": "request",
+      "type": "documented",
+      "replacement": "node-fetch, axios, or native fetch",
+      "docPath": "request-alternatives"
+    },
+    {
+      "moduleName": "bluebird",
+      "type": "none",
+      "replacement": "Use native Promise methods"
+    }
+  ]
+}

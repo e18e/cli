@@ -31,7 +31,7 @@ async function computeInfo(fileSystem: FileSystem) {
 }
 
 export async function report(options: Options) {
-  const {root = process.cwd(), pack = 'auto'} = options ?? {};
+  const {root = process.cwd(), pack = 'auto', customManifests} = options ?? {};
 
   let fileSystem: FileSystem;
   const messages: Message[] = [];
@@ -65,7 +65,9 @@ export async function report(options: Options) {
   }
 
   for (const plugin of plugins) {
-    const result = await plugin(fileSystem);
+    const result = await (plugin === runReplacements 
+      ? runReplacements(fileSystem, customManifests)
+      : plugin(fileSystem));
 
     for (const message of result.messages) {
       messages.push(message);
