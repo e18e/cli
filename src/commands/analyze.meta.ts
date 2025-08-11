@@ -22,6 +22,12 @@ export const meta = {
       choices: ['debug', 'info', 'warn', 'error'],
       default: 'info',
       description: 'Set the log level (debug | info | warn | error)'
+    },
+    'custom-manifests': {
+      type: 'string',
+      array: true,
+      description:
+        'Path(s) to custom manifest file(s) for module replacements analysis'
     }
   }
 } as const;

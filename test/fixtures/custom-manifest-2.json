@@ -1,0 +1,14 @@
+{
+  "replacements": [
+    {
+      "moduleName": "express",
+      "type": "simple",
+      "replacement": "Use Fastify, Koa, or native Node.js http module"
+    },
+    {
+      "moduleName": "body-parser",
+      "type": "none",
+      "replacement": "Use native JSON.parse or built-in middleware"
+    }
+  ]
+}
