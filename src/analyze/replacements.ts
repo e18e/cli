@@ -2,7 +2,9 @@ import * as replacements from 'module-replacements';
 import {ReportPluginResult} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {getPackageJson} from '../file-system-utils.js';
-import {gte, minVersion, validRange} from 'semver';
+import semverSatisfies from 'semver/functions/satisfies.js';
+import semverLessThan from 'semver/ranges/ltr.js';
+import {minVersion, validRange} from 'semver';
 
 /**
  * Generates a standard URL to the docs of a given rule
@@ -23,22 +25,25 @@ export function getMdnUrl(path: string): string {
 }
 
 function isNodeEngineCompatible(
-  requiredNode: string | undefined,
-  enginesNode: string | undefined
+  requiredNode: string,
+  enginesNode: string
 ): boolean {
-  if (!requiredNode || !enginesNode) return true;
-
-  const requiredRange = validRange(requiredNode) ?? `>=${requiredNode}`;
-  const requiredMin = minVersion(requiredRange);
-  if (!requiredMin) return true;
-
+  const requiredRange = validRange(requiredNode);
   const engineRange = validRange(enginesNode);
-  if (!engineRange) return true;
 
-  const engineMin = minVersion(engineRange);
-  if (!engineMin) return true;
+  if (!requiredRange || !engineRange) {
+    return true;
+  }
 
-  return gte(engineMin, requiredMin);
+  const requiredMin = minVersion(requiredRange);
+  if (!requiredMin) {
+    return true;
+  }
+
+  return (
+    semverLessThan(requiredMin.version, engineRange) ||
+    semverSatisfies(requiredMin.version, engineRange)
+  );
 }
 
 export async function runReplacements(
@@ -78,13 +83,19 @@ export async function runReplacements(
       });
     } else if (replacement.type === 'native') {
       const enginesNode = packageJson.engines?.node;
-      const supported = isNodeEngineCompatible(
-        replacement.nodeVersion,
-        enginesNode
-      );
+      let supported = true;
+
+      if (replacement.nodeVersion && enginesNode) {
+        supported = isNodeEngineCompatible(
+          replacement.nodeVersion,
+          enginesNode
+        );
+      }
+
       if (!supported) {
         continue;
       }
+
       const mdnPath = getMdnUrl(replacement.mdnPath);
       const requires =
         replacement.nodeVersion && !enginesNode
