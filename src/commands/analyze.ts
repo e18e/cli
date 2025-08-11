@@ -1,5 +1,5 @@
 import {type CommandContext} from 'gunshi';
-import fs from 'node:fs/promises';
+import {promises as fsp, type Stats} from 'node:fs';
 import * as prompts from '@clack/prompts';
 import c from 'picocolors';
 import {meta} from './analyze.meta.js';
@@ -51,9 +51,9 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   // Path can be a directory (analyze project) or a tarball file (analyze tarball)
   if (providedPath) {
-    let stat: import('node:fs').Stats | null = null;
+    let stat: Stats | null = null;
     try {
-      stat = await fs.stat(providedPath);
+      stat = await fsp.stat(providedPath);
     } catch {
       stat = null;
     }
@@ -66,7 +66,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
     }
 
     if (stat.isFile()) {
-      const buffer = await fs.readFile(providedPath);
+      const buffer = await fsp.readFile(providedPath);
       const tarball = buffer.buffer.slice(
         buffer.byteOffset,
         buffer.byteOffset + buffer.byteLength
