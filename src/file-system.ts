@@ -3,4 +3,5 @@ export interface FileSystem {
   listPackageFiles(): Promise<string[]>;
   readFile(path: string): Promise<string>;
   getInstallSize(): Promise<number>;
+  fileExists(path: string): Promise<boolean>;
 }

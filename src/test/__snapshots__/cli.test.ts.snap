@@ -14,9 +14,6 @@ exports[`CLI > should display package report 1`] = `
 [90m│[39m
 [34m●[39m  Results:
 [90m│[39m
-[90m│[39m  [34mSuggestions:[39m
-[90m│[39m    [34m•[39m No type definitions found.
-[90m│[39m
 [90m│[39m
 [90m└[39m  Done!
 
@@ -38,9 +35,6 @@ exports[`CLI > should run successfully with default options 1`] = `
 [90m│[39m  [36mES Modules[39m    0% (0 ESM, 0 CJS)
 [90m│[39m
 [34m●[39m  Results:
-[90m│[39m
-[90m│[39m  [34mSuggestions:[39m
-[90m│[39m    [34m•[39m No type definitions found.
 [90m│[39m
 [90m│[39m
 [90m└[39m  Done!
