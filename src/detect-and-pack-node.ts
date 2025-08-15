@@ -29,7 +29,14 @@ export async function detectAndPack(
       ignoreScripts: true,
       destination
     });
-    return (await fs.readFile(tarballPath)).buffer as ArrayBuffer;
+
+    const buffer = await fs.readFile(tarballPath);
+    const tarball = buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength
+    ) as ArrayBuffer;
+
+    return tarball;
   } finally {
     if (tarballPath) await fs.unlink(tarballPath);
     await fs.rm(destination, {recursive: true, force: true});
