@@ -8,6 +8,7 @@ import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
 import {runDependencyAnalysis} from './dependencies.js';
+import {getPackageJson} from '../utils/package-json.js';
 
 const plugins: ReportPlugin[] = [
   runAttw,
@@ -17,17 +18,15 @@ const plugins: ReportPlugin[] = [
 ];
 
 async function computeInfo(fileSystem: FileSystem) {
-  try {
-    const pkgJson = await fileSystem.readFile('/package.json');
-    const pkg = JSON.parse(pkgJson);
-    return {
-      name: pkg.name,
-      version: pkg.version,
-      type: analyzePackageModuleType(pkg)
-    };
-  } catch {
+  const pkg = await getPackageJson(fileSystem);
+  if (!pkg) {
     throw new Error('No package.json found.');
   }
+  return {
+    name: pkg.name,
+    version: pkg.version,
+    type: analyzePackageModuleType(pkg)
+  };
 }
 
 export async function report(options: Options) {
