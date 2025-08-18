@@ -35,18 +35,6 @@ export async function report(options: Options) {
   let fileSystem: FileSystem;
   const messages: Message[] = [];
   const extraStats: Stat[] = [];
-  let stats: Stats = {
-    name: 'unknown',
-    version: 'unknown',
-    dependencyCount: {
-      production: 0,
-      development: 0,
-      cjs: 0,
-      duplicate: 0,
-      esm: 0
-    },
-    extraStats
-  };
   const seenStatKeys = new Set<string>();
 
   if (pack === 'none') {
@@ -63,11 +51,26 @@ export async function report(options: Options) {
     fileSystem = new TarballFileSystem(tarball);
   }
 
+  const info = await computeInfo(fileSystem);
+
+  let stats: Stats = {
+    name: info.name,
+    version: info.version,
+    dependencyCount: {
+      production: 0,
+      development: 0,
+      cjs: 0,
+      duplicate: 0,
+      esm: 0
+    },
+    extraStats
+  };
+
   for (const plugin of plugins) {
     const result = await plugin(fileSystem);
 
-    for (const message of result.messages) {
-      messages.push(message);
+    if (result.messages.length) {
+      messages.push(...result.messages);
     }
 
     if (result.stats) {
@@ -76,19 +79,17 @@ export async function report(options: Options) {
         ...result.stats,
         extraStats
       };
-      if (result.stats.extraStats) {
+      if (result.stats.extraStats?.length) {
         for (const stat of result.stats.extraStats) {
           if (seenStatKeys.has(stat.name)) {
             continue;
           }
           seenStatKeys.add(stat.name);
-          result.stats.extraStats.push(stat);
+          extraStats.push(stat);
         }
       }
     }
   }
-
-  const info = await computeInfo(fileSystem);
 
   return {info, messages, stats};
 }
