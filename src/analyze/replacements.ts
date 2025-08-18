@@ -1,7 +1,7 @@
 import * as replacements from 'module-replacements';
 import {ReportPluginResult} from '../types.js';
 import type {FileSystem} from '../file-system.js';
-import {getPackageJson} from '../file-system-utils.js';
+import {getPackageJson} from '../utils/package-json.js';
 import semverSatisfies from 'semver/functions/satisfies.js';
 import semverLessThan from 'semver/ranges/ltr.js';
 import {minVersion, validRange} from 'semver';
