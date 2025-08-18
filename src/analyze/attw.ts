@@ -1,10 +1,3 @@
-import {
-  checkPackage,
-  createPackageFromTarballData,
-  ResolutionKind
-} from '@arethetypeswrong/core';
-import {groupProblemsByKind} from '@arethetypeswrong/core/utils';
-import {filterProblems, problemKindInfo} from '@arethetypeswrong/core/problems';
 import {ReportPluginResult} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
@@ -20,6 +13,14 @@ export async function runAttw(
   if (!(fileSystem instanceof TarballFileSystem)) {
     return result;
   }
+
+  const {checkPackage, createPackageFromTarballData} = await import(
+    '@arethetypeswrong/core'
+  );
+  const {groupProblemsByKind} = await import('@arethetypeswrong/core/utils');
+  const {filterProblems, problemKindInfo} = await import(
+    '@arethetypeswrong/core/problems'
+  );
 
   const pkg = createPackageFromTarballData(new Uint8Array(fileSystem.tarball));
   const attwResult = await checkPackage(pkg);
@@ -40,7 +41,7 @@ export async function runAttw(
         const problemsForMatrix = Object.entries(
           groupProblemsByKind(
             filterProblems(attwResult, {
-              resolutionKind: resolutionKind as ResolutionKind,
+              resolutionKind: resolutionKind as any,
               entrypoint: subpath
             })
           )

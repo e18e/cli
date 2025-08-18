@@ -54,7 +54,6 @@
   },
   "homepage": "https://github.com/e18e/cli#readme",
   "dependencies": {
-    "@arethetypeswrong/core": "^0.18.2",
     "@clack/prompts": "https://pkg.pr.new/bombshell-dev/clack/@clack/prompts@9a1412d",
     "@publint/pack": "^0.1.2",
     "debug": "^4.4.1",
@@ -64,9 +63,20 @@
     "module-replacements-codemods": "^1.2.0",
     "package-manager-detector": "^1.3.0",
     "picocolors": "^1.1.1",
-    "publint": "^0.3.12",
     "semver": "^7.7.2",
     "tinyglobby": "^0.2.14"
+  },
+   "peerDependencies": {
+    "@arethetypeswrong/core": "^0.18.2",
+    "publint": "^0.3.12"
+  },
+  "peerDependenciesMeta": {
+    "@arethetypeswrong/core": {
+      "optional": true
+    },
+    "publint": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
