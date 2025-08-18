@@ -54,8 +54,8 @@ export async function report(options: Options) {
   const info = await computeInfo(fileSystem);
 
   let stats: Stats = {
-    name: info.name,
-    version: info.version,
+    name: 'Unknown',
+    version: 'Unknown',
     dependencyCount: {
       production: 0,
       development: 0,
