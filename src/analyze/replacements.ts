@@ -1,12 +1,15 @@
 import * as replacements from 'module-replacements';
 import type {ManifestModule, ModuleReplacement} from 'module-replacements';
-import {
-  ReportPluginResult
-} from '../types.js';
+import {ReportPluginResult} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {getPackageJson} from '../file-system-utils.js';
 import {resolve, dirname} from 'node:path';
-import {satisfies as semverSatisfies, ltr as semverLessThan, minVersion, validRange} from 'semver';
+import {
+  satisfies as semverSatisfies,
+  ltr as semverLessThan,
+  minVersion,
+  validRange
+} from 'semver';
 import {LocalFileSystem} from '../local-file-system.js';
 import type {Options} from '../types.js';
 
@@ -43,10 +46,15 @@ async function loadCustomManifests(
       const manifestDir = dirname(absolutePath);
       const manifestFileName = absolutePath.substring(manifestDir.length + 1);
       const localFileSystem = new LocalFileSystem(manifestDir);
-      const manifestContent = await localFileSystem.readFile(`/${manifestFileName}`);
+      const manifestContent = await localFileSystem.readFile(
+        `/${manifestFileName}`
+      );
       const manifest: ManifestModule = JSON.parse(manifestContent);
 
-      if (manifest.moduleReplacements && Array.isArray(manifest.moduleReplacements)) {
+      if (
+        manifest.moduleReplacements &&
+        Array.isArray(manifest.moduleReplacements)
+      ) {
         customReplacements.push(...manifest.moduleReplacements);
       }
     } catch (error) {
@@ -100,7 +108,10 @@ export async function runReplacements(
   const customReplacements = await loadCustomManifests(options?.manifest);
 
   // Combine custom and built-in replacements
-  const allReplacements = [...customReplacements, ...replacements.all.moduleReplacements];
+  const allReplacements = [
+    ...customReplacements,
+    ...replacements.all.moduleReplacements
+  ];
 
   for (const name of Object.keys(packageJson.dependencies)) {
     // Find replacement (custom replacements take precedence due to order)

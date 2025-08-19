@@ -16,7 +16,9 @@ describe('Custom Manifests', () => {
       '../../test/fixtures/custom-manifest.json'
     );
 
-    const result = await runReplacements(fileSystem, {manifest: [customManifestPath]});
+    const result = await runReplacements(fileSystem, {
+      manifest: [customManifestPath]
+    });
 
     // Should have messages from custom manifest
     expect(result.messages.length).toBeGreaterThan(0);
@@ -39,7 +41,9 @@ describe('Custom Manifests', () => {
     const fileSystem = new LocalFileSystem(testDir);
     const invalidManifestPath = 'non-existent-file.json';
 
-    const result = await runReplacements(fileSystem, {manifest: [invalidManifestPath]});
+    const result = await runReplacements(fileSystem, {
+      manifest: [invalidManifestPath]
+    });
 
     // Should still work without crashing
     expect(result.messages).toBeDefined();

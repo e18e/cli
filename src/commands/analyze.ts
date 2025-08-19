@@ -88,7 +88,11 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
       ? [rawCustomManifests]
       : [];
 
-  const {stats, messages} = await report({root, pack, manifest: customManifests});
+  const {stats, messages} = await report({
+    root,
+    pack,
+    manifest: customManifests
+  });
 
   prompts.log.info('Summary');
 

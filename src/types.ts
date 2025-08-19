@@ -76,5 +76,3 @@ export type ReportPlugin = (
   fileSystem: FileSystem,
   options?: Options
 ) => Promise<ReportPluginResult>;
-
-
