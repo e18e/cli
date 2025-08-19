@@ -14,7 +14,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
-        {varsIgnorePattern: '^[A-Z_]'}
+        {varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_'}
       ]
     }
   }

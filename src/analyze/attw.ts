@@ -11,8 +11,7 @@ import {TarballFileSystem} from '../tarball-file-system.js';
 
 export async function runAttw(
   fileSystem: FileSystem,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _?: Options
+  _options?: Options
 ): Promise<ReportPluginResult> {
   const result: ReportPluginResult = {
     messages: []

@@ -149,8 +149,7 @@ async function parsePackageJson(
 // Keep the existing tarball analysis for backward compatibility
 export async function runDependencyAnalysis(
   fileSystem: FileSystem,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _?: Options
+  _options?: Options
 ): Promise<ReportPluginResult> {
   const packageFiles = await fileSystem.listPackageFiles();
   const rootDir = await fileSystem.getRootDir();
