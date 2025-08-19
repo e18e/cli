@@ -5,12 +5,14 @@ import {
 } from '@arethetypeswrong/core';
 import {groupProblemsByKind} from '@arethetypeswrong/core/utils';
 import {filterProblems, problemKindInfo} from '@arethetypeswrong/core/problems';
-import {ReportPluginResult} from '../types.js';
+import {ReportPluginResult, type Options} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 
 export async function runAttw(
-  fileSystem: FileSystem
+  fileSystem: FileSystem,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _?: Options
 ): Promise<ReportPluginResult> {
   const result: ReportPluginResult = {
     messages: []

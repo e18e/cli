@@ -16,7 +16,7 @@ describe('Custom Manifests', () => {
       '../../test/fixtures/custom-manifest.json'
     );
 
-    const result = await runReplacements(fileSystem, [customManifestPath]);
+    const result = await runReplacements(fileSystem, {manifest: [customManifestPath]});
 
     // Should have messages from custom manifest
     expect(result.messages.length).toBeGreaterThan(0);
@@ -39,7 +39,7 @@ describe('Custom Manifests', () => {
     const fileSystem = new LocalFileSystem(testDir);
     const invalidManifestPath = 'non-existent-file.json';
 
-    const result = await runReplacements(fileSystem, [invalidManifestPath]);
+    const result = await runReplacements(fileSystem, {manifest: [invalidManifestPath]});
 
     // Should still work without crashing
     expect(result.messages).toBeDefined();
@@ -53,9 +53,9 @@ describe('Custom Manifests', () => {
       '../../test/fixtures/custom-manifest.json'
     );
 
-    const resultWithCustom = await runReplacements(fileSystem, [
-      customManifestPath
-    ]);
+    const resultWithCustom = await runReplacements(fileSystem, {
+      manifest: [customManifestPath]
+    });
     const resultWithoutCustom = await runReplacements(fileSystem);
 
     // Custom manifest should provide additional or different messages
@@ -76,10 +76,9 @@ describe('Custom Manifests', () => {
       '../../test/fixtures/custom-manifest-2.json'
     );
 
-    const result = await runReplacements(fileSystem, [
-      manifest1Path,
-      manifest2Path
-    ]);
+    const result = await runReplacements(fileSystem, {
+      manifest: [manifest1Path, manifest2Path]
+    });
 
     // Should have messages from both manifests
     expect(result.messages.length).toBeGreaterThan(0);

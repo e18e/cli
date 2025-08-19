@@ -1,5 +1,5 @@
 {
-  "replacements": [
+  "moduleReplacements": [
     {
       "moduleName": "express",
       "type": "simple",

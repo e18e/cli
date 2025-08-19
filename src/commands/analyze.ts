@@ -78,7 +78,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   }
 
   // Then analyze the tarball
-  const rawCustomManifests = ctx.values['custom-manifests'];
+  const rawCustomManifests = ctx.values['manifest'];
 
   // NOTE: Gunshi quirk - array arguments are sometimes returned as single strings
   // when only one value is provided, so we need to handle both cases
@@ -88,7 +88,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
       ? [rawCustomManifests]
       : [];
 
-  const {stats, messages} = await report({root, pack, customManifests});
+  const {stats, messages} = await report({root, pack, manifest: customManifests});
 
   prompts.log.info('Summary');
 

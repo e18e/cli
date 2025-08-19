@@ -23,7 +23,7 @@ export const meta = {
       default: 'info',
       description: 'Set the log level (debug | info | warn | error)'
     },
-    'custom-manifests': {
+    'manifest': {
       type: 'string',
       array: true,
       description:

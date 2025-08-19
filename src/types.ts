@@ -18,7 +18,7 @@ export type PackType =
 export interface Options {
   root?: string;
   pack?: PackType;
-  customManifests?: string[];
+  manifest?: string[];
 }
 
 export interface StatLike<T> {
@@ -73,18 +73,8 @@ export interface ReportPluginResult {
 }
 
 export type ReportPlugin = (
-  fileSystem: FileSystem
+  fileSystem: FileSystem,
+  options?: Options
 ) => Promise<ReportPluginResult>;
 
-export interface CustomReplacement {
-  moduleName: string;
-  type: 'none' | 'simple' | 'native' | 'documented';
-  replacement?: string;
-  mdnPath?: string;
-  docPath?: string;
-  nodeVersion?: string;
-}
 
-export interface CustomManifest {
-  replacements: CustomReplacement[];
-}

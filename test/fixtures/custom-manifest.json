@@ -1,5 +1,5 @@
 {
-  "replacements": [
+  "moduleReplacements": [
     {
       "moduleName": "chalk",
       "type": "simple",
@@ -14,7 +14,8 @@
       "moduleName": "moment",
       "type": "native",
       "replacement": "Intl.DateTimeFormat or Date methods",
-      "mdnPath": "Global_Objects/Intl/DateTimeFormat"
+      "mdnPath": "Global_Objects/Intl/DateTimeFormat",
+      "nodeVersion": "12.0.0"
     },
     {
       "moduleName": "request",

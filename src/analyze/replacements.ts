@@ -1,16 +1,14 @@
 import * as replacements from 'module-replacements';
+import type {ManifestModule, ModuleReplacement} from 'module-replacements';
 import {
-  ReportPluginResult,
-  CustomManifest,
-  CustomReplacement
+  ReportPluginResult
 } from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {getPackageJson} from '../file-system-utils.js';
-import {readFile} from 'node:fs/promises';
-import {resolve} from 'node:path';
-import semverSatisfies from 'semver/functions/satisfies.js';
-import semverLessThan from 'semver/ranges/ltr.js';
-import {minVersion, validRange} from 'semver';
+import {resolve, dirname} from 'node:path';
+import {satisfies as semverSatisfies, ltr as semverLessThan, minVersion, validRange} from 'semver';
+import {LocalFileSystem} from '../local-file-system.js';
+import type {Options} from '../types.js';
 
 /**
  * Generates a standard URL to the docs of a given rule
@@ -32,21 +30,24 @@ export function getMdnUrl(path: string): string {
 
 async function loadCustomManifests(
   manifestPaths?: string[]
-): Promise<CustomReplacement[]> {
+): Promise<ModuleReplacement[]> {
   if (!manifestPaths || manifestPaths.length === 0) {
     return [];
   }
 
-  const customReplacements: CustomReplacement[] = [];
+  const customReplacements: ModuleReplacement[] = [];
 
   for (const manifestPath of manifestPaths) {
     try {
       const absolutePath = resolve(manifestPath);
-      const manifestContent = await readFile(absolutePath, 'utf8');
-      const manifest: CustomManifest = JSON.parse(manifestContent);
+      const manifestDir = dirname(absolutePath);
+      const manifestFileName = absolutePath.substring(manifestDir.length + 1);
+      const localFileSystem = new LocalFileSystem(manifestDir);
+      const manifestContent = await localFileSystem.readFile(`/${manifestFileName}`);
+      const manifest: ManifestModule = JSON.parse(manifestContent);
 
-      if (manifest.replacements && Array.isArray(manifest.replacements)) {
-        customReplacements.push(...manifest.replacements);
+      if (manifest.moduleReplacements && Array.isArray(manifest.moduleReplacements)) {
+        customReplacements.push(...manifest.moduleReplacements);
       }
     } catch (error) {
       console.warn(
@@ -82,7 +83,7 @@ function isNodeEngineCompatible(
 
 export async function runReplacements(
   fileSystem: FileSystem,
-  customManifests?: string[]
+  options?: Options
 ): Promise<ReportPluginResult> {
   const result: ReportPluginResult = {
     messages: []
@@ -96,81 +97,88 @@ export async function runReplacements(
   }
 
   // Load custom manifests
-  const customReplacements = await loadCustomManifests(customManifests);
+  const customReplacements = await loadCustomManifests(options?.manifest);
+
+  // Combine custom and built-in replacements
+  const allReplacements = [...customReplacements, ...replacements.all.moduleReplacements];
 
   for (const name of Object.keys(packageJson.dependencies)) {
-    // Check custom replacements first
-    let replacement = customReplacements.find(
+    // Find replacement (custom replacements take precedence due to order)
+    const replacement = allReplacements.find(
       (replacement) => replacement.moduleName === name
     );
-
-    // If no custom replacement found, check built-in replacements
-    if (!replacement) {
-      replacement = replacements.all.moduleReplacements.find(
-        (replacement) => replacement.moduleName === name
-      );
-    }
 
     if (!replacement) {
       continue;
     }
 
-    if (replacement.type === 'none') {
-      result.messages.push({
-        severity: 'warning',
-        score: 0,
-        message: `Module "${name}" can be removed, and native functionality used instead`
-      });
-    } else if (replacement.type === 'simple') {
-      result.messages.push({
-        severity: 'warning',
-        score: 0,
-        message: `Module "${name}" can be replaced. ${replacement.replacement || 'See documentation for details'}.`
-      });
-    } else if (replacement.type === 'native') {
-      const enginesNode = packageJson.engines?.node;
-      let supported = true;
+    // Handle each replacement type using the same logic for both custom and built-in
+    switch (replacement.type) {
+      case 'none':
+        result.messages.push({
+          severity: 'warning',
+          score: 0,
+          message: `Module "${name}" can be removed, and native functionality used instead`
+        });
+        break;
 
-      if (replacement.nodeVersion && enginesNode) {
-        supported = isNodeEngineCompatible(
-          replacement.nodeVersion,
-          enginesNode
-        );
+      case 'simple':
+        result.messages.push({
+          severity: 'warning',
+          score: 0,
+          message: `Module "${name}" can be replaced. ${replacement.replacement || 'See documentation for details'}.`
+        });
+        break;
+
+      case 'native': {
+        const enginesNode = packageJson.engines?.node;
+        let supported = true;
+
+        if (replacement.nodeVersion && enginesNode) {
+          supported = isNodeEngineCompatible(
+            replacement.nodeVersion,
+            enginesNode
+          );
+        }
+
+        if (!supported) {
+          continue;
+        }
+
+        const mdnPath = replacement.mdnPath
+          ? getMdnUrl(replacement.mdnPath)
+          : undefined;
+        const requires =
+          replacement.nodeVersion && !enginesNode
+            ? ` Required Node >= ${replacement.nodeVersion}.`
+            : '';
+        const message = `Module "${name}" can be replaced with native functionality. Use "${replacement.replacement || 'native alternative'}" instead.${requires}`;
+        const fullMessage = mdnPath
+          ? `${message} You can read more at ${mdnPath}.`
+          : message;
+        result.messages.push({
+          severity: 'warning',
+          score: 0,
+          message: fullMessage
+        });
+        break;
       }
 
-      if (!supported) {
-        continue;
+      case 'documented': {
+        const docUrl = replacement.docPath
+          ? getDocsUrl(replacement.docPath)
+          : undefined;
+        const message = `Module "${name}" can be replaced with a more performant alternative.`;
+        const fullMessage = docUrl
+          ? `${message} See the list of available alternatives at ${docUrl}.`
+          : message;
+        result.messages.push({
+          severity: 'warning',
+          score: 0,
+          message: fullMessage
+        });
+        break;
       }
-
-      const mdnPath = replacement.mdnPath
-        ? getMdnUrl(replacement.mdnPath)
-        : undefined;
-      const requires =
-        replacement.nodeVersion && !enginesNode
-          ? ` Required Node >= ${replacement.nodeVersion}.`
-          : '';
-      const message = `Module "${name}" can be replaced with native functionality. Use "${replacement.replacement || 'native alternative'}" instead.`;
-      const fullMessage = mdnPath
-        ? `${message} You can read more at ${mdnPath}.`
-        : message;
-      result.messages.push({
-        severity: 'warning',
-        score: 0,
-        message: `Module "${name}" can be replaced with native functionality. Use "${replacement.replacement}" instead. You can read more at ${mdnPath}.${requires}`
-      });
-    } else if (replacement.type === 'documented') {
-      const docUrl = replacement.docPath
-        ? getDocsUrl(replacement.docPath)
-        : undefined;
-      const message = `Module "${name}" can be replaced with a more performant alternative.`;
-      const fullMessage = docUrl
-        ? `${message} See the list of available alternatives at ${docUrl}.`
-        : message;
-      result.messages.push({
-        severity: 'warning',
-        score: 0,
-        message: fullMessage
-      });
     }
   }
 

@@ -1,11 +1,13 @@
 import {publint} from 'publint';
 import {formatMessage} from 'publint/utils';
-import {ReportPluginResult} from '../types.js';
+import {ReportPluginResult, type Options} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 
 export async function runPublint(
-  fileSystem: FileSystem
+  fileSystem: FileSystem,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _?: Options
 ): Promise<ReportPluginResult> {
   const result: ReportPluginResult = {
     messages: []
