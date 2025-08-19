@@ -1,5 +1,5 @@
 import {type CommandContext} from 'gunshi';
-import fs from 'node:fs/promises';
+import {promises as fsp, type Stats} from 'node:fs';
 import * as prompts from '@clack/prompts';
 import c from 'picocolors';
 import {meta} from './analyze.meta.js';
@@ -30,9 +30,10 @@ function formatBytes(bytes: number) {
 }
 
 export async function run(ctx: CommandContext<typeof meta.args>) {
-  const root = ctx.positionals[1];
+  const [_commandName, providedPath] = ctx.positionals;
   let pack: PackType = ctx.values.pack;
   const logLevel = ctx.values['log-level'];
+  let root: string | undefined = undefined;
 
   // Enable debug output based on log level
   if (logLevel === 'debug') {
@@ -48,25 +49,31 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
     process.exit(1);
   }
 
-  // If a path is passed, it must be a tarball file
-  if (root) {
+  // Path can be a directory (analyze project) or a tarball file (analyze tarball)
+  if (providedPath) {
+    let stat: Stats | null = null;
     try {
-      const stat = await fs.stat(root);
-      if (stat.isFile()) {
-        const buffer = await fs.readFile(root);
-        pack = {tarball: buffer.buffer as ArrayBuffer};
-      } else {
-        // Not a file, exit
-        prompts.cancel(
-          `When '--pack file' is used, a path to a tarball file must be passed.`
-        );
-        process.exit(1);
-      }
-    } catch (error) {
+      stat = await fsp.stat(providedPath);
+    } catch {
+      stat = null;
+    }
+
+    if (!stat || (!stat.isFile() && !stat.isDirectory())) {
       prompts.cancel(
-        `Failed to read tarball file: ${error instanceof Error ? error.message : String(error)}`
+        `Path must be a tarball file or a directory: ${providedPath}`
       );
       process.exit(1);
+    }
+
+    if (stat.isFile()) {
+      const buffer = await fsp.readFile(providedPath);
+      const tarball = buffer.buffer.slice(
+        buffer.byteOffset,
+        buffer.byteOffset + buffer.byteLength
+      ) as ArrayBuffer;
+      pack = {tarball};
+    } else {
+      root = providedPath; // analyze this directory (respecting --pack)
     }
   }
 

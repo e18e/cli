@@ -8,6 +8,9 @@ import type {FileSystem} from '../file-system.js';
 import {getPackageJson} from '../file-system-utils.js';
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
+import semverSatisfies from 'semver/functions/satisfies.js';
+import semverLessThan from 'semver/ranges/ltr.js';
+import {minVersion, validRange} from 'semver';
 
 /**
  * Generates a standard URL to the docs of a given rule
@@ -53,6 +56,28 @@ async function loadCustomManifests(
   }
 
   return customReplacements;
+}
+
+function isNodeEngineCompatible(
+  requiredNode: string,
+  enginesNode: string
+): boolean {
+  const requiredRange = validRange(requiredNode);
+  const engineRange = validRange(enginesNode);
+
+  if (!requiredRange || !engineRange) {
+    return true;
+  }
+
+  const requiredMin = minVersion(requiredRange);
+  if (!requiredMin) {
+    return true;
+  }
+
+  return (
+    semverLessThan(requiredMin.version, engineRange) ||
+    semverSatisfies(requiredMin.version, engineRange)
+  );
 }
 
 export async function runReplacements(
@@ -103,11 +128,27 @@ export async function runReplacements(
         message: `Module "${name}" can be replaced. ${replacement.replacement || 'See documentation for details'}.`
       });
     } else if (replacement.type === 'native') {
+      const enginesNode = packageJson.engines?.node;
+      let supported = true;
+
+      if (replacement.nodeVersion && enginesNode) {
+        supported = isNodeEngineCompatible(
+          replacement.nodeVersion,
+          enginesNode
+        );
+      }
+
+      if (!supported) {
+        continue;
+      }
+
       const mdnPath = replacement.mdnPath
         ? getMdnUrl(replacement.mdnPath)
         : undefined;
-      // TODO (43081j): support `nodeVersion` here, check it against the
-      // packageJson.engines field, if there is one.
+      const requires =
+        replacement.nodeVersion && !enginesNode
+          ? ` Required Node >= ${replacement.nodeVersion}.`
+          : '';
       const message = `Module "${name}" can be replaced with native functionality. Use "${replacement.replacement || 'native alternative'}" instead.`;
       const fullMessage = mdnPath
         ? `${message} You can read more at ${mdnPath}.`
@@ -115,7 +156,7 @@ export async function runReplacements(
       result.messages.push({
         severity: 'warning',
         score: 0,
-        message: fullMessage
+        message: `Module "${name}" can be replaced with native functionality. Use "${replacement.replacement}" instead. You can read more at ${mdnPath}.${requires}`
       });
     } else if (replacement.type === 'documented') {
       const docUrl = replacement.docPath
