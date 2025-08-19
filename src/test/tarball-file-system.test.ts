@@ -16,7 +16,7 @@ describe('TarballFileSystem', () => {
     await fs.rm(tempDir, {recursive: true, force: true});
   });
 
-  describe('File Existence with tsconfig.json in tarball', () => {
+  describe('fileExists', () => {
     it('should return false when tsconfig.json does not exist in tarball', async () => {
       // Create a minimal package.json for the tarball
       await fs.writeFile(

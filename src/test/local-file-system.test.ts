@@ -15,33 +15,18 @@ describe('LocalFileSystem', () => {
     await fs.rm(tempDir, {recursive: true, force: true});
   });
 
-  describe('File Existence with tsconfig.json', () => {
+  describe('fileExists', () => {
     it('should return false when tsconfig.json does not exist', async () => {
       const fileSystem = new LocalFileSystem(tempDir);
       const hasConfig = await fileSystem.fileExists('/tsconfig.json');
       expect(hasConfig).toBe(false);
     });
 
-    it('should return true when tsconfig.json exists', async () => {
+    it('should return true when file exists', async () => {
       await fs.writeFile(path.join(tempDir, 'tsconfig.json'), '{}');
       const fileSystem = new LocalFileSystem(tempDir);
       const hasConfig = await fileSystem.fileExists('/tsconfig.json');
       expect(hasConfig).toBe(true);
-    });
-  });
-
-  describe('File Existence', () => {
-    it('should return false when file does not exist', async () => {
-      const fileSystem = new LocalFileSystem(tempDir);
-      const exists = await fileSystem.fileExists('/nonexistent.txt');
-      expect(exists).toBe(false);
-    });
-
-    it('should return true when file exists', async () => {
-      await fs.writeFile(path.join(tempDir, 'test.txt'), 'content');
-      const fileSystem = new LocalFileSystem(tempDir);
-      const exists = await fileSystem.fileExists('/test.txt');
-      expect(exists).toBe(true);
     });
   });
 });
