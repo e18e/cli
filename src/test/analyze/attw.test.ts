@@ -2,8 +2,9 @@ import {describe, it, expect} from 'vitest';
 import {runAttw} from '../../analyze/attw.js';
 import {LocalFileSystem} from '../../local-file-system.js';
 import * as path from 'node:path';
+import * as fs from 'node:fs/promises';
 
-describe('ATTW TypeScript Configuration', () => {
+describe('ATTW Integration', () => {
   it('should not run attw when tsconfig.json does not exist', async () => {
     const fixturePath = path.join(process.cwd(), 'test/fixtures/basic-chalk');
     const fileSystem = new LocalFileSystem(fixturePath);
@@ -19,7 +20,6 @@ describe('ATTW TypeScript Configuration', () => {
     const fileSystem = new LocalFileSystem(fixturePath);
 
     // Create a tsconfig.json file in the fixture
-    const fs = await import('node:fs/promises');
     await fs.writeFile(path.join(fixturePath, 'tsconfig.json'), '{}');
 
     try {
