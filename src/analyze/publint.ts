@@ -1,5 +1,3 @@
-import {publint} from 'publint';
-import {formatMessage} from 'publint/utils';
 import {ReportPluginResult} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
@@ -14,6 +12,9 @@ export async function runPublint(
   if (!(fileSystem instanceof TarballFileSystem)) {
     return result;
   }
+
+  const {publint} = await import('publint');
+  const {formatMessage} = await import('publint/utils');
 
   const publintResult = await publint({pack: {tarball: fileSystem.tarball}});
   for (const problem of publintResult.messages) {
