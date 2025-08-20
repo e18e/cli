@@ -1,5 +1,5 @@
-import type {FileSystem} from './file-system.js';
-import type {PackageJsonLike} from './types.js';
+import type {FileSystem} from '../file-system.js';
+import type {PackageJsonLike} from '../types.js';
 
 export async function getPackageJson(
   fileSystem: FileSystem

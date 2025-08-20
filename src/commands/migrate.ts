@@ -7,7 +7,7 @@ import {readFile, writeFile} from 'node:fs/promises';
 import {fixableReplacements} from './fixable-replacements.js';
 import type {Replacement} from '../types.js';
 import {LocalFileSystem} from '../local-file-system.js';
-import {getPackageJson} from '../file-system-utils.js';
+import {getPackageJson} from '../utils/package-json.js';
 
 export async function run(ctx: CommandContext<typeof meta.args>) {
   const [_commandName, ...targetModules] = ctx.positionals;

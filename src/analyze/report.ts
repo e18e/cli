@@ -8,6 +8,7 @@ import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
 import {runDependencyAnalysis} from './dependencies.js';
+import {getPackageJson} from '../utils/package-json.js';
 
 const plugins: ReportPlugin[] = [
   runAttw,
@@ -17,17 +18,15 @@ const plugins: ReportPlugin[] = [
 ];
 
 async function computeInfo(fileSystem: FileSystem) {
-  try {
-    const pkgJson = await fileSystem.readFile('/package.json');
-    const pkg = JSON.parse(pkgJson);
-    return {
-      name: pkg.name,
-      version: pkg.version,
-      type: analyzePackageModuleType(pkg)
-    };
-  } catch {
+  const pkg = await getPackageJson(fileSystem);
+  if (!pkg) {
     throw new Error('No package.json found.');
   }
+  return {
+    name: pkg.name,
+    version: pkg.version,
+    type: analyzePackageModuleType(pkg)
+  };
 }
 
 export async function report(options: Options) {
@@ -36,18 +35,6 @@ export async function report(options: Options) {
   let fileSystem: FileSystem;
   const messages: Message[] = [];
   const extraStats: Stat[] = [];
-  let stats: Stats = {
-    name: 'unknown',
-    version: 'unknown',
-    dependencyCount: {
-      production: 0,
-      development: 0,
-      cjs: 0,
-      duplicate: 0,
-      esm: 0
-    },
-    extraStats
-  };
   const seenStatKeys = new Set<string>();
 
   if (pack === 'none') {
@@ -64,11 +51,26 @@ export async function report(options: Options) {
     fileSystem = new TarballFileSystem(tarball);
   }
 
+  const info = await computeInfo(fileSystem);
+
+  let stats: Stats = {
+    name: 'Unknown',
+    version: 'Unknown',
+    dependencyCount: {
+      production: 0,
+      development: 0,
+      cjs: 0,
+      duplicate: 0,
+      esm: 0
+    },
+    extraStats
+  };
+
   for (const plugin of plugins) {
     const result = await plugin(fileSystem);
 
-    for (const message of result.messages) {
-      messages.push(message);
+    if (result.messages.length) {
+      messages.push(...result.messages);
     }
 
     if (result.stats) {
@@ -77,19 +79,17 @@ export async function report(options: Options) {
         ...result.stats,
         extraStats
       };
-      if (result.stats.extraStats) {
+      if (result.stats.extraStats?.length) {
         for (const stat of result.stats.extraStats) {
           if (seenStatKeys.has(stat.name)) {
             continue;
           }
           seenStatKeys.add(stat.name);
-          result.stats.extraStats.push(stat);
+          extraStats.push(stat);
         }
       }
     }
   }
-
-  const info = await computeInfo(fileSystem);
 
   return {info, messages, stats};
 }
