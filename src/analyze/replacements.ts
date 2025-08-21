@@ -151,30 +151,22 @@ export async function runReplacements(
         continue;
       }
 
-      const mdnPath = replacement.mdnPath
-        ? getMdnUrl(replacement.mdnPath)
-        : undefined;
+      const mdnPath = getMdnUrl(replacement.mdnPath);
       const requires =
         replacement.nodeVersion && !enginesNode
           ? ` Required Node >= ${replacement.nodeVersion}.`
           : '';
       const message = `Module "${name}" can be replaced with native functionality. Use "${replacement.replacement}" instead.${requires}`;
-      const fullMessage = mdnPath
-        ? `${message} You can read more at ${mdnPath}.`
-        : message;
+      const fullMessage = `${message} You can read more at ${mdnPath}.`;
       result.messages.push({
         severity: 'warning',
         score: 0,
         message: fullMessage
       });
     } else if (replacement.type === 'documented') {
-      const docUrl = replacement.docPath
-        ? getDocsUrl(replacement.docPath)
-        : undefined;
+      const docUrl = getDocsUrl(replacement.docPath);
       const message = `Module "${name}" can be replaced with a more performant alternative.`;
-      const fullMessage = docUrl
-        ? `${message} See the list of available alternatives at ${docUrl}.`
-        : message;
+      const fullMessage = `${message} See the list of available alternatives at ${docUrl}.`;
       result.messages.push({
         severity: 'warning',
         score: 0,
