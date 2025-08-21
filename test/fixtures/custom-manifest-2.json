@@ -1,12 +1,12 @@
 {
   "moduleReplacements": [
     {
-      "moduleName": "express",
+      "moduleName": "@e18e/fake-5",
       "type": "simple",
       "replacement": "Use Fastify, Koa, or native Node.js http module"
     },
     {
-      "moduleName": "body-parser",
+      "moduleName": "@e18e/fake-6",
       "type": "none",
       "replacement": "Use native JSON.parse or built-in middleware"
     }

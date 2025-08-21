@@ -1,0 +1,13 @@
+{
+  "name": "fake-modules-test",
+  "version": "1.0.0",
+  "dependencies": {
+    "@e18e/fake-0": "^1.0.0",
+    "@e18e/fake-1": "^2.0.0",
+    "@e18e/fake-2": "^3.0.0",
+    "@e18e/fake-3": "^4.0.0",
+    "@e18e/fake-4": "^5.0.0",
+    "@e18e/fake-5": "^6.0.0",
+    "@e18e/fake-6": "^7.0.0"
+  }
+}

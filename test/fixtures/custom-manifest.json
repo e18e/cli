@@ -1,30 +1,30 @@
 {
   "moduleReplacements": [
     {
-      "moduleName": "chalk",
+      "moduleName": "@e18e/fake-0",
       "type": "simple",
       "replacement": "Use picocolors, kleur, or native console styling"
     },
     {
-      "moduleName": "lodash",
+      "moduleName": "@e18e/fake-1",
       "type": "simple",
       "replacement": "Use native JavaScript methods or specific lodash functions"
     },
     {
-      "moduleName": "moment",
+      "moduleName": "@e18e/fake-2",
       "type": "native",
       "replacement": "Intl.DateTimeFormat or Date methods",
       "mdnPath": "Global_Objects/Intl/DateTimeFormat",
       "nodeVersion": "12.0.0"
     },
     {
-      "moduleName": "request",
+      "moduleName": "@e18e/fake-3",
       "type": "documented",
       "replacement": "node-fetch, axios, or native fetch",
       "docPath": "request-alternatives"
     },
     {
-      "moduleName": "bluebird",
+      "moduleName": "@e18e/fake-4",
       "type": "none",
       "replacement": "Use native Promise methods"
     }

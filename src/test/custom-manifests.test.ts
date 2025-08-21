@@ -9,7 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 describe('Custom Manifests', () => {
   it('should load and use custom manifest files', async () => {
-    const testDir = join(__dirname, '../../test/fixtures/basic-chalk');
+    const testDir = join(__dirname, '../../test/fixtures/fake-modules');
     const fileSystem = new LocalFileSystem(testDir);
     const customManifestPath = join(
       __dirname,
@@ -20,24 +20,11 @@ describe('Custom Manifests', () => {
       manifest: [customManifestPath]
     });
 
-    // Should have messages from custom manifest
-    expect(result.messages.length).toBeGreaterThan(0);
-
-    // Check that custom replacement messages are included
-    const hasCustomMessage = result.messages.some(
-      (msg) =>
-        msg.message.includes('chalk') ||
-        msg.message.includes('lodash') ||
-        msg.message.includes('moment') ||
-        msg.message.includes('request') ||
-        msg.message.includes('bluebird')
-    );
-
-    expect(hasCustomMessage).toBe(true);
+    expect(result.messages).toMatchSnapshot();
   });
 
   it('should handle invalid manifest files gracefully', async () => {
-    const testDir = join(__dirname, '../../test/fixtures/basic-chalk');
+    const testDir = join(__dirname, '../../test/fixtures/fake-modules');
     const fileSystem = new LocalFileSystem(testDir);
     const invalidManifestPath = 'non-existent-file.json';
 
@@ -45,12 +32,11 @@ describe('Custom Manifests', () => {
       manifest: [invalidManifestPath]
     });
 
-    // Should still work without crashing
-    expect(result.messages).toBeDefined();
+    expect(result.messages).toMatchSnapshot();
   });
 
   it('should prioritize custom replacements over built-in ones', async () => {
-    const testDir = join(__dirname, '../../test/fixtures/basic-chalk');
+    const testDir = join(__dirname, '../../test/fixtures/fake-modules');
     const fileSystem = new LocalFileSystem(testDir);
     const customManifestPath = join(
       __dirname,
@@ -62,14 +48,14 @@ describe('Custom Manifests', () => {
     });
     const resultWithoutCustom = await runReplacements(fileSystem);
 
-    // Custom manifest should provide additional or different messages
-    expect(resultWithCustom.messages.length).toBeGreaterThanOrEqual(
-      resultWithoutCustom.messages.length
-    );
+    expect({
+      withCustom: resultWithCustom.messages,
+      withoutCustom: resultWithoutCustom.messages
+    }).toMatchSnapshot();
   });
 
   it('should load multiple manifest files', async () => {
-    const testDir = join(__dirname, '../../test/fixtures/basic-chalk');
+    const testDir = join(__dirname, '../../test/fixtures/fake-modules');
     const fileSystem = new LocalFileSystem(testDir);
     const manifest1Path = join(
       __dirname,
@@ -84,16 +70,6 @@ describe('Custom Manifests', () => {
       manifest: [manifest1Path, manifest2Path]
     });
 
-    // Should have messages from both manifests
-    expect(result.messages.length).toBeGreaterThan(0);
-
-    // Check that replacements from both manifests are included
-    const hasChalkMessage = result.messages.some((msg) =>
-      msg.message.includes('chalk')
-    );
-
-    // Note: express won't be found since it's not in the test fixture dependencies
-    // but chalk should be found
-    expect(hasChalkMessage).toBe(true);
+    expect(result.messages).toMatchSnapshot();
   });
 });
