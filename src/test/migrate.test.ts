@@ -32,10 +32,12 @@ vi.mock('../local-file-system.js', () => ({
 }));
 
 vi.mock('../file-system-utils.js', () => ({
-  getPackageJson: vi.fn(() => Promise.resolve({
-    dependencies: {chalk: '^4.0.0'},
-    devDependencies: {}
-  }))
+  getPackageJson: vi.fn(() =>
+    Promise.resolve({
+      dependencies: {chalk: '^4.0.0'},
+      devDependencies: {}
+    })
+  )
 }));
 
 describe('migrate command', () => {
