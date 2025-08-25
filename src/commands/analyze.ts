@@ -98,11 +98,6 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   const totalDeps =
     stats.dependencyCount.production + stats.dependencyCount.development;
-  const totalDeepDeps = stats.dependencyCount.cjs + stats.dependencyCount.esm;
-  const esmPercentage =
-    totalDeepDeps > 0
-      ? Math.floor((stats.dependencyCount.esm / totalDeepDeps) * 100)
-      : 0;
   const summaryPairs: Array<[string, string]> = [
     ['Package Name', stats.name],
     ['Version', stats.version],
@@ -115,10 +110,6 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
     [
       'Dependencies',
       `${totalDeps} (${stats.dependencyCount.production} production, ${stats.dependencyCount.development} development)`
-    ],
-    [
-      'ES Modules',
-      `${esmPercentage}% (${stats.dependencyCount.esm} ESM, ${stats.dependencyCount.cjs} CJS)`
     ]
   ];
 
