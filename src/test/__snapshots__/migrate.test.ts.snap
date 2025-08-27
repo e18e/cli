@@ -1,0 +1,83 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`migrate command > should handle --all flag correctly 1`] = `
+"[36me18e[39m (cli <version>)
+
+[90m┌[39m  Migrating packages...
+[90m│[39m
+[90m│[39m  Targets: [2mchalk[22m
+[90m│[39m
+[32m◇[39m  /tmp/reporter-test-XXXXXX/lib/main.js...
+[90m│[39m
+[90m│[39m  [2mloading /tmp/reporter-test-XXXXXX/lib/main.js[22m
+[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /tmp/reporter-test-XXXXXX/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /tmp/reporter-test-XXXXXX/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[90m│[39m  [2mwriting /tmp/reporter-test-XXXXXX/lib/main.js[22m
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m
+[32m◆[39m  /tmp/reporter-test-XXXXXX/lib/main.js [2m(1 migrated)[22m
+[90m│[39m
+[90m└[39m  Migration complete.
+
+"
+`;
+
+exports[`migrate command > should handle custom include pattern 1`] = `
+"[36me18e[39m (cli <version>)
+
+[90m┌[39m  Migrating packages...
+[90m│[39m
+[90m│[39m  Targets: [2mchalk[22m
+[90m│[39m
+[32m◇[39m  /tmp/reporter-test-XXXXXX/lib/main.js...
+[90m│[39m
+[90m│[39m  [2mloading /tmp/reporter-test-XXXXXX/lib/main.js[22m
+[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /tmp/reporter-test-XXXXXX/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /tmp/reporter-test-XXXXXX/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[90m│[39m  [2mwriting /tmp/reporter-test-XXXXXX/lib/main.js[22m
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m
+[32m◆[39m  /tmp/reporter-test-XXXXXX/lib/main.js [2m(1 migrated)[22m
+[90m│[39m
+[90m└[39m  Migration complete.
+
+"
+`;
+
+exports[`migrate command > should handle interactive mode 1`] = `
+"[36me18e[39m (cli <version>)
+
+[90m┌[39m  Migrating packages...
+[?25l[90m│[39m
+[36m◆[39m  Select packages to migrate
+
+[36m│[39m  [2mSearch:[22m [7m[8m_[28m[27m
+[36m│[39m  [32m◼[39m chalk
+[36m│[39m  [2m[2m↑/↓[22m[2m to navigate • [2mSpace:[22m[2m select • [2mEnter:[22m[2m confirm • [2mType:[22m[2m to search[22m
+[36m└[39m"
+`;
+
+exports[`migrate command > should handle specific package migration 1`] = `
+"[36me18e[39m (cli <version>)
+
+[90m┌[39m  Migrating packages...
+[90m│[39m
+[90m│[39m  Targets: [2mchalk[22m
+[90m│[39m
+[32m◇[39m  /tmp/reporter-test-XXXXXX/lib/main.js...
+[90m│[39m
+[90m│[39m  [2mloading /tmp/reporter-test-XXXXXX/lib/main.js[22m
+[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /tmp/reporter-test-XXXXXX/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /tmp/reporter-test-XXXXXX/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[90m│[39m  [2mwriting /tmp/reporter-test-XXXXXX/lib/main.js[22m
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m
+[32m◆[39m  /tmp/reporter-test-XXXXXX/lib/main.js [2m(1 migrated)[22m
+[90m│[39m
+[90m└[39m  Migration complete.
+
+"
+`;

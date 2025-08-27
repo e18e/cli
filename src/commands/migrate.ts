@@ -40,7 +40,9 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   // If --all flag is used, add all available migrations
   if (all) {
-    targetModules.push(...fixableReplacementsTargets);
+    for (const target of fixableReplacementsTargets) {
+      targetModules.push(target);
+    }
   }
 
   if (interactive) {

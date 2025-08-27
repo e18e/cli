@@ -1,83 +1,72 @@
-import {describe, it, expect, vi, beforeEach} from 'vitest';
-import {run} from '../commands/migrate.js';
-import {meta} from '../commands/migrate.meta.js';
-import type {CommandContext} from 'gunshi';
+import {describe, it, expect, beforeAll, afterAll} from 'vitest';
+import path from 'node:path';
+import fs from 'node:fs/promises';
+import {createTempDir, cleanupTempDir, runCliProcess, stripVersion} from './utils.js';
 
-// Mock dependencies
-vi.mock('@clack/prompts', () => ({
-  intro: vi.fn(),
-  cancel: vi.fn(),
-  log: {
-    message: vi.fn()
-  },
-  taskLog: vi.fn(() => ({
-    message: vi.fn(),
-    success: vi.fn()
-  })),
-  outro: vi.fn(),
-  isCancel: vi.fn(() => false)
-}));
+let tempDir: string;
 
-vi.mock('node:fs/promises', () => ({
-  readFile: vi.fn(() => Promise.resolve('import chalk from "chalk";')),
-  writeFile: vi.fn(() => Promise.resolve())
-}));
+beforeAll(async () => {
+  // Create a temporary directory for the test
+  tempDir = await createTempDir();
 
-vi.mock('tinyglobby', () => ({
-  glob: vi.fn(() => Promise.resolve(['/test/file.js']))
-}));
+  // Copy the basic-chalk fixture to the temp dir
+  const fixturePath = path.join(process.cwd(), 'test/fixtures/basic-chalk');
+  await fs.cp(fixturePath, tempDir, {recursive: true});
+});
 
-vi.mock('../local-file-system.js', () => ({
-  LocalFileSystem: vi.fn()
-}));
-
-vi.mock('../file-system-utils.js', () => ({
-  getPackageJson: vi.fn(() =>
-    Promise.resolve({
-      dependencies: {chalk: '^4.0.0'},
-      devDependencies: {}
-    })
-  )
-}));
+afterAll(async () => {
+  await cleanupTempDir(tempDir);
+});
 
 describe('migrate command', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
   it('should handle --all flag correctly', async () => {
-    const mockContext = {
-      positionals: ['migrate'],
-      values: {
-        'dry-run': false,
-        interactive: false,
-        include: '**/*.{ts,js}',
-        all: true
-      },
-      env: {cwd: '/test'}
-    } as CommandContext<typeof meta.args>;
-
-    await run(mockContext);
-
-    // Verify that the command runs without errors when --all is used
-    expect(true).toBe(true); // Basic assertion that the function completes
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', '--all', '--dry-run'],
+      tempDir
+    );
+    
+    if (code !== 0) {
+      console.error('CLI Error:', stderr);
+    }
+    
+    expect(code).toBe(0);
+    expect(stripVersion(stdout)).toMatchSnapshot();
+    expect(stderr).toBe('');
   });
 
   it('should handle specific package migration', async () => {
-    const mockContext = {
-      positionals: ['migrate', 'chalk'],
-      values: {
-        'dry-run': false,
-        interactive: false,
-        include: '**/*.{ts,js}',
-        all: false
-      },
-      env: {cwd: '/test'}
-    } as CommandContext<typeof meta.args>;
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', 'chalk', '--dry-run'],
+      tempDir
+    );
+    
+    expect(code).toBe(0);
+    expect(stripVersion(stdout)).toMatchSnapshot();
+    expect(stderr).toBe('');
+  });
 
-    await run(mockContext);
+  it('should handle interactive mode', async () => {
+    // Test interactive mode by providing input to the prompt
+    // Press Enter to accept the default selection
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', '--interactive', 'chalk', '--dry-run'],
+      tempDir,
+      '\n' // Press Enter to accept default
+    );
+    
+    expect(code).toBe(0);
+    expect(stripVersion(stdout)).toMatchSnapshot();
+    expect(stderr).toBe('');
+  });
 
-    // Verify that the command runs without errors when specific package is provided
-    expect(true).toBe(true); // Basic assertion that the function completes
+  it('should handle custom include pattern', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', 'chalk', '--include', '**/*.js', '--dry-run'],
+      tempDir
+    );
+    
+    expect(code).toBe(0);
+    expect(stripVersion(stdout)).toMatchSnapshot();
+    expect(stderr).toBe('');
   });
 });
