@@ -117,4 +117,8 @@ export const stripVersion = (str: string): string =>
     .replace(
       /\/private\/var\/folders\/[^/]+\/[^/]+\/T\/reporter-test-[^/]+/g,
       '/tmp/reporter-test-XXXXXX'
+    )
+    .replace(
+      /\/tmp\/reporter-test-[^/]+/g,
+      '/tmp/reporter-test-XXXXXX'
     );
