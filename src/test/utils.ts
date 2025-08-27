@@ -99,7 +99,7 @@ export function runCliProcess(
       resolve({stdout, stderr, code: 1});
     });
     proc.on('close', (code) => resolve({stdout, stderr, code}));
-    
+
     // If input is provided, write it to stdin
     if (input && proc.stdin) {
       proc.stdin.write(input);

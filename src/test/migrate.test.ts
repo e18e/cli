@@ -1,7 +1,12 @@
 import {describe, it, expect, beforeAll, afterAll} from 'vitest';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import {createTempDir, cleanupTempDir, runCliProcess, stripVersion} from './utils.js';
+import {
+  createTempDir,
+  cleanupTempDir,
+  runCliProcess,
+  stripVersion
+} from './utils.js';
 
 let tempDir: string;
 
@@ -24,11 +29,11 @@ describe('migrate command', () => {
       ['migrate', '--all', '--dry-run'],
       tempDir
     );
-    
+
     if (code !== 0) {
       console.error('CLI Error:', stderr);
     }
-    
+
     expect(code).toBe(0);
     expect(stripVersion(stdout)).toMatchSnapshot();
     expect(stderr).toBe('');
@@ -39,7 +44,7 @@ describe('migrate command', () => {
       ['migrate', 'chalk', '--dry-run'],
       tempDir
     );
-    
+
     expect(code).toBe(0);
     expect(stripVersion(stdout)).toMatchSnapshot();
     expect(stderr).toBe('');
@@ -53,7 +58,7 @@ describe('migrate command', () => {
       tempDir,
       '\n' // Press Enter to accept default
     );
-    
+
     expect(code).toBe(0);
     expect(stripVersion(stdout)).toMatchSnapshot();
     expect(stderr).toBe('');
@@ -64,7 +69,7 @@ describe('migrate command', () => {
       ['migrate', 'chalk', '--include', '**/*.js', '--dry-run'],
       tempDir
     );
-    
+
     expect(code).toBe(0);
     expect(stripVersion(stdout)).toMatchSnapshot();
     expect(stderr).toBe('');

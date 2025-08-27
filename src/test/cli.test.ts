@@ -1,7 +1,13 @@
 import {describe, it, expect, beforeAll, afterAll} from 'vitest';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import {createTempDir, cleanupTempDir, createTestPackage, runCliProcess, stripVersion} from './utils.js';
+import {
+  createTempDir,
+  cleanupTempDir,
+  createTestPackage,
+  runCliProcess,
+  stripVersion
+} from './utils.js';
 import {pack as packAsTarball} from '@publint/pack';
 
 let mockTarballPath: string;
