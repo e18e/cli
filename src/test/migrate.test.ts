@@ -31,7 +31,7 @@ describe('migrate command', () => {
     );
 
     expect(code).toBe(0);
-    expect(stripVersion(stdout, tempDir)).toMatchSnapshot();
+    expect(await stripVersion(stdout, tempDir)).toMatchSnapshot();
     expect(stderr).toBe('');
 
     // Check that the file was NOT modified in dry-run mode
@@ -47,7 +47,7 @@ describe('migrate command', () => {
     );
 
     expect(code).toBe(0);
-    expect(stripVersion(stdout, tempDir)).toMatchSnapshot();
+    expect(await stripVersion(stdout, tempDir)).toMatchSnapshot();
     expect(stderr).toBe('');
 
     // Check that the file was NOT modified in dry-run mode
@@ -66,7 +66,7 @@ describe('migrate command', () => {
     );
 
     expect(code).toBe(0);
-    expect(stripVersion(stdout, tempDir)).toMatchSnapshot();
+    expect(await stripVersion(stdout, tempDir)).toMatchSnapshot();
     expect(stderr).toBe('');
 
     // Check that the file was NOT modified in dry-run mode
@@ -82,7 +82,7 @@ describe('migrate command', () => {
     );
 
     expect(code).toBe(0);
-    expect(stripVersion(stdout, tempDir)).toMatchSnapshot();
+    expect(await stripVersion(stdout, tempDir)).toMatchSnapshot();
     expect(stderr).toBe('');
 
     // Check that the file was NOT modified in dry-run mode
@@ -98,7 +98,7 @@ describe('migrate command', () => {
     );
 
     expect(code).toBe(0);
-    expect(stripVersion(stdout, tempDir)).toMatchSnapshot();
+    expect(await stripVersion(stdout, tempDir)).toMatchSnapshot();
     expect(stderr).toBe('');
 
     // Check that the file was actually modified (chalk import should be replaced with picocolors)

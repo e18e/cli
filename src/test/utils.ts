@@ -108,15 +108,20 @@ export function runCliProcess(
   });
 }
 
-export const stripVersion = (
+const cachedRealPaths = new Map<string, string>();
+
+export const stripVersion = async (
   str: string,
   cwd: string = process.cwd()
-): string =>
-  str
+): Promise<string> => {
+  const cwdRealPath = cachedRealPaths.get(cwd) ?? await fs.realpath(cwd);
+  cachedRealPaths.set(cwd, cwdRealPath);
+  
+  return str
     .replace(
       new RegExp(/\(cli v\d+\.\d+\.\d+(?:-\S+)?\)/, 'g'),
       '(cli <version>)'
     )
-    .replaceAll(cwd, '{cwd}')
-    .replaceAll(cwd.replace('/var/folders', '/private/var/folders'), '{cwd}')
-    .replaceAll(cwd.replace('/private/var/folders', '/var/folders'), '{cwd}');
+    .replaceAll(cwdRealPath, '{cwd}')
+    .replaceAll(cwd, '{cwd}');
+};

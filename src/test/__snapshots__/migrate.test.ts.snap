@@ -7,16 +7,16 @@ exports[`migrate command > should actually modify files when not using --dry-run
 [90m│[39m
 [90m│[39m  Targets: [2mchalk[22m
 [90m│[39m
-[32m◇[39m  /private{cwd}/lib/main.js...
+[32m◇[39m  {cwd}/lib/main.js...
 [90m│[39m
-[90m│[39m  [2mloading /private{cwd}/lib/main.js[22m
-[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /private{cwd}/lib/main.js[22m
+[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
 [90m│[39m  [2mmigrating chalk to picocolors[22m
-[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /private{cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
 [90m│[39m  [2mmigrating chalk to picocolors[22m
-[90m│[39m  [2mwriting /private{cwd}/lib/main.js[22m
+[90m│[39m  [2mwriting {cwd}/lib/main.js[22m
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m
-[32m◆[39m  /private{cwd}/lib/main.js [2m(1 migrated)[22m
+[32m◆[39m  {cwd}/lib/main.js [2m(1 migrated)[22m
 [90m│[39m
 [90m└[39m  Migration complete.
 
@@ -37,16 +37,16 @@ exports[`migrate command > should handle --all flag correctly 1`] = `
 [90m│[39m
 [90m│[39m  Targets: [2mchalk[22m
 [90m│[39m
-[32m◇[39m  /private{cwd}/lib/main.js...
+[32m◇[39m  {cwd}/lib/main.js...
 [90m│[39m
-[90m│[39m  [2mloading /private{cwd}/lib/main.js[22m
-[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /private{cwd}/lib/main.js[22m
+[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
 [90m│[39m  [2mmigrating chalk to picocolors[22m
-[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /private{cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
 [90m│[39m  [2mmigrating chalk to picocolors[22m
-[90m│[39m  [2mwriting /private{cwd}/lib/main.js[22m
+[90m│[39m  [2mwriting {cwd}/lib/main.js[22m
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m
-[32m◆[39m  /private{cwd}/lib/main.js [2m(1 migrated)[22m
+[32m◆[39m  {cwd}/lib/main.js [2m(1 migrated)[22m
 [90m│[39m
 [90m└[39m  Migration complete.
 
@@ -67,16 +67,16 @@ exports[`migrate command > should handle custom include pattern 1`] = `
 [90m│[39m
 [90m│[39m  Targets: [2mchalk[22m
 [90m│[39m
-[32m◇[39m  /private{cwd}/lib/main.js...
+[32m◇[39m  {cwd}/lib/main.js...
 [90m│[39m
-[90m│[39m  [2mloading /private{cwd}/lib/main.js[22m
-[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /private{cwd}/lib/main.js[22m
+[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
 [90m│[39m  [2mmigrating chalk to picocolors[22m
-[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /private{cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
 [90m│[39m  [2mmigrating chalk to picocolors[22m
-[90m│[39m  [2mwriting /private{cwd}/lib/main.js[22m
+[90m│[39m  [2mwriting {cwd}/lib/main.js[22m
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m
-[32m◆[39m  /private{cwd}/lib/main.js [2m(1 migrated)[22m
+[32m◆[39m  {cwd}/lib/main.js [2m(1 migrated)[22m
 [90m│[39m
 [90m└[39m  Migration complete.
 
@@ -117,16 +117,16 @@ exports[`migrate command > should handle specific package migration 1`] = `
 [90m│[39m
 [90m│[39m  Targets: [2mchalk[22m
 [90m│[39m
-[32m◇[39m  /private{cwd}/lib/main.js...
+[32m◇[39m  {cwd}/lib/main.js...
 [90m│[39m
-[90m│[39m  [2mloading /private{cwd}/lib/main.js[22m
-[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /private{cwd}/lib/main.js[22m
+[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
 [90m│[39m  [2mmigrating chalk to picocolors[22m
-[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading /private{cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
 [90m│[39m  [2mmigrating chalk to picocolors[22m
-[90m│[39m  [2mwriting /private{cwd}/lib/main.js[22m
+[90m│[39m  [2mwriting {cwd}/lib/main.js[22m
 [2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m
-[32m◆[39m  /private{cwd}/lib/main.js [2m(1 migrated)[22m
+[32m◆[39m  {cwd}/lib/main.js [2m(1 migrated)[22m
 [90m│[39m
 [90m└[39m  Migration complete.
 
