@@ -69,7 +69,7 @@ describe('CLI', () => {
       console.error('CLI Error:', stderr);
     }
     expect(code).toBe(0);
-    expect(stripVersion(stdout)).toMatchSnapshot();
+    expect(stripVersion(stdout, process.cwd())).toMatchSnapshot();
     expect(stderr).toBe('');
   });
 
@@ -79,7 +79,7 @@ describe('CLI', () => {
       tempDir
     );
     expect(code).toBe(0);
-    expect(stripVersion(stdout)).toMatchSnapshot();
+    expect(stripVersion(stdout, process.cwd())).toMatchSnapshot();
     expect(stderr).toMatchSnapshot();
   });
 });
