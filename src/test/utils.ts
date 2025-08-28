@@ -108,12 +108,21 @@ export function runCliProcess(
   });
 }
 
-export const stripVersion = (str: string, cwd: string = process.cwd()): string =>
+export const stripVersion = (
+  str: string,
+  cwd: string = process.cwd()
+): string =>
   str
     .replace(
       new RegExp(/\(cli v\d+\.\d+\.\d+(?:-\S+)?\)/, 'g'),
       '(cli <version>)'
     )
-    .replace(new RegExp(cwd.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), '{cwd}')
-    .replace(/\/private\/var\/folders\/[^/]+\/[^/]+\/T\/reporter-test-[^/]+/g, '/tmp/reporter-test-XXXXXX')
+    .replace(
+      new RegExp(cwd.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+      '{cwd}'
+    )
+    .replace(
+      /\/private\/var\/folders\/[^/]+\/[^/]+\/T\/reporter-test-[^/]+/g,
+      '/tmp/reporter-test-XXXXXX'
+    )
     .replace(/\/tmp\/reporter-test-[^/]+/g, '/tmp/reporter-test-XXXXXX');
