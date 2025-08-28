@@ -24,7 +24,74 @@ describe('migrate command', () => {
     // Clean up the temporary directory after each test
     await cleanupTempDir(tempDir);
   });
-  it('should handle --all flag correctly', async () => {
+  it('should migrate with --all flag', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', '--all'],
+      tempDir
+    );
+
+    expect(code).toBe(0);
+    expect(await stripVersion(stdout, tempDir)).toMatchSnapshot();
+    expect(stderr).toBe('');
+
+    // Check that the file was actually modified (chalk import should be replaced with picocolors)
+    const mainJsPath = path.join(tempDir, 'lib/main.js');
+    const fileContent = await fs.readFile(mainJsPath, 'utf-8');
+    expect(fileContent).toMatchSnapshot();
+  });
+
+  it('should migrate specific package', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', 'chalk'],
+      tempDir
+    );
+
+    expect(code).toBe(0);
+    expect(await stripVersion(stdout, tempDir)).toMatchSnapshot();
+    expect(stderr).toBe('');
+
+    // Check that the file was actually modified (chalk import should be replaced with picocolors)
+    const mainJsPath = path.join(tempDir, 'lib/main.js');
+    const fileContent = await fs.readFile(mainJsPath, 'utf-8');
+    expect(fileContent).toMatchSnapshot();
+  });
+
+  it('should handle interactive mode', async () => {
+    // Test interactive mode by providing input to the prompt
+    // Press Enter to accept the default selection
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', '--all', '--interactive'],
+      tempDir,
+      '\n' // Press Enter to accept default
+    );
+
+    expect(code).toBe(0);
+    expect(await stripVersion(stdout, tempDir)).toMatchSnapshot();
+    expect(stderr).toBe('');
+
+    // Check that the file was actually modified
+    const mainJsPath = path.join(tempDir, 'lib/main.js');
+    const fileContent = await fs.readFile(mainJsPath, 'utf-8');
+    expect(fileContent).toMatchSnapshot();
+  });
+
+  it('should handle custom include pattern', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', 'chalk', '--include', '**/*.js'],
+      tempDir
+    );
+
+    expect(code).toBe(0);
+    expect(await stripVersion(stdout, tempDir)).toMatchSnapshot();
+    expect(stderr).toBe('');
+
+    // Check that the file was actually modified
+    const mainJsPath = path.join(tempDir, 'lib/main.js');
+    const fileContent = await fs.readFile(mainJsPath, 'utf-8');
+    expect(fileContent).toMatchSnapshot();
+  });
+
+  it('should not modify files with --all flag in dry-run mode', async () => {
     const {stdout, stderr, code} = await runCliProcess(
       ['migrate', '--all', '--dry-run'],
       tempDir
@@ -40,7 +107,7 @@ describe('migrate command', () => {
     expect(fileContent).toMatchSnapshot();
   });
 
-  it('should handle specific package migration', async () => {
+  it('should not modify files with specific package in dry-run mode', async () => {
     const {stdout, stderr, code} = await runCliProcess(
       ['migrate', 'chalk', '--dry-run'],
       tempDir
@@ -51,57 +118,6 @@ describe('migrate command', () => {
     expect(stderr).toBe('');
 
     // Check that the file was NOT modified in dry-run mode
-    const mainJsPath = path.join(tempDir, 'lib/main.js');
-    const fileContent = await fs.readFile(mainJsPath, 'utf-8');
-    expect(fileContent).toMatchSnapshot();
-  });
-
-  it('should handle interactive mode', async () => {
-    // Test interactive mode by providing input to the prompt
-    // Press Enter to accept the default selection
-    const {stdout, stderr, code} = await runCliProcess(
-      ['migrate', '--all', '--interactive', '--dry-run'],
-      tempDir,
-      '\n' // Press Enter to accept default
-    );
-
-    expect(code).toBe(0);
-    expect(await stripVersion(stdout, tempDir)).toMatchSnapshot();
-    expect(stderr).toBe('');
-
-    // Check that the file was NOT modified in dry-run mode
-    const mainJsPath = path.join(tempDir, 'lib/main.js');
-    const fileContent = await fs.readFile(mainJsPath, 'utf-8');
-    expect(fileContent).toMatchSnapshot();
-  });
-
-  it('should handle custom include pattern', async () => {
-    const {stdout, stderr, code} = await runCliProcess(
-      ['migrate', 'chalk', '--include', '**/*.js', '--dry-run'],
-      tempDir
-    );
-
-    expect(code).toBe(0);
-    expect(await stripVersion(stdout, tempDir)).toMatchSnapshot();
-    expect(stderr).toBe('');
-
-    // Check that the file was NOT modified in dry-run mode
-    const mainJsPath = path.join(tempDir, 'lib/main.js');
-    const fileContent = await fs.readFile(mainJsPath, 'utf-8');
-    expect(fileContent).toMatchSnapshot();
-  });
-
-  it('should actually modify files when not using --dry-run', async () => {
-    const {stdout, stderr, code} = await runCliProcess(
-      ['migrate', 'chalk'],
-      tempDir
-    );
-
-    expect(code).toBe(0);
-    expect(await stripVersion(stdout, tempDir)).toMatchSnapshot();
-    expect(stderr).toBe('');
-
-    // Check that the file was actually modified (chalk import should be replaced with picocolors)
     const mainJsPath = path.join(tempDir, 'lib/main.js');
     const fileContent = await fs.readFile(mainJsPath, 'utf-8');
     expect(fileContent).toMatchSnapshot();
