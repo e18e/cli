@@ -117,4 +117,6 @@ export const stripVersion = (
       new RegExp(/\(cli v\d+\.\d+\.\d+(?:-\S+)?\)/, 'g'),
       '(cli <version>)'
     )
-    .replaceAll(cwd, '{cwd}');
+    .replaceAll(cwd, '{cwd}')
+    .replaceAll(cwd.replace('/var/folders', '/private/var/folders'), '{cwd}')
+    .replaceAll(cwd.replace('/private/var/folders', '/var/folders'), '{cwd}');
