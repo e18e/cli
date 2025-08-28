@@ -114,9 +114,9 @@ export const stripVersion = async (
   str: string,
   cwd: string = process.cwd()
 ): Promise<string> => {
-  const cwdRealPath = cachedRealPaths.get(cwd) ?? await fs.realpath(cwd);
+  const cwdRealPath = cachedRealPaths.get(cwd) ?? (await fs.realpath(cwd));
   cachedRealPaths.set(cwd, cwdRealPath);
-  
+
   return str
     .replace(
       new RegExp(/\(cli v\d+\.\d+\.\d+(?:-\S+)?\)/, 'g'),
