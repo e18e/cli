@@ -2,7 +2,7 @@ import * as replacements from 'module-replacements';
 import type {ManifestModule, ModuleReplacement} from 'module-replacements';
 import {ReportPluginResult} from '../types.js';
 import type {FileSystem} from '../file-system.js';
-import {getPackageJson} from '../file-system-utils.js';
+import {getPackageJson} from '../utils/package-json.js';
 import {resolve, dirname, basename} from 'node:path';
 import {
   satisfies as semverSatisfies,
