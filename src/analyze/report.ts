@@ -8,7 +8,7 @@ import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
 import {runDependencyAnalysis} from './dependencies.js';
-import { getPackageJson } from '../utils/package-json.js';
+import {getPackageJson} from '../utils/package-json.js';
 
 const plugins: ReportPlugin[] = [
   runAttw,
@@ -22,7 +22,7 @@ async function computeInfo(fileSystem: FileSystem) {
   if (!pkg) {
     throw new Error('No package.json found.');
   }
-  
+
   return {
     name: pkg.name || 'unknown',
     version: pkg.version || 'unknown',
