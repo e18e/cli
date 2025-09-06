@@ -1,6 +1,5 @@
 import type {FileSystem} from './file-system.js';
-
-type Codemods = typeof import('module-replacements-codemods').codemods;
+import type {Codemod, CodemodOptions} from 'module-replacements-codemods';
 
 export interface PackFile {
   name: string;
@@ -65,7 +64,7 @@ export interface Replacement {
   from: string;
   to: string;
   condition?: (filename: string, source: string) => Promise<boolean>;
-  factory: Codemods[keyof Codemods];
+  factory: (options: CodemodOptions) => Codemod;
 }
 
 export interface ReportPluginResult {
