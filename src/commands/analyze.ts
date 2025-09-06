@@ -124,7 +124,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   }
 
   let longestStatName = 0;
-  
+
   // Iterate once to find the longest stat name
   for (const [label] of summaryPairs) {
     if (label.length > longestStatName) {
