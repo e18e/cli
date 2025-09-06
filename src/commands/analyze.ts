@@ -7,15 +7,6 @@ import {report} from '../index.js';
 import type {PackType} from '../types.js';
 import {enableDebug} from '../logger.js';
 
-const allowedPackTypes: PackType[] = [
-  'auto',
-  'npm',
-  'yarn',
-  'pnpm',
-  'bun',
-  'none'
-];
-
 function formatBytes(bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB'];
   let size = bytes;
@@ -42,9 +33,10 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   prompts.intro('Analyzing...');
 
-  if (typeof pack === 'string' && !allowedPackTypes.includes(pack)) {
+  const allowedPackChoices: ReadonlyArray<string> = meta.args.pack.choices;
+  if (typeof pack === 'string' && !allowedPackChoices.includes(pack)) {
     prompts.cancel(
-      `Invalid '--pack' option. Allowed values are: ${allowedPackTypes.join(', ')}`
+      `Invalid '--pack' option. Allowed values are: ${allowedPackChoices.join(', ')}`
     );
     process.exit(1);
   }
@@ -132,7 +124,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   }
 
   let longestStatName = 0;
-
+  
   // Iterate once to find the longest stat name
   for (const [label] of summaryPairs) {
     if (label.length > longestStatName) {
