@@ -1,11 +1,11 @@
 import {
   checkPackage,
-  createPackageFromTarballData,
-  ResolutionKind
+  createPackageFromTarballData
 } from '@arethetypeswrong/core';
 import {groupProblemsByKind} from '@arethetypeswrong/core/utils';
+import type {ResolutionKind} from '@arethetypeswrong/core';
 import {filterProblems, problemKindInfo} from '@arethetypeswrong/core/problems';
-import {ReportPluginResult, type Options} from '../types.js';
+import type {ReportPluginResult, Options} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 

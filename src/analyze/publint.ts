@@ -1,6 +1,6 @@
 import {publint} from 'publint';
 import {formatMessage} from 'publint/utils';
-import {ReportPluginResult, type Options} from '../types.js';
+import type {ReportPluginResult, Options} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 

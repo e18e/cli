@@ -1,6 +1,6 @@
 import * as replacements from 'module-replacements';
 import type {ManifestModule, ModuleReplacement} from 'module-replacements';
-import {ReportPluginResult} from '../types.js';
+import type {ReportPluginResult, Options} from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {getPackageJson} from '../file-system-utils.js';
 import {resolve, dirname, basename} from 'node:path';
@@ -11,7 +11,6 @@ import {
   validRange
 } from 'semver';
 import {LocalFileSystem} from '../local-file-system.js';
-import type {Options} from '../types.js';
 
 /**
  * Generates a standard URL to the docs of a given rule

@@ -7,7 +7,7 @@ import type {
   Stats,
   Options
 } from '../types.js';
-import {FileSystem} from '../file-system.js';
+import type {FileSystem} from '../file-system.js';
 import {normalizePath} from '../utils/path.js';
 
 interface DependencyNode {
