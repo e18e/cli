@@ -1,11 +1,6 @@
 import {codemods} from 'module-replacements-codemods';
 import type {FileSystem} from './file-system.js';
 
-export interface PackFile {
-  name: string;
-  data: string | ArrayBuffer | Uint8Array;
-}
-
 export type PackType =
   | 'auto'
   | 'npm'
