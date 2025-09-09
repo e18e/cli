@@ -4,10 +4,9 @@ import type {
   PackageJsonLike,
   ReportPluginResult,
   Message,
-  Stats,
-  Options
+  Stats
 } from '../types.js';
-import type {FileSystem} from '../file-system.js';
+import {FileSystem} from '../file-system.js';
 import {normalizePath} from '../utils/path.js';
 
 interface DependencyNode {
@@ -148,28 +147,11 @@ async function parsePackageJson(
 
 // Keep the existing tarball analysis for backward compatibility
 export async function runDependencyAnalysis(
-  fileSystem: FileSystem,
-  _options?: Options
+  fileSystem: FileSystem
 ): Promise<ReportPluginResult> {
   const packageFiles = await fileSystem.listPackageFiles();
   const rootDir = await fileSystem.getRootDir();
   const messages: Message[] = [];
-
-  const rootDirNorm = normalizePath(rootDir);
-  const virtualToRaw = new Map<string, string>();
-  const packageFilesVirtual = new Set<string>();
-  for (const raw of packageFiles) {
-    const rawNorm = normalizePath(raw);
-    let virtual = rawNorm;
-    if (virtual.startsWith(rootDirNorm + '/')) {
-      virtual = virtual.slice(rootDirNorm.length + 1);
-    }
-    if (virtual.startsWith('/')) {
-      virtual = virtual.slice(1);
-    }
-    packageFilesVirtual.add(virtual);
-    virtualToRaw.set(virtual, rawNorm);
-  }
 
   // Find root package.json
   const pkg = await parsePackageJson(fileSystem, '/package.json');
@@ -199,27 +181,55 @@ export async function runDependencyAnalysis(
   const dependencyNodes: DependencyNode[] = [];
 
   // Recursively traverse dependencies
-  async function traverse(
-    packagePathRaw: string,
-    packagePathVirtual: string,
-    parent: string | undefined,
-    depth: number,
-    pathInTree: string
-  ) {
-    const depPkg = await parsePackageJson(fileSystem, packagePathRaw);
-    if (!depPkg || !depPkg.name) return;
+  const rootPackageJsonPath = normalizePath(rootDir) + '/package.json';
 
-    // Record this node
+  for (const file of packageFiles) {
+    const normalizedFile = normalizePath(file);
+
+    // Skip root package files
+    if (normalizedFile === rootPackageJsonPath || normalizedFile === '/package.json') {
+      continue;
+    }
+
+    const depPkg = await parsePackageJson(fileSystem, file);
+    if (!depPkg || !depPkg.name) {
+      continue;
+    }
+
+    const parts = normalizedFile.split('/node_modules/');
+    const packages: string[] = [];
+
+    if (parts.length > 1) {
+      for (let i = 1; i < parts.length; i++) {
+        const remainder = parts[i];
+        const segParts = remainder.split('/');
+        if (segParts[0].startsWith('@') && segParts.length >= 2) {
+          packages.push(segParts[0] + '/' + segParts[1]);
+        } else {
+          packages.push(segParts[0]);
+        }
+      }
+    }
+
+    const depth = packages.length;
+    const pathInTree =
+      depth === 0 ? 'root' : 'root' + ' > ' + packages.join(' > ');
+    const parent =
+      depth === 0
+        ? undefined
+        : depth === 1
+        ? pkg.name || 'root'
+        : packages[packages.length - 2];
+
     dependencyNodes.push({
       name: depPkg.name,
       version: depPkg.version || 'unknown',
       path: pathInTree,
       parent,
       depth,
-      packagePath: packagePathRaw
+      packagePath: file
     });
 
-    // Only count CJS/ESM for non-root packages
     if (depth > 0) {
       const type = analyzePackageModuleType(depPkg);
       if (type === 'cjs') cjsDependencies++;
@@ -229,64 +239,9 @@ export async function runDependencyAnalysis(
         esmDependencies++;
       }
     }
-
-    // Traverse dependencies
-    const allDeps = {
-      ...(depPkg.dependencies || {}),
-      ...(depPkg.devDependencies || {})
-    };
-
-    const visited = new Set<string>();
-
-    function dirOfVirtual(p: string): string {
-      if (p.endsWith('/package.json'))
-        return p.slice(0, -'/package.json'.length);
-      if (p === 'package.json') return '';
-      const idx = p.lastIndexOf('/');
-      return idx === -1 ? '' : p.slice(0, idx);
-    }
-
-    function parentDirVirtual(dir: string): string {
-      const idx = dir.lastIndexOf('/');
-      return idx === -1 ? '' : dir.slice(0, idx);
-    }
-
-    function resolveDepVirtual(
-      depName: string,
-      fromVirtual: string
-    ): string | undefined {
-      let cur = dirOfVirtual(fromVirtual);
-      while (true) {
-        const prefix = cur ? cur + '/' : '';
-        const candidate = `${prefix}node_modules/${depName}/package.json`;
-        if (packageFilesVirtual.has(candidate)) return candidate;
-        if (cur === '') break;
-        cur = parentDirVirtual(cur);
-      }
-      return undefined;
-    }
-
-    for (const depName of Object.keys(allDeps)) {
-      const resolvedVirtual = resolveDepVirtual(depName, packagePathVirtual);
-      if (!resolvedVirtual) continue;
-      if (visited.has(resolvedVirtual)) continue;
-      visited.add(resolvedVirtual);
-
-      const raw = virtualToRaw.get(resolvedVirtual) ?? resolvedVirtual;
-      await traverse(
-        raw,
-        resolvedVirtual,
-        depPkg.name,
-        depth + 1,
-        pathInTree + ' > ' + depName
-      );
-    }
   }
 
-  // Start traversal from root using '/package.json' and a normalized virtual 'package.json'
-  await traverse('/package.json', 'package.json', undefined, 0, 'root');
-
-  // Detect duplicates from collected nodes
+  // Detect duplicates from the collected dependency nodes
   const duplicateDependencies = detectDuplicates(dependencyNodes);
 
   stats.dependencyCount.cjs = cjsDependencies;
