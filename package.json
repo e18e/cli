@@ -57,7 +57,7 @@
     "@arethetypeswrong/core": "^0.18.2",
     "@clack/prompts": "https://pkg.pr.new/bombshell-dev/clack/@clack/prompts@9a1412d",
     "@publint/pack": "^0.1.2",
-    "debug": "^4.4.1",
+    "debug": "^4.4.3",
     "fdir": "^6.5.0",
     "gunshi": "^0.26.3",
     "module-replacements": "^2.9.0",
