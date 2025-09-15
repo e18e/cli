@@ -71,16 +71,16 @@
   "devDependencies": {
     "@eslint/js": "^9.35.0",
     "@types/debug": "^4.1.12",
-    "@types/node": "^24.3.1",
+    "@types/node": "^24.4.0",
     "@types/picomatch": "^4.0.2",
     "@types/semver": "^7.7.1",
     "@vitest/coverage-v8": "^3.2.3",
     "eslint": "^9.35.0",
-    "pkg-pr-new": "^0.0.59",
+    "pkg-pr-new": "^0.0.60",
     "premove": "^4.0.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.42.0",
+    "typescript-eslint": "^8.43.0",
     "vitest": "^3.2.3"
   }
 }
