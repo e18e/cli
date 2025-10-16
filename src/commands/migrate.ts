@@ -14,6 +14,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   const dryRun = ctx.values['dry-run'] === true;
   const interactive = ctx.values.interactive === true;
   const include = ctx.values.include;
+  const all = ctx.values.all === true;
   const fileSystem = new LocalFileSystem(process.cwd());
   const packageJson = await getPackageJson(fileSystem);
 
@@ -36,6 +37,13 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
       .filter((rep) => Object.hasOwn(dependencies, rep.from))
       .map((rep) => rep.from)
   );
+
+  // If --all flag is used, add all available migrations
+  if (all) {
+    for (const target of fixableReplacementsTargets) {
+      targetModules.push(target);
+    }
+  }
 
   if (interactive) {
     const additionalTargets = await prompts.autocompleteMultiselect({
@@ -62,7 +70,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   if (targetModules.length === 0) {
     prompts.cancel(
-      'Error: Please specify a package to migrate. For example, `migrate chalk`'
+      'Error: Please specify a package to migrate. For example, `migrate chalk` or use `--all` to migrate all available packages'
     );
     return;
   }

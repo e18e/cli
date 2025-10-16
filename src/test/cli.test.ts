@@ -1,17 +1,17 @@
 import {describe, it, expect, beforeAll, afterAll} from 'vitest';
-import {spawn} from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import {createTempDir, cleanupTempDir, createTestPackage} from './utils.js';
+import {
+  createTempDir,
+  cleanupTempDir,
+  createTestPackage,
+  runCliProcess,
+  stripVersion
+} from './utils.js';
 import {pack as packAsTarball} from '@publint/pack';
 
 let mockTarballPath: string;
 let tempDir: string;
-const stripVersion = (str: string): string =>
-  str.replace(
-    new RegExp(/\(cli v\d+\.\d+\.\d+(?:-\S+)?\)/, 'g'),
-    '(cli <version>)'
-  );
 
 beforeAll(async () => {
   // Create a temporary directory for the test package
@@ -59,28 +59,6 @@ afterAll(async () => {
   await cleanupTempDir(tempDir);
 });
 
-function runCliProcess(
-  args: string[],
-  cwd?: string
-): Promise<{stdout: string; stderr: string; code: number | null}> {
-  return new Promise((resolve) => {
-    const cliPath = path.resolve(__dirname, '../../lib/cli.js');
-    const proc = spawn('node', [cliPath, ...args], {
-      env: process.env,
-      cwd: cwd || process.cwd()
-    });
-    let stdout = '';
-    let stderr = '';
-    proc.stdout.on('data', (data) => (stdout += data.toString()));
-    proc.stderr.on('data', (data) => (stderr += data.toString()));
-    proc.on('error', (err) => {
-      stderr += String(err);
-      resolve({stdout, stderr, code: 1});
-    });
-    proc.on('close', (code) => resolve({stdout, stderr, code}));
-  });
-}
-
 describe('CLI', () => {
   it('should run successfully with default options', async () => {
     const {stdout, stderr, code} = await runCliProcess(
@@ -91,7 +69,7 @@ describe('CLI', () => {
       console.error('CLI Error:', stderr);
     }
     expect(code).toBe(0);
-    expect(stripVersion(stdout)).toMatchSnapshot();
+    expect(await stripVersion(stdout, process.cwd())).toMatchSnapshot();
     expect(stderr).toBe('');
   });
 
@@ -101,7 +79,7 @@ describe('CLI', () => {
       tempDir
     );
     expect(code).toBe(0);
-    expect(stripVersion(stdout)).toMatchSnapshot();
+    expect(await stripVersion(stdout, process.cwd())).toMatchSnapshot();
     expect(stderr).toMatchSnapshot();
   });
 });

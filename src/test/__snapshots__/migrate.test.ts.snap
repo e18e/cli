@@ -1,0 +1,171 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`migrate command > should handle custom include pattern 1`] = `
+"[36me18e[39m (cli <version>)
+
+[90m┌[39m  Migrating packages...
+[90m│[39m
+[90m│[39m  Targets: [2mchalk[22m
+[90m│[39m
+[32m◇[39m  {cwd}/lib/main.js...
+[90m│[39m
+[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[90m│[39m  [2mwriting {cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m
+[32m◆[39m  {cwd}/lib/main.js [2m(1 migrated)[22m
+[90m│[39m
+[90m└[39m  Migration complete.
+
+"
+`;
+
+exports[`migrate command > should handle custom include pattern 2`] = `
+"import * as pc from 'picocolors';
+
+console.log(pc.cyan('I am _so_ cyan'));
+"
+`;
+
+exports[`migrate command > should handle interactive mode 1`] = `
+"[36me18e[39m (cli <version>)
+
+[90m┌[39m  Migrating packages...
+[?25l[90m│[39m
+[36m◆[39m  Select packages to migrate
+
+[36m│[39m  [2mSearch:[22m [7m[8m_[28m[27m
+[36m│[39m  [32m◼[39m chalk
+[36m│[39m  [2m[2m↑/↓[22m[2m to navigate • [2mSpace:[22m[2m select • [2mEnter:[22m[2m confirm • [2mType:[22m[2m to search[22m
+[36m└[39m"
+`;
+
+exports[`migrate command > should handle interactive mode 2`] = `
+"import chalk from 'chalk';
+
+console.log(chalk.cyan('I am _so_ cyan'));
+"
+`;
+
+exports[`migrate command > should migrate specific package 1`] = `
+"[36me18e[39m (cli <version>)
+
+[90m┌[39m  Migrating packages...
+[90m│[39m
+[90m│[39m  Targets: [2mchalk[22m
+[90m│[39m
+[32m◇[39m  {cwd}/lib/main.js...
+[90m│[39m
+[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[90m│[39m  [2mwriting {cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m
+[32m◆[39m  {cwd}/lib/main.js [2m(1 migrated)[22m
+[90m│[39m
+[90m└[39m  Migration complete.
+
+"
+`;
+
+exports[`migrate command > should migrate specific package 2`] = `
+"import * as pc from 'picocolors';
+
+console.log(pc.cyan('I am _so_ cyan'));
+"
+`;
+
+exports[`migrate command > should migrate with --all flag 1`] = `
+"[36me18e[39m (cli <version>)
+
+[90m┌[39m  Migrating packages...
+[90m│[39m
+[90m│[39m  Targets: [2mchalk[22m
+[90m│[39m
+[32m◇[39m  {cwd}/lib/main.js...
+[90m│[39m
+[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[90m│[39m  [2mwriting {cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m
+[32m◆[39m  {cwd}/lib/main.js [2m(1 migrated)[22m
+[90m│[39m
+[90m└[39m  Migration complete.
+
+"
+`;
+
+exports[`migrate command > should migrate with --all flag 2`] = `
+"import * as pc from 'picocolors';
+
+console.log(pc.cyan('I am _so_ cyan'));
+"
+`;
+
+exports[`migrate command > should not modify files with --all flag in dry-run mode 1`] = `
+"[36me18e[39m (cli <version>)
+
+[90m┌[39m  Migrating packages...
+[90m│[39m
+[90m│[39m  Targets: [2mchalk[22m
+[90m│[39m
+[32m◇[39m  {cwd}/lib/main.js...
+[90m│[39m
+[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[90m│[39m  [2mwriting {cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m
+[32m◆[39m  {cwd}/lib/main.js [2m(1 migrated)[22m
+[90m│[39m
+[90m└[39m  Migration complete.
+
+"
+`;
+
+exports[`migrate command > should not modify files with --all flag in dry-run mode 2`] = `
+"import chalk from 'chalk';
+
+console.log(chalk.cyan('I am _so_ cyan'));
+"
+`;
+
+exports[`migrate command > should not modify files with specific package in dry-run mode 1`] = `
+"[36me18e[39m (cli <version>)
+
+[90m┌[39m  Migrating packages...
+[90m│[39m
+[90m│[39m  Targets: [2mchalk[22m
+[90m│[39m
+[32m◇[39m  {cwd}/lib/main.js...
+[90m│[39m
+[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[2K[1A[2K[1A[2K[G[90m│[39m  [2mloading {cwd}/lib/main.js[22m
+[90m│[39m  [2mmigrating chalk to picocolors[22m
+[90m│[39m  [2mwriting {cwd}/lib/main.js[22m
+[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[1A[2K[G[90m│[39m
+[32m◆[39m  {cwd}/lib/main.js [2m(1 migrated)[22m
+[90m│[39m
+[90m└[39m  Migration complete.
+
+"
+`;
+
+exports[`migrate command > should not modify files with specific package in dry-run mode 2`] = `
+"import chalk from 'chalk';
+
+console.log(chalk.cyan('I am _so_ cyan'));
+"
+`;
