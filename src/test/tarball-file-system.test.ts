@@ -1,53 +1,84 @@
-import {describe, it, expect, beforeEach, afterEach} from 'vitest';
-import {TarballFileSystem} from '../tarball-file-system.js';
-import {detectAndPack} from '../detect-and-pack-node.js';
-import * as fs from 'node:fs/promises';
+import {describe, it, expect, beforeEach, vi} from 'vitest';
 import * as path from 'node:path';
-import {tmpdir} from 'node:os';
+
+import {TarballFileSystem} from '../tarball-file-system.js';
+
+const enc = (s: string) => new TextEncoder().encode(s);
+let mockFiles: Array<{name: string; data: Uint8Array}>;
+const mockRootDir = 'package';
+
+vi.mock('@publint/pack', () => {
+  return {
+    unpack: vi.fn(async () => ({
+      rootDir: mockRootDir,
+      files: mockFiles
+    }))
+  };
+});
 
 describe('TarballFileSystem', () => {
-  let tempDir: string;
-
-  beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(tmpdir(), 'reporter-test-'));
+  beforeEach(() => {
+    mockFiles = [
+      {
+        name: path.posix.join(mockRootDir, 'package.json'),
+        data: enc(JSON.stringify({name: 'pkg', version: '1.0.0'}))
+      },
+      {
+        name: path.posix.join(mockRootDir, 'tsconfig.json'),
+        data: enc('{}')
+      },
+      {
+        name: path.posix.join(mockRootDir, 'node_modules/a/package.json'),
+        data: enc(JSON.stringify({name: 'a', version: '1.0.0'}))
+      },
+      {
+        name: path.posix.join(
+          mockRootDir,
+          'node_modules/a/node_modules/b/package.json'
+        ),
+        data: enc(JSON.stringify({name: 'b', version: '1.0.0'}))
+      },
+      {
+        name: path.posix.join(mockRootDir, 'node_modules/a/readme.txt'),
+        data: enc('abc')
+      }
+    ];
   });
 
-  afterEach(async () => {
-    await fs.rm(tempDir, {recursive: true, force: true});
+  it('should report true for an existing file and false for a missing file', async () => {
+    const tfs = new TarballFileSystem(new ArrayBuffer(0));
+
+    expect(await tfs.fileExists('/tsconfig.json')).toBe(true);
+    expect(await tfs.fileExists('/does-not-exist.json')).toBe(false);
   });
 
-  describe('fileExists', () => {
-    it('should return false when file does not exist in tarball', async () => {
-      // Create a minimal package.json for the tarball
-      await fs.writeFile(
-        path.join(tempDir, 'package.json'),
-        JSON.stringify({
-          name: 'test-package',
-          version: '1.0.0'
-        })
-      );
+  it('should read /package.json and throw on a non-existent path', async () => {
+    const tfs = new TarballFileSystem(new ArrayBuffer(0));
 
-      const tarball = await detectAndPack(tempDir, 'npm');
-      const fileSystem = new TarballFileSystem(tarball);
-      const hasConfig = await fileSystem.fileExists('/tsconfig.json');
-      expect(hasConfig).toBe(false);
-    });
+    const text = await tfs.readFile('/package.json');
+    expect(JSON.parse(text).name).toBe('pkg');
 
-    it('should return true when file exists in tarball', async () => {
-      // Create a minimal package.json for the tarball
-      await fs.writeFile(
-        path.join(tempDir, 'package.json'),
-        JSON.stringify({
-          name: 'test-package',
-          version: '1.0.0'
-        })
-      );
+    await expect(tfs.readFile('/nope.json')).rejects.toBeTruthy();
+  });
 
-      await fs.writeFile(path.join(tempDir, 'tsconfig.json'), '{}');
-      const tarball = await detectAndPack(tempDir, 'npm');
-      const fileSystem = new TarballFileSystem(tarball);
-      const hasConfig = await fileSystem.fileExists('/tsconfig.json');
-      expect(hasConfig).toBe(true);
-    });
+  it('should list package.json files, including nested ones', async () => {
+    const tfs = new TarballFileSystem(new ArrayBuffer(0));
+    const root = await tfs.getRootDir();
+    const files = await tfs.listPackageFiles();
+
+    expect(files).toContain(path.posix.join(root, 'package.json'));
+    expect(files).toContain(
+      path.posix.join(root, 'node_modules/a/package.json')
+    );
+    expect(files).toContain(
+      path.posix.join(root, 'node_modules/a/node_modules/b/package.json')
+    );
+  });
+
+  it('should compute install size as the sum of file bytes from the unpacked tarball', async () => {
+    const tfs = new TarballFileSystem(new ArrayBuffer(0));
+    const expected = mockFiles.reduce((n, f) => n + f.data.byteLength, 0);
+    const size = await tfs.getInstallSize();
+    expect(size).toBe(expected);
   });
 });
