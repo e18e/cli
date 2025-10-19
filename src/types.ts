@@ -14,6 +14,7 @@ export interface Options {
   root?: string;
   pack?: PackType;
   manifest?: string[];
+  attw?: boolean;
 }
 
 export interface StatLike<T> {

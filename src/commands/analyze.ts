@@ -6,6 +6,11 @@ import {meta} from './analyze.meta.js';
 import {report} from '../index.js';
 import type {PackType} from '../types.js';
 import {enableDebug} from '../logger.js';
+import {
+  isPackageInstalled,
+  promptToInstall,
+  installPackage
+} from '../utils/dependency-check.js';
 
 function formatBytes(bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB'];
@@ -24,6 +29,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   const [_commandName, providedPath] = ctx.positionals;
   let pack: PackType = ctx.values.pack;
   const logLevel = ctx.values['log-level'];
+  let attwEnabled = ctx.values.attw;
   let root: string | undefined = undefined;
 
   // Enable debug output based on log level
@@ -32,6 +38,32 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   }
 
   prompts.intro('Analyzing...');
+
+  // Check for optional dependencies if features are enabled
+  if (attwEnabled) {
+    const attwPackage = '@arethetypeswrong/core';
+    if (!isPackageInstalled(attwPackage)) {
+      const shouldInstall = await promptToInstall(attwPackage);
+
+      if (shouldInstall) {
+        const installed = await installPackage(attwPackage);
+        if (installed) {
+          prompts.log.info('Restarting analysis with ATTW enabled...');
+          // Continue with analysis now that ATTW is installed
+        } else {
+          prompts.log.warn(
+            'Installation failed. Please install the package manually and run the command again.'
+          );
+          process.exit(1);
+        }
+      } else {
+        prompts.log.warn(
+          `ATTW analysis will be skipped because ${c.cyan(attwPackage)} is not installed.`
+        );
+        attwEnabled = false;
+      }
+    }
+  }
 
   const allowedPackChoices: ReadonlyArray<string> = meta.args.pack.choices;
   if (typeof pack === 'string' && !allowedPackChoices.includes(pack)) {
@@ -83,7 +115,8 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
   const {stats, messages} = await report({
     root,
     pack,
-    manifest: customManifests
+    manifest: customManifests,
+    attw: attwEnabled
   });
 
   prompts.log.info('Summary');

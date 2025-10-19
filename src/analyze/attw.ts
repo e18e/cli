@@ -1,21 +1,26 @@
+import type {ReportPluginResult, Options} from '../types.js';
+import type {FileSystem} from '../file-system.js';
+import type {ResolutionKind} from '@arethetypeswrong/core';
+import {TarballFileSystem} from '../tarball-file-system.js';
 import {
   checkPackage,
   createPackageFromTarballData
 } from '@arethetypeswrong/core';
 import {groupProblemsByKind} from '@arethetypeswrong/core/utils';
-import type {ResolutionKind} from '@arethetypeswrong/core';
 import {filterProblems, problemKindInfo} from '@arethetypeswrong/core/problems';
-import type {ReportPluginResult, Options} from '../types.js';
-import type {FileSystem} from '../file-system.js';
-import {TarballFileSystem} from '../tarball-file-system.js';
 
 export async function runAttw(
   fileSystem: FileSystem,
-  _options?: Options
+  options?: Options
 ): Promise<ReportPluginResult> {
   const result: ReportPluginResult = {
     messages: []
   };
+
+  // Only run attw when explicitly enabled
+  if (!options?.attw) {
+    return result;
+  }
 
   // Only run attw when TypeScript is configured
   const hasTypeScriptConfig = await fileSystem.fileExists('/tsconfig.json');

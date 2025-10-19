@@ -28,6 +28,11 @@ export const meta = {
       array: true,
       description:
         'Path(s) to custom manifest file(s) for module replacements analysis'
+    },
+    attw: {
+      type: 'boolean',
+      default: false,
+      description: 'Enable Are The Types Wrong analysis'
     }
   }
 } as const;
