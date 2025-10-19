@@ -3,6 +3,7 @@ import {spawn} from 'node:child_process';
 import {detect, resolveCommand} from 'package-manager-detector';
 import * as p from '@clack/prompts';
 import c from 'picocolors';
+import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
 
@@ -12,7 +13,6 @@ const require = createRequire(import.meta.url);
 export function isPackageInstalled(packageName: string): boolean {
   try {
     // Check only in current directory's node_modules, not parent directories
-    const {resolve} = require('node:path');
     const localPath = resolve('./node_modules', packageName);
     require.resolve(localPath);
     return true;

@@ -67,8 +67,13 @@
     "semver": "^7.7.3",
     "tinyglobby": "^0.2.15"
   },
-  "optionalPeerDependencies": {
+  "peerDependencies": {
     "@arethetypeswrong/core": "^0.18.2"
+  },
+  "peerDependenciesMeta": {
+    "@arethetypeswrong/core": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
