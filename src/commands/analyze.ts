@@ -4,7 +4,6 @@ import * as prompts from '@clack/prompts';
 import c from 'picocolors';
 import {meta} from './analyze.meta.js';
 import {report} from '../index.js';
-import type {PackType} from '../types.js';
 import {enableDebug} from '../logger.js';
 
 function formatBytes(bytes: number) {
@@ -22,7 +21,8 @@ function formatBytes(bytes: number) {
 
 export async function run(ctx: CommandContext<typeof meta.args>) {
   const [_commandName, providedPath] = ctx.positionals;
-  let pack: PackType = ctx.values.pack;
+  const baseTarball = ctx.values['base-tarball'];
+  const targetTarball = ctx.values['target-tarball'];
   const logLevel = ctx.values['log-level'];
   let root: string | undefined = undefined;
 
@@ -33,14 +33,6 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   prompts.intro('Analyzing...');
 
-  const allowedPackChoices: ReadonlyArray<string> = meta.args.pack.choices;
-  if (typeof pack === 'string' && !allowedPackChoices.includes(pack)) {
-    prompts.cancel(
-      `Invalid '--pack' option. Allowed values are: ${allowedPackChoices.join(', ')}`
-    );
-    process.exit(1);
-  }
-
   // Path can be a directory (analyze project) or a tarball file (analyze tarball)
   if (providedPath) {
     let stat: Stats | null = null;
@@ -50,40 +42,22 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
       stat = null;
     }
 
-    if (!stat || (!stat.isFile() && !stat.isDirectory())) {
-      prompts.cancel(
-        `Path must be a tarball file or a directory: ${providedPath}`
-      );
+    if (!stat || !stat.isDirectory()) {
+      prompts.cancel(`Path must be a directory: ${providedPath}`);
       process.exit(1);
     }
 
-    if (stat.isFile()) {
-      const buffer = await fsp.readFile(providedPath);
-      const tarball = buffer.buffer.slice(
-        buffer.byteOffset,
-        buffer.byteOffset + buffer.byteLength
-      ) as ArrayBuffer;
-      pack = {tarball};
-    } else {
-      root = providedPath; // analyze this directory (respecting --pack)
-    }
+    root = providedPath;
   }
 
   // Then analyze the tarball
-  const rawCustomManifests = ctx.values['manifest'];
-
-  // NOTE: Gunshi quirk - array arguments are sometimes returned as single strings
-  // when only one value is provided, so we need to handle both cases
-  const customManifests = Array.isArray(rawCustomManifests)
-    ? rawCustomManifests
-    : rawCustomManifests
-      ? [rawCustomManifests]
-      : [];
+  const customManifests = ctx.values['manifest'];
 
   const {stats, messages} = await report({
     root,
-    pack,
-    manifest: customManifests
+    manifest: customManifests,
+    baseTarball,
+    targetTarball
   });
 
   prompts.log.info('Summary');

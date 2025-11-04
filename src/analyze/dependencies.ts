@@ -213,9 +213,7 @@ export async function runDependencyAnalysis(
       }
     }
 
-    // Traverse dependencies
-    const allDeps = {...depPkg.dependencies, ...depPkg.devDependencies};
-    for (const depName of Object.keys(allDeps)) {
+    for (const depName of Object.keys(depPkg.dependencies || {})) {
       let packageMatch = packageFiles.find((packageFile) =>
         normalizePath(packageFile).endsWith(
           `/node_modules/${depName}/package.json`

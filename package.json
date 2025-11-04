@@ -13,13 +13,6 @@
       "default": "./lib/index.js"
     }
   },
-  "imports": {
-    "#detect-and-pack": {
-      "types": "./lib/detect-and-pack-node.d.ts",
-      "browser": "./lib/detect-and-pack-browser.js",
-      "default": "./lib/detect-and-pack-node.js"
-    }
-  },
   "files": [
     "lib",
     "!lib/test"
