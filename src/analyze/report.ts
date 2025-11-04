@@ -4,7 +4,6 @@ import {LocalFileSystem} from '../local-file-system.js';
 import {TarballFileSystem} from '../tarball-file-system.js';
 import type {FileSystem} from '../file-system.js';
 import type {Options, ReportPlugin, Stat, Stats, Message} from '../types.js';
-import {runAttw} from './attw.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
 import {runDependencyAnalysis} from './dependencies.js';
@@ -12,7 +11,6 @@ import {runPlugins} from '../plugin-runner.js';
 import {getPackageJson} from '../utils/package-json.js';
 
 const plugins: ReportPlugin[] = [
-  runAttw,
   runPublint,
   runReplacements,
   runDependencyAnalysis
