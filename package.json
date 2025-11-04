@@ -54,7 +54,6 @@
   },
   "homepage": "https://github.com/e18e/cli#readme",
   "dependencies": {
-    "@arethetypeswrong/core": "^0.18.2",
     "@clack/prompts": "^1.0.0-alpha.6",
     "@publint/pack": "^0.1.2",
     "debug": "^4.4.3",
