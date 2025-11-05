@@ -1,21 +1,18 @@
-import type {PackType} from '../types.js';
-
 export const meta = {
   name: 'analyze',
   description: 'Analyze the project for any warnings or errors',
   args: {
-    pack: {
-      type: 'enum',
-      choices: [
-        'auto',
-        'npm',
-        'yarn',
-        'pnpm',
-        'bun',
-        'none'
-      ] satisfies PackType[],
-      default: 'auto',
-      description: `Package manager to use for packing`
+    'base-tarball': {
+      type: 'string',
+      multiple: true,
+      description:
+        'Path to base tarball file(s) (e.g. main) to analyze (globs supported)'
+    },
+    'target-tarball': {
+      type: 'string',
+      multiple: true,
+      description:
+        'Path to target tarball file(s) (e.g. PR branch) to analyze (globs supported)'
     },
     'log-level': {
       type: 'enum',
@@ -25,7 +22,7 @@ export const meta = {
     },
     manifest: {
       type: 'string',
-      array: true,
+      multiple: true,
       description:
         'Path(s) to custom manifest file(s) for module replacements analysis'
     }

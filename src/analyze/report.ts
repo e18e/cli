@@ -1,7 +1,5 @@
-import {detectAndPack} from '#detect-and-pack';
 import {analyzePackageModuleType} from '../compute-type.js';
 import {LocalFileSystem} from '../local-file-system.js';
-import {TarballFileSystem} from '../tarball-file-system.js';
 import type {FileSystem} from '../file-system.js';
 import type {Options, ReportPlugin, Stat, Stats, Message} from '../types.js';
 import {runPublint} from './publint.js';
@@ -30,9 +28,7 @@ async function computeInfo(fileSystem: FileSystem) {
 }
 
 export async function report(options: Options) {
-  const {root = process.cwd(), pack = 'auto'} = options ?? {};
-
-  let fileSystem: FileSystem;
+  const {root = process.cwd()} = options ?? {};
 
   const extraStats: Stat[] = [];
   const stats: Stats = {
@@ -49,19 +45,7 @@ export async function report(options: Options) {
   };
   const messages: Message[] = [];
 
-  if (pack === 'none') {
-    fileSystem = new LocalFileSystem(root);
-  } else {
-    let tarball: ArrayBuffer;
-
-    if (typeof pack === 'object') {
-      tarball = pack.tarball;
-    } else {
-      tarball = await detectAndPack(root, pack);
-    }
-
-    fileSystem = new TarballFileSystem(tarball);
-  }
+  const fileSystem = new LocalFileSystem(root);
 
   await runPlugins(fileSystem, plugins, stats, messages, options);
 

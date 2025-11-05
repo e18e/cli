@@ -1,19 +1,11 @@
 import type {FileSystem} from './file-system.js';
 import type {Codemod, CodemodOptions} from 'module-replacements-codemods';
 
-export type PackType =
-  | 'auto'
-  | 'npm'
-  | 'yarn'
-  | 'pnpm'
-  | 'bun'
-  | 'none'
-  | {tarball: ArrayBuffer};
-
 export interface Options {
   root?: string;
-  pack?: PackType;
   manifest?: string[];
+  baseTarball?: string[];
+  targetTarball?: string[];
 }
 
 export interface StatLike<T> {

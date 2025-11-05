@@ -5,7 +5,7 @@ exports[`analyzeDependencies (local) > should analyze dependencies correctly 1`]
   "messages": [],
   "stats": {
     "dependencyCount": {
-      "cjs": 2,
+      "cjs": 1,
       "development": 1,
       "duplicate": 0,
       "esm": 1,

@@ -3,9 +3,7 @@ import {spawn} from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import {createTempDir, cleanupTempDir, createTestPackage} from './utils.js';
-import {pack as packAsTarball} from '@publint/pack';
 
-let mockTarballPath: string;
 let tempDir: string;
 const stripVersion = (str: string): string =>
   str.replace(
@@ -46,13 +44,6 @@ beforeAll(async () => {
       type: 'module'
     })
   );
-
-  // Pack the test package into a tarball (cross-platform, no external npm spawn)
-  mockTarballPath = await packAsTarball(tempDir, {
-    packageManager: 'npm',
-    ignoreScripts: true,
-    destination: tempDir
-  });
 });
 
 afterAll(async () => {
@@ -83,10 +74,7 @@ function runCliProcess(
 
 describe('CLI', () => {
   it('should run successfully with default options', async () => {
-    const {stdout, stderr, code} = await runCliProcess(
-      ['analyze', mockTarballPath],
-      tempDir
-    );
+    const {stdout, stderr, code} = await runCliProcess(['analyze'], tempDir);
     if (code !== 0) {
       console.error('CLI Error:', stderr);
     }
@@ -96,10 +84,7 @@ describe('CLI', () => {
   });
 
   it('should display package report', async () => {
-    const {stdout, stderr, code} = await runCliProcess(
-      ['analyze', mockTarballPath],
-      tempDir
-    );
+    const {stdout, stderr, code} = await runCliProcess(['analyze'], tempDir);
     expect(code).toBe(0);
     expect(stripVersion(stdout)).toMatchSnapshot();
     expect(stderr).toMatchSnapshot();

@@ -1,9 +1,42 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest';
 import {TarballFileSystem} from '../tarball-file-system.js';
-import {detectAndPack} from '../detect-and-pack-node.js';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import {tmpdir} from 'node:os';
+import {spawn} from 'node:child_process';
+
+async function runNpmPack(cwd: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const proc = spawn('npm', ['pack'], {cwd});
+
+    proc.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`npm pack failed with code ${code}`));
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+async function createTarballBuffer(cwd: string): Promise<ArrayBuffer> {
+  await runNpmPack(cwd);
+
+  // Find the generated .tgz file
+  const files = await fs.readdir(cwd);
+  const tgzFile = files.find((f) => f.endsWith('.tgz'));
+  if (!tgzFile) {
+    throw new Error('No .tgz file found after npm pack');
+  }
+
+  // Read the tarball as ArrayBuffer
+  const tgzPath = path.join(cwd, tgzFile);
+  const buffer = await fs.readFile(tgzPath);
+  return buffer.buffer.slice(
+    buffer.byteOffset,
+    buffer.byteOffset + buffer.byteLength
+  );
+}
 
 describe('TarballFileSystem', () => {
   let tempDir: string;
@@ -27,7 +60,7 @@ describe('TarballFileSystem', () => {
         })
       );
 
-      const tarball = await detectAndPack(tempDir, 'npm');
+      const tarball = await createTarballBuffer(tempDir);
       const fileSystem = new TarballFileSystem(tarball);
       const hasConfig = await fileSystem.fileExists('/tsconfig.json');
       expect(hasConfig).toBe(false);
@@ -44,7 +77,7 @@ describe('TarballFileSystem', () => {
       );
 
       await fs.writeFile(path.join(tempDir, 'tsconfig.json'), '{}');
-      const tarball = await detectAndPack(tempDir, 'npm');
+      const tarball = await createTarballBuffer(tempDir);
       const fileSystem = new TarballFileSystem(tarball);
       const hasConfig = await fileSystem.fileExists('/tsconfig.json');
       expect(hasConfig).toBe(true);
