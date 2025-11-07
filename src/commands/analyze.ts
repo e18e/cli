@@ -50,15 +50,38 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
     root = providedPath;
   }
 
+  // Check if package.json exists in the root directory
+  const packageJsonPath = root ? `${root}/package.json` : './package.json';
+
+  try {
+    await fsp.access(packageJsonPath);
+  } catch {
+    prompts.cancel(
+      c.red(
+        `No package.json found in ${root || 'the current directory'}. Make sure you are in a package directory before running this command.`
+      )
+    );
+    process.exit(1);
+  }
+
   // Then analyze the tarball
   const customManifests = ctx.values['manifest'];
 
-  const {stats, messages} = await report({
-    root,
-    manifest: customManifests,
-    baseTarball,
-    targetTarball
-  });
+  let stats, messages;
+  try {
+    const result = await report({
+      root,
+      manifest: customManifests,
+      baseTarball,
+      targetTarball
+    });
+    stats = result.stats;
+    messages = result.messages;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    prompts.cancel(c.red(`Analysis failed: ${errorMessage}`));
+    process.exit(1);
+  }
 
   prompts.log.info('Summary');
 
