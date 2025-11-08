@@ -5,8 +5,8 @@ exports[`Duplicate Dependency Detection > should detect exact duplicate dependen
   "messages": [
     {
       "message": "[duplicate dependency] shared-lib has 2 installed versions:
- 2.0.0 via root > package-a > shared-lib
- 2.0.0 via root > package-b > shared-lib
+  2.0.0 via root > package-a > shared-lib
+  2.0.0 via root > package-b > shared-lib
 Suggestions:    💡 Consider standardizing on version 2.0.0 (used by 2 dependencies)    💡 Check if newer versions of consuming packages (package-a, package-b) would resolve this duplicate",
       "score": 0,
       "severity": "warning",
@@ -32,9 +32,9 @@ exports[`Duplicate Dependency Detection > should detect version conflicts 1`] = 
   "messages": [
     {
       "message": "[duplicate dependency] shared-lib has 3 installed versions:
- 1.0.0 via root > package-a > shared-lib
- 1.0.0 via root > package-b > shared-lib
- 2.0.0 via shared-lib
+  1.0.0 via root > package-a > shared-lib
+  1.0.0 via root > package-b > shared-lib
+  2.0.0 via shared-lib
 Suggestions:    💡 Consider standardizing on version 1.0.0 (used by 2 dependencies)    💡 Check if newer versions of consuming packages (package-a, package-b) would resolve this duplicate",
       "score": 0,
       "severity": "warning",
@@ -60,8 +60,8 @@ exports[`Duplicate Dependency Detection > should generate suggestions for duplic
   "messages": [
     {
       "message": "[duplicate dependency] shared-lib has 2 installed versions:
- 2.0.0 via root > package-a > shared-lib
- 2.0.0 via root > package-b > shared-lib
+  2.0.0 via root > package-a > shared-lib
+  2.0.0 via root > package-b > shared-lib
 Suggestions:    💡 Consider standardizing on version 2.0.0 (used by 2 dependencies)    💡 Check if newer versions of consuming packages (package-a, package-b) would resolve this duplicate",
       "score": 0,
       "severity": "warning",
