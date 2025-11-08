@@ -306,9 +306,11 @@ export async function runDependencyAnalysis(
     for (const duplicate of duplicateDependencies) {
       // Disable colors completely when NO_COLOR is set (for consistent test snapshots)
       const noColor = process.env.NO_COLOR === '1';
-      const severityColor = noColor 
+      const severityColor = noColor
         ? (str: string) => str
-        : (duplicate.severity === 'exact' ? colors.blue : colors.yellow);
+        : duplicate.severity === 'exact'
+          ? colors.blue
+          : colors.yellow;
       const bold = noColor ? (str: string) => str : colors.bold;
       const gray = noColor ? (str: string) => str : colors.gray;
       const blue = noColor ? (str: string) => str : colors.blue;
