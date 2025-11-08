@@ -310,7 +310,7 @@ export async function runDependencyAnalysis(
       let message = `${severityColor('[duplicate dependency]')} ${colors.bold(duplicate.name)} has ${duplicate.versions.length} installed versions:`;
 
       for (const version of duplicate.versions) {
-        message += `\n  ${colors.gray(version.version)} via ${colors.gray(version.path)}`;
+        message += `\n   ${colors.gray(version.version)} via ${colors.gray(version.path)}`;
       }
 
       if (duplicate.suggestions && duplicate.suggestions.length > 0) {
