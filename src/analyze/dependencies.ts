@@ -304,19 +304,25 @@ export async function runDependencyAnalysis(
     stats.dependencyCount.duplicate = duplicateDependencies.length;
 
     for (const duplicate of duplicateDependencies) {
-      const severityColor =
-        duplicate.severity === 'exact' ? colors.blue : colors.yellow;
+      // Disable colors completely when NO_COLOR is set (for consistent test snapshots)
+      const noColor = process.env.NO_COLOR === '1';
+      const severityColor = noColor 
+        ? (str: string) => str
+        : (duplicate.severity === 'exact' ? colors.blue : colors.yellow);
+      const bold = noColor ? (str: string) => str : colors.bold;
+      const gray = noColor ? (str: string) => str : colors.gray;
+      const blue = noColor ? (str: string) => str : colors.blue;
 
-      let message = `${severityColor('[duplicate dependency]')} ${colors.bold(duplicate.name)} has ${duplicate.versions.length} installed versions:`;
+      let message = `${severityColor('[duplicate dependency]')} ${bold(duplicate.name)} has ${duplicate.versions.length} installed versions:`;
 
       for (const version of duplicate.versions) {
-        message += `\n   ${colors.gray(version.version)} via ${colors.gray(version.path)}`;
+        message += `\n ${gray(version.version)} via ${gray(version.path)}`;
       }
 
       if (duplicate.suggestions && duplicate.suggestions.length > 0) {
         message += '\nSuggestions:';
         for (const suggestion of duplicate.suggestions) {
-          message += `    ${colors.blue('💡')} ${colors.gray(suggestion)}`;
+          message += `    ${blue('💡')} ${gray(suggestion)}`;
         }
       }
 
