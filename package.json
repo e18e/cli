@@ -61,18 +61,18 @@
     "tinyglobby": "^0.2.15"
   },
   "devDependencies": {
-    "@eslint/js": "^9.38.0",
+    "@eslint/js": "^9.39.1",
     "@types/debug": "^4.1.12",
-    "@types/node": "^24.9.1",
+    "@types/node": "^24.10.0",
     "@types/picomatch": "^4.0.2",
     "@types/semver": "^7.7.1",
-    "@vitest/coverage-v8": "^4.0.3",
-    "eslint": "^9.38.0",
+    "@vitest/coverage-v8": "^4.0.8",
+    "eslint": "^9.39.1",
     "pkg-pr-new": "^0.0.60",
     "premove": "^4.0.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.2",
+    "typescript-eslint": "^8.46.3",
     "vitest": "^4.0.3"
   }
 }
