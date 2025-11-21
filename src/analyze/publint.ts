@@ -1,18 +1,16 @@
 import {publint} from 'publint';
 import {formatMessage} from 'publint/utils';
-import type {ReportPluginResult, Options} from '../types.js';
-import type {FileSystem} from '../file-system.js';
+import type {ReportPluginResult, Options, AnalysisContext} from '../types.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
 export async function runPublint(
-  _fileSystem: FileSystem,
-  options?: Options
+  context: AnalysisContext
 ): Promise<ReportPluginResult> {
-  const targetTarballs = options?.targetTarball;
+  const targetTarballs = context.options?.targetTarball;
 
   if (targetTarballs && targetTarballs.length > 0) {
-    return runPublintWithTarballs(targetTarballs, options);
+    return runPublintWithTarballs(targetTarballs, context.options);
   }
 
   return {messages: []};

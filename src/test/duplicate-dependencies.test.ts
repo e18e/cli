@@ -8,16 +8,51 @@ import {
   createTestPackageWithDependencies,
   type TestPackage
 } from './utils.js';
+import type {AnalysisContext} from '../types.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
 describe('Duplicate Dependency Detection', () => {
   let tempDir: string;
   let fileSystem: LocalFileSystem;
+  let context: AnalysisContext;
 
   beforeEach(async () => {
     tempDir = await createTempDir();
     fileSystem = new LocalFileSystem(tempDir);
+    context = {
+      fs: fileSystem,
+      root: '.',
+      messages: [],
+      stats: {
+        name: 'unknown',
+        version: 'unknown',
+        dependencyCount: {
+          production: 0,
+          development: 0,
+          duplicate: 0,
+          esm: 0,
+          cjs: 0
+        },
+        extraStats: []
+      },
+      lockfile: {
+        type: 'npm',
+        packages: [],
+        root: {
+          name: 'test-package',
+          version: '1.0.0',
+          dependencies: [],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0'
+      }
+    };
   });
 
   afterEach(async () => {
@@ -57,7 +92,7 @@ describe('Duplicate Dependency Detection', () => {
 
     await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
 
-    const stats = await runDependencyAnalysis(fileSystem);
+    const stats = await runDependencyAnalysis(context);
 
     expect(stats).toMatchSnapshot();
   });
@@ -119,7 +154,7 @@ describe('Duplicate Dependency Detection', () => {
       version: '2.0.0'
     });
 
-    const stats = await runDependencyAnalysis(fileSystem);
+    const stats = await runDependencyAnalysis(context);
 
     expect(stats).toMatchSnapshot();
   });
@@ -142,7 +177,7 @@ describe('Duplicate Dependency Detection', () => {
 
     await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
 
-    const stats = await runDependencyAnalysis(fileSystem);
+    const stats = await runDependencyAnalysis(context);
 
     expect(stats).toMatchSnapshot();
   });
@@ -180,7 +215,7 @@ describe('Duplicate Dependency Detection', () => {
 
     await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
 
-    const stats = await runDependencyAnalysis(fileSystem);
+    const stats = await runDependencyAnalysis(context);
 
     expect(stats).toMatchSnapshot();
   });

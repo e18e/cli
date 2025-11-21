@@ -1,7 +1,7 @@
 import {describe, it, expect} from 'vitest';
 import {runPlugins} from '../plugin-runner.js';
 import type {FileSystem} from '../file-system.js';
-import type {ReportPlugin, Stats, Message} from '../types.js';
+import type {ReportPlugin, Stats, Message, AnalysisContext} from '../types.js';
 
 const fsMock: FileSystem = {
   getRootDir: async () => '/',
@@ -49,8 +49,30 @@ describe('runPlugins', () => {
       extraStats: [{name: 'seed', value: 'seed'}]
     };
     const messages: Message[] = [];
+    const context: AnalysisContext = {
+      fs: fsMock,
+      root: '.',
+      messages,
+      stats,
+      lockfile: {
+        type: 'npm',
+        packages: [],
+        root: {
+          name: 'test-package',
+          version: '1.0.0',
+          dependencies: [],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0'
+      }
+    };
 
-    await runPlugins(fsMock, [pluginA, pluginB, pluginC], stats, messages);
+    await runPlugins(context, [pluginA, pluginB, pluginC]);
 
     expect(messages.map((m) => m.message)).toEqual(['A', 'B', 'C']);
     expect(stats.name).toBe('pkg-b');
@@ -70,10 +92,32 @@ describe('runPlugins', () => {
       extraStats: [{name: 'seed', value: 'seed'}]
     };
     const messages: Message[] = [];
+    const context: AnalysisContext = {
+      fs: fsMock,
+      root: '.',
+      messages,
+      stats,
+      lockfile: {
+        type: 'npm',
+        packages: [],
+        root: {
+          name: 'test-package',
+          version: '1.0.0',
+          dependencies: [],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0'
+      }
+    };
 
     const noop: ReportPlugin = async () => ({messages: []});
 
-    await runPlugins(fsMock, [noop], stats, messages);
+    await runPlugins(context, [noop]);
 
     expect(stats.extraStats).toBe(stats.extraStats);
     expect(stats.extraStats?.map((s) => s.name)).toEqual(['seed']);
@@ -90,24 +134,39 @@ describe('runPlugins', () => {
         extraStats: []
       }
     });
+    const context: AnalysisContext = {
+      fs: fsMock,
+      root: '.',
+      messages: [],
+      stats: {
+        name: 'unknown',
+        version: 'unknown',
+        dependencyCount: depCounts,
+        extraStats: []
+      },
+      lockfile: {
+        type: 'npm',
+        packages: [],
+        root: {
+          name: 'test-package',
+          version: '1.0.0',
+          dependencies: [],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0'
+      }
+    };
 
     const boom: ReportPlugin = async () => {
       throw new Error('boom');
     };
 
-    await expect(
-      runPlugins(
-        fsMock,
-        [ok, boom],
-        {
-          name: 'unknown',
-          version: 'unknown',
-          dependencyCount: depCounts,
-          extraStats: []
-        },
-        []
-      )
-    ).rejects.toThrow('boom');
+    await expect(runPlugins(context, [ok, boom])).rejects.toThrow('boom');
   });
 
   it('should return provided baseStats when plugins only emit messages', async () => {
@@ -122,8 +181,30 @@ describe('runPlugins', () => {
       extraStats: []
     };
     const messages: Message[] = [];
+    const context: AnalysisContext = {
+      fs: fsMock,
+      root: '.',
+      messages,
+      stats,
+      lockfile: {
+        type: 'npm',
+        packages: [],
+        root: {
+          name: 'test-package',
+          version: '1.0.0',
+          dependencies: [],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0'
+      }
+    };
 
-    await runPlugins(fsMock, [onlyMsgs], stats, messages);
+    await runPlugins(context, [onlyMsgs]);
 
     expect(messages).toHaveLength(1);
     expect(stats.name).toBe('unknown');
@@ -148,8 +229,30 @@ describe('runPlugins', () => {
       dependencyCount: depCounts
     };
     const messages: Message[] = [];
+    const context: AnalysisContext = {
+      fs: fsMock,
+      root: '.',
+      messages,
+      stats,
+      lockfile: {
+        type: 'npm',
+        packages: [],
+        root: {
+          name: 'test-package',
+          version: '1.0.0',
+          dependencies: [],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0'
+      }
+    };
 
-    await runPlugins(fsMock, [plugin], stats, messages);
+    await runPlugins(context, [plugin]);
     expect(stats.name).toBe('p');
     expect(stats.version).toBe('1');
     expect(stats.extraStats).toEqual(undefined);
@@ -163,8 +266,30 @@ describe('runPlugins', () => {
       extraStats: []
     };
     const messages: Message[] = [];
+    const context: AnalysisContext = {
+      fs: fsMock,
+      root: '.',
+      messages,
+      stats,
+      lockfile: {
+        type: 'npm',
+        packages: [],
+        root: {
+          name: 'test-package',
+          version: '1.0.0',
+          dependencies: [],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0'
+      }
+    };
 
-    await runPlugins(fsMock, [], stats, messages);
+    await runPlugins(context, []);
     expect(messages).toEqual([]);
     expect(stats.name).toBe('unknown');
     expect(stats.extraStats).toEqual([]);

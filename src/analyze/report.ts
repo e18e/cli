@@ -1,12 +1,22 @@
+import {join} from 'node:path';
 import {analyzePackageModuleType} from '../compute-type.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import type {FileSystem} from '../file-system.js';
-import type {Options, ReportPlugin, Stat, Stats, Message} from '../types.js';
+import type {
+  Options,
+  ReportPlugin,
+  Stat,
+  Stats,
+  Message,
+  AnalysisContext
+} from '../types.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
 import {runDependencyAnalysis} from './dependencies.js';
 import {runPlugins} from '../plugin-runner.js';
 import {getPackageJson} from '../utils/package-json.js';
+import {detectLockfile} from '../shared-lib.js';
+import {parse as parseLockfile} from 'lockparse';
 
 const plugins: ReportPlugin[] = [
   runPublint,
@@ -46,8 +56,34 @@ export async function report(options: Options) {
   const messages: Message[] = [];
 
   const fileSystem = new LocalFileSystem(root);
+  const lockfileFilename = detectLockfile(root);
 
-  await runPlugins(fileSystem, plugins, stats, messages, options);
+  if (!lockfileFilename) {
+    // TODO (jg): error nicely?
+    throw new Error('No lockfile found in the project root.');
+  }
+
+  const lockfilePath = join(root, lockfileFilename);
+  const packageFilePath = join(root, 'package.json');
+  const lockfile = await fileSystem.readFile(lockfilePath);
+  const packageFileJSON = await fileSystem.readFile(packageFilePath);
+  const packageFile = JSON.parse(packageFileJSON);
+  const parsedLock = await parseLockfile(
+    lockfile,
+    lockfileFilename,
+    packageFile ?? undefined
+  );
+
+  const context: AnalysisContext = {
+    fs: fileSystem,
+    root,
+    packageFile,
+    lockfile: parsedLock,
+    stats,
+    messages,
+    options
+  };
+  await runPlugins(context, plugins);
 
   const info = await computeInfo(fileSystem);
 

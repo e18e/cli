@@ -9,6 +9,7 @@ import {
   createTestPackageWithDependencies,
   type TestPackage
 } from '../utils.js';
+import type {AnalysisContext} from '../../types.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -27,7 +28,40 @@ describe('analyzeDependencies (tarball)', () => {
     const fileSystem = new TarballFileSystem(
       tarballBuffer.buffer as ArrayBuffer
     );
-    const result = await runDependencyAnalysis(fileSystem);
+    const context: AnalysisContext = {
+      fs: fileSystem,
+      root: '.',
+      messages: [],
+      stats: {
+        name: 'unknown',
+        version: 'unknown',
+        dependencyCount: {
+          cjs: 0,
+          esm: 0,
+          duplicate: 0,
+          production: 0,
+          development: 0
+        },
+        extraStats: []
+      },
+      lockfile: {
+        type: 'npm',
+        packages: [],
+        root: {
+          name: 'test-package',
+          version: '1.0.0',
+          dependencies: [],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0'
+      }
+    };
+    const result = await runDependencyAnalysis(context);
     expect(result).toMatchSnapshot();
   });
 });
@@ -35,10 +69,44 @@ describe('analyzeDependencies (tarball)', () => {
 describe('analyzeDependencies (local)', () => {
   let tempDir: string;
   let fileSystem: LocalFileSystem;
+  let context: AnalysisContext;
 
   beforeEach(async () => {
     tempDir = await createTempDir();
     fileSystem = new LocalFileSystem(tempDir);
+    context = {
+      fs: fileSystem,
+      root: '.',
+      messages: [],
+      stats: {
+        name: 'unknown',
+        version: 'unknown',
+        dependencyCount: {
+          cjs: 0,
+          esm: 0,
+          duplicate: 0,
+          production: 0,
+          development: 0
+        },
+        extraStats: []
+      },
+      lockfile: {
+        type: 'npm',
+        packages: [],
+        root: {
+          name: 'test-package',
+          version: '1.0.0',
+          dependencies: [],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0'
+      }
+    };
   });
 
   afterEach(async () => {
@@ -51,7 +119,7 @@ describe('analyzeDependencies (local)', () => {
       version: '1.0.0'
     });
 
-    const stats = await runDependencyAnalysis(fileSystem);
+    const stats = await runDependencyAnalysis(context);
     expect(stats).toMatchSnapshot();
   });
 
@@ -94,7 +162,7 @@ describe('analyzeDependencies (local)', () => {
 
     await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
 
-    const stats = await runDependencyAnalysis(fileSystem);
+    const stats = await runDependencyAnalysis(context);
     expect(stats).toMatchSnapshot();
   });
 
@@ -128,7 +196,7 @@ describe('analyzeDependencies (local)', () => {
       'dir'
     );
 
-    const stats = await runDependencyAnalysis(fileSystem);
+    const stats = await runDependencyAnalysis(context);
     expect(stats).toMatchSnapshot();
   });
 
@@ -141,7 +209,7 @@ describe('analyzeDependencies (local)', () => {
       }
     });
 
-    const stats = await runDependencyAnalysis(fileSystem);
+    const stats = await runDependencyAnalysis(context);
     expect(stats).toMatchSnapshot();
   });
 });

@@ -1,5 +1,6 @@
 import type {FileSystem} from './file-system.js';
 import type {Codemod, CodemodOptions} from 'module-replacements-codemods';
+import type {ParsedLockFile} from 'lockparse';
 
 export interface Options {
   root?: string;
@@ -60,6 +61,15 @@ export interface ReportPluginResult {
 }
 
 export type ReportPlugin = (
-  fileSystem: FileSystem,
-  options?: Options
+  context: AnalysisContext
 ) => Promise<ReportPluginResult>;
+
+export interface AnalysisContext {
+  fs: FileSystem;
+  root: string;
+  options?: Options;
+  lockfile: ParsedLockFile;
+  packageFile: PackageJsonLike;
+  stats: Stats;
+  messages: Message[];
+}

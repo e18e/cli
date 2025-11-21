@@ -1,6 +1,7 @@
-import {describe, it, expect, afterEach, vi} from 'vitest';
+import {describe, it, expect, afterEach, vi, beforeEach} from 'vitest';
 import {runReplacements} from '../analyze/replacements.js';
 import {LocalFileSystem} from '../local-file-system.js';
+import type {AnalysisContext} from '../types.js';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {dirname} from 'node:path';
@@ -8,34 +9,75 @@ import {dirname} from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 describe('Custom Manifests', () => {
+  let context: AnalysisContext;
+
+  beforeEach(() => {
+    const testDir = join(__dirname, '../../test/fixtures/fake-modules');
+    const fileSystem = new LocalFileSystem(testDir);
+
+    context = {
+      fs: fileSystem,
+      root: '.',
+      messages: [],
+      stats: {
+        name: 'unknown',
+        version: 'unknown',
+        dependencyCount: {
+          cjs: 0,
+          esm: 0,
+          duplicate: 0,
+          production: 0,
+          development: 0
+        },
+        extraStats: []
+      },
+      lockfile: {
+        type: 'npm',
+        packages: [],
+        root: {
+          name: 'test-package',
+          version: '1.0.0',
+          dependencies: [],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0'
+      }
+    };
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
   });
 
   it('should load and use custom manifest files', async () => {
-    const testDir = join(__dirname, '../../test/fixtures/fake-modules');
-    const fileSystem = new LocalFileSystem(testDir);
     const customManifestPath = join(
       __dirname,
       '../../test/fixtures/custom-manifest.json'
     );
 
-    const result = await runReplacements(fileSystem, {
+    context.options = {
       manifest: [customManifestPath]
-    });
+    };
+
+    const result = await runReplacements(context);
 
     expect(result.messages).toMatchSnapshot();
   });
 
   it('should handle invalid manifest files gracefully', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const testDir = join(__dirname, '../../test/fixtures/fake-modules');
-    const fileSystem = new LocalFileSystem(testDir);
     const invalidManifestPath = 'non-existent-file.json';
 
-    const result = await runReplacements(fileSystem, {
+    context.options = {
       manifest: [invalidManifestPath]
-    });
+    };
+
+    const result = await runReplacements(context);
 
     expect(result.messages).toMatchSnapshot();
     expect(warnSpy).toHaveBeenCalledWith(
@@ -46,17 +88,20 @@ describe('Custom Manifests', () => {
   });
 
   it('should prioritize custom replacements over built-in ones', async () => {
-    const testDir = join(__dirname, '../../test/fixtures/fake-modules');
-    const fileSystem = new LocalFileSystem(testDir);
     const customManifestPath = join(
       __dirname,
       '../../test/fixtures/custom-manifest.json'
     );
 
-    const resultWithCustom = await runReplacements(fileSystem, {
+    context.options = {
       manifest: [customManifestPath]
-    });
-    const resultWithoutCustom = await runReplacements(fileSystem);
+    };
+
+    const resultWithCustom = await runReplacements(context);
+
+    context.options = undefined;
+
+    const resultWithoutCustom = await runReplacements(context);
 
     expect({
       withCustom: resultWithCustom.messages,
@@ -65,8 +110,6 @@ describe('Custom Manifests', () => {
   });
 
   it('should load multiple manifest files', async () => {
-    const testDir = join(__dirname, '../../test/fixtures/fake-modules');
-    const fileSystem = new LocalFileSystem(testDir);
     const manifest1Path = join(
       __dirname,
       '../../test/fixtures/custom-manifest.json'
@@ -76,9 +119,11 @@ describe('Custom Manifests', () => {
       '../../test/fixtures/custom-manifest-2.json'
     );
 
-    const result = await runReplacements(fileSystem, {
+    context.options = {
       manifest: [manifest1Path, manifest2Path]
-    });
+    };
+
+    const result = await runReplacements(context);
 
     expect(result.messages).toMatchSnapshot();
   });

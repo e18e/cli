@@ -5,7 +5,7 @@ import type {
   ReportPluginResult,
   Message,
   Stats,
-  Options
+  AnalysisContext
 } from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {normalizePath} from '../utils/path.js';
@@ -148,21 +148,20 @@ async function parsePackageJson(
 
 // Keep the existing tarball analysis for backward compatibility
 export async function runDependencyAnalysis(
-  fileSystem: FileSystem,
-  _options?: Options
+  context: AnalysisContext
 ): Promise<ReportPluginResult> {
-  const packageFiles = await fileSystem.listPackageFiles();
-  const rootDir = await fileSystem.getRootDir();
+  const packageFiles = await context.fs.listPackageFiles();
+  const rootDir = await context.fs.getRootDir();
   const messages: Message[] = [];
 
   // Find root package.json
-  const pkg = await parsePackageJson(fileSystem, '/package.json');
+  const pkg = await parsePackageJson(context.fs, '/package.json');
 
   if (!pkg) {
     throw new Error('No package.json found.');
   }
 
-  const installSize = await fileSystem.getInstallSize();
+  const installSize = await context.fs.getInstallSize();
   const prodDependencies = Object.keys(pkg.dependencies || {}).length;
   const devDependencies = Object.keys(pkg.devDependencies || {}).length;
   const stats: Stats = {
@@ -189,7 +188,7 @@ export async function runDependencyAnalysis(
     depth: number,
     pathInTree: string
   ) {
-    const depPkg = await parsePackageJson(fileSystem, packagePath);
+    const depPkg = await parsePackageJson(context.fs, packagePath);
     if (!depPkg || !depPkg.name) return;
 
     // Record this node
@@ -222,7 +221,7 @@ export async function runDependencyAnalysis(
 
       if (!packageMatch) {
         for (const packageFile of packageFiles) {
-          const depPkg = await parsePackageJson(fileSystem, packageFile);
+          const depPkg = await parsePackageJson(context.fs, packageFile);
           if (depPkg !== null && depPkg.name === depName) {
             packageMatch = packageFile;
             break;
@@ -256,7 +255,7 @@ export async function runDependencyAnalysis(
     }
 
     try {
-      const depPkg = await parsePackageJson(fileSystem, file);
+      const depPkg = await parsePackageJson(context.fs, file);
       if (!depPkg || !depPkg.name) {
         continue;
       }
