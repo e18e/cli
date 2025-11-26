@@ -63,10 +63,25 @@ export async function report(options: Options) {
     throw new Error('No lockfile found in the project root.');
   }
 
-  const lockfilePath = join(root, lockfileFilename);
-  const packageFilePath = join(root, 'package.json');
-  const lockfile = await fileSystem.readFile(lockfilePath);
-  const packageFileJSON = await fileSystem.readFile(packageFilePath);
+  let lockfile: string;
+  let packageFileJSON: string;
+
+  try {
+    lockfile = await fileSystem.readFile(lockfileFilename);
+  } catch (err) {
+    const lockfilePath = join(root, lockfileFilename);
+    throw new Error(`Failed to read lockfile at ${lockfilePath}: ${err}`);
+  }
+
+  try {
+    packageFileJSON = await fileSystem.readFile('package.json');
+  } catch (err) {
+    const packageFilePath = join(root, 'package.json');
+    throw new Error(
+      `Failed to read package.json at ${packageFilePath}: ${err}`
+    );
+  }
+
   const packageFile = JSON.parse(packageFileJSON);
   const parsedLock = await parseLockfile(
     lockfile,
