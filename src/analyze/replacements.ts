@@ -1,7 +1,6 @@
 import * as replacements from 'module-replacements';
 import type {ManifestModule, ModuleReplacement} from 'module-replacements';
-import type {ReportPluginResult, Options} from '../types.js';
-import type {FileSystem} from '../file-system.js';
+import type {ReportPluginResult, AnalysisContext} from '../types.js';
 import {getPackageJson} from '../utils/package-json.js';
 import {resolve, dirname, basename} from 'node:path';
 import {
@@ -85,14 +84,13 @@ function isNodeEngineCompatible(
 }
 
 export async function runReplacements(
-  fileSystem: FileSystem,
-  options?: Options
+  context: AnalysisContext
 ): Promise<ReportPluginResult> {
   const result: ReportPluginResult = {
     messages: []
   };
 
-  const packageJson = await getPackageJson(fileSystem);
+  const packageJson = await getPackageJson(context.fs);
 
   if (!packageJson || !packageJson.dependencies) {
     // No dependencies
@@ -100,8 +98,8 @@ export async function runReplacements(
   }
 
   // Load custom manifests
-  const customReplacements = options?.manifest
-    ? await loadCustomManifests(options.manifest)
+  const customReplacements = context.options?.manifest
+    ? await loadCustomManifests(context.options.manifest)
     : [];
 
   // Combine custom and built-in replacements

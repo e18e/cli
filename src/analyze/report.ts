@@ -1,12 +1,21 @@
+import {join} from 'node:path';
 import {analyzePackageModuleType} from '../compute-type.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import type {FileSystem} from '../file-system.js';
-import type {Options, ReportPlugin, Stat, Stats, Message} from '../types.js';
+import type {
+  Options,
+  ReportPlugin,
+  Stat,
+  Stats,
+  Message,
+  AnalysisContext
+} from '../types.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
 import {runDependencyAnalysis} from './dependencies.js';
 import {runPlugins} from '../plugin-runner.js';
-import {getPackageJson} from '../utils/package-json.js';
+import {getPackageJson, detectLockfile} from '../utils/package-json.js';
+import {parse as parseLockfile} from 'lockparse';
 
 const plugins: ReportPlugin[] = [
   runPublint,
@@ -46,8 +55,49 @@ export async function report(options: Options) {
   const messages: Message[] = [];
 
   const fileSystem = new LocalFileSystem(root);
+  const lockfileFilename = detectLockfile(root);
 
-  await runPlugins(fileSystem, plugins, stats, messages, options);
+  if (!lockfileFilename) {
+    // TODO (jg): error nicely?
+    throw new Error('No lockfile found in the project root.');
+  }
+
+  let lockfile: string;
+  let packageFileJSON: string;
+
+  try {
+    lockfile = await fileSystem.readFile(lockfileFilename);
+  } catch (err) {
+    const lockfilePath = join(root, lockfileFilename);
+    throw new Error(`Failed to read lockfile at ${lockfilePath}: ${err}`);
+  }
+
+  try {
+    packageFileJSON = await fileSystem.readFile('package.json');
+  } catch (err) {
+    const packageFilePath = join(root, 'package.json');
+    throw new Error(
+      `Failed to read package.json at ${packageFilePath}: ${err}`
+    );
+  }
+
+  const packageFile = JSON.parse(packageFileJSON);
+  const parsedLock = await parseLockfile(
+    lockfile,
+    lockfileFilename,
+    packageFile ?? undefined
+  );
+
+  const context: AnalysisContext = {
+    fs: fileSystem,
+    root,
+    packageFile,
+    lockfile: parsedLock,
+    stats,
+    messages,
+    options
+  };
+  await runPlugins(context, plugins);
 
   const info = await computeInfo(fileSystem);
 

@@ -36,6 +36,45 @@ export async function createTestPackage(
     JSON.stringify(pkg, null, 2)
   );
 
+  const lockfile = {
+    name: pkg.name,
+    version: pkg.version,
+    lockfileVersion: 3,
+    packages: {
+      '': {
+        name: pkg.name,
+        version: pkg.version,
+        dependencies: pkg.dependencies || {},
+        devDependencies: pkg.devDependencies || {}
+      },
+      ...Object.fromEntries(
+        Object.entries(pkg.dependencies ?? {}).map(([depName, depVersion]) => [
+          `node_modules/${depName}`,
+          {
+            name: depName,
+            version: depVersion
+          }
+        ])
+      ),
+      ...Object.fromEntries(
+        Object.entries(pkg.devDependencies ?? {}).map(
+          ([depName, depVersion]) => [
+            `node_modules/${depName}`,
+            {
+              name: depName,
+              version: depVersion
+            }
+          ]
+        )
+      )
+    }
+  };
+
+  await fs.writeFile(
+    path.join(root, 'package-lock.json'),
+    JSON.stringify(lockfile, null, 2)
+  );
+
   // Create node_modules if requested
   if (options.createNodeModules) {
     await fs.mkdir(path.join(root, 'node_modules'));
