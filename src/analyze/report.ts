@@ -14,8 +14,7 @@ import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
 import {runDependencyAnalysis} from './dependencies.js';
 import {runPlugins} from '../plugin-runner.js';
-import {getPackageJson} from '../utils/package-json.js';
-import {detectLockfile} from '../shared-lib.js';
+import {getPackageJson, detectLockfile} from '../utils/package-json.js';
 import {parse as parseLockfile} from 'lockparse';
 
 const plugins: ReportPlugin[] = [
