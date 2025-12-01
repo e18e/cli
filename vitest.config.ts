@@ -5,7 +5,7 @@ export default defineConfig({
   ],
   test: {
     env: {
-      FORCE_COLOR: '1'
+      NO_COLOR: '1'
     },
     reporters: 'dot',
     include: [
