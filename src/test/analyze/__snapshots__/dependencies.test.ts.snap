@@ -71,21 +71,3 @@ exports[`analyzeDependencies (local) > should handle symlinks 1`] = `
   },
 }
 `;
-
-exports[`analyzeDependencies (tarball) > should analyze a real tarball fixture 1`] = `
-{
-  "messages": [],
-  "stats": {
-    "dependencyCount": {
-      "cjs": 0,
-      "development": 0,
-      "duplicate": 0,
-      "esm": 0,
-      "production": 0,
-    },
-    "installSize": 226,
-    "name": "test-package",
-    "version": "1.0.0",
-  },
-}
-`;

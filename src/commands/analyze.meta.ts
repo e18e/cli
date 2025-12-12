@@ -2,18 +2,6 @@ export const meta = {
   name: 'analyze',
   description: 'Analyze the project for any warnings or errors',
   args: {
-    'base-tarball': {
-      type: 'string',
-      multiple: true,
-      description:
-        'Path to base tarball file(s) (e.g. main) to analyze (globs supported)'
-    },
-    'target-tarball': {
-      type: 'string',
-      multiple: true,
-      description:
-        'Path to target tarball file(s) (e.g. PR branch) to analyze (globs supported)'
-    },
     'log-level': {
       type: 'enum',
       choices: ['debug', 'info', 'warn', 'error'],

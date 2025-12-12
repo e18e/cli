@@ -1,6 +1,5 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest';
 import {runDependencyAnalysis} from '../../analyze/dependencies.js';
-import {TarballFileSystem} from '../../tarball-file-system.js';
 import {LocalFileSystem} from '../../local-file-system.js';
 import {
   createTempDir,
@@ -12,59 +11,6 @@ import {
 import type {AnalysisContext} from '../../types.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
-
-const FIXTURE_DIR = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '../../../test/fixtures'
-);
-
-// Integration test using a real tarball fixture
-
-describe('analyzeDependencies (tarball)', () => {
-  it('should analyze a real tarball fixture', async () => {
-    const tarballPath = path.join(FIXTURE_DIR, 'test-package.tgz');
-    const tarballBuffer = await fs.readFile(tarballPath);
-    const fileSystem = new TarballFileSystem(
-      tarballBuffer.buffer as ArrayBuffer
-    );
-    const context: AnalysisContext = {
-      fs: fileSystem,
-      root: '.',
-      messages: [],
-      stats: {
-        name: 'unknown',
-        version: 'unknown',
-        dependencyCount: {
-          cjs: 0,
-          esm: 0,
-          duplicate: 0,
-          production: 0,
-          development: 0
-        },
-        extraStats: []
-      },
-      lockfile: {
-        type: 'npm',
-        packages: [],
-        root: {
-          name: 'test-package',
-          version: '1.0.0',
-          dependencies: [],
-          devDependencies: [],
-          optionalDependencies: [],
-          peerDependencies: []
-        }
-      },
-      packageFile: {
-        name: 'test-package',
-        version: '1.0.0'
-      }
-    };
-    const result = await runDependencyAnalysis(context);
-    expect(result).toMatchSnapshot();
-  });
-});
 
 describe('analyzeDependencies (local)', () => {
   let tempDir: string;

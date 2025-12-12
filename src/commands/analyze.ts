@@ -21,8 +21,6 @@ function formatBytes(bytes: number) {
 
 export async function run(ctx: CommandContext<typeof meta.args>) {
   const [_commandName, providedPath] = ctx.positionals;
-  const baseTarball = ctx.values['base-tarball'];
-  const targetTarball = ctx.values['target-tarball'];
   const logLevel = ctx.values['log-level'];
   let root: string | undefined = undefined;
 
@@ -33,7 +31,7 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
 
   prompts.intro('Analyzing...');
 
-  // Path can be a directory (analyze project) or a tarball file (analyze tarball)
+  // Path can be a directory (analyze project)
   if (providedPath) {
     let stat: Stats | null = null;
     try {
@@ -50,14 +48,12 @@ export async function run(ctx: CommandContext<typeof meta.args>) {
     root = providedPath;
   }
 
-  // Then analyze the tarball
+  // Then read the manifest
   const customManifests = ctx.values['manifest'];
 
   const {stats, messages} = await report({
     root,
-    manifest: customManifests,
-    baseTarball,
-    targetTarball
+    manifest: customManifests
   });
 
   prompts.log.info('Summary');
