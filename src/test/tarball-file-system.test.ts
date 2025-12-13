@@ -35,7 +35,7 @@ async function createTarballBuffer(cwd: string): Promise<ArrayBuffer> {
   return buffer.buffer.slice(
     buffer.byteOffset,
     buffer.byteOffset + buffer.byteLength
-  );
+  ) as ArrayBuffer;
 }
 
 describe('TarballFileSystem', () => {

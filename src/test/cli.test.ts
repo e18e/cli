@@ -56,8 +56,12 @@ function runCliProcess(
 ): Promise<{stdout: string; stderr: string; code: number | null}> {
   return new Promise((resolve) => {
     const cliPath = path.resolve(__dirname, '../../lib/cli.js');
+    // Set NO_COLOR to ensure consistent plain text output for snapshots
+    // Remove FORCE_COLOR as it overrides NO_COLOR
+    const {FORCE_COLOR, ...envWithoutForceColor} = process.env;
+    const env = {...envWithoutForceColor, NO_COLOR: '1'};
     const proc = spawn('node', [cliPath, ...args], {
-      env: process.env,
+      env,
       cwd: cwd || process.cwd()
     });
     let stdout = '';
