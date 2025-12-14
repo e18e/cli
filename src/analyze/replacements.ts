@@ -17,7 +17,7 @@ import {LocalFileSystem} from '../local-file-system.js';
  * @return {string}
  */
 export function getDocsUrl(name: string): string {
-  return `https://github.com/es-tooling/eslint-plugin-depend/blob/main/docs/rules/${name}.md`;
+  return `https://github.com/es-tooling/module-replacements/blob/main/docs/modules/${name}.md`;
 }
 
 /**
