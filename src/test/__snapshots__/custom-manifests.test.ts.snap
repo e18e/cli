@@ -20,7 +20,7 @@ exports[`Custom Manifests > should load and use custom manifest files 1`] = `
     "severity": "warning",
   },
   {
-    "message": "Module "@e18e/fake-3" can be replaced with a more performant alternative. See the list of available alternatives at https://github.com/es-tooling/eslint-plugin-depend/blob/main/docs/rules/request-alternatives.md.",
+    "message": "Module "@e18e/fake-3" can be replaced with a more performant alternative. See the list of available alternatives at https://github.com/es-tooling/module-replacements/blob/main/docs/modules/request-alternatives.md.",
     "score": 0,
     "severity": "warning",
   },
@@ -50,7 +50,7 @@ exports[`Custom Manifests > should load multiple manifest files 1`] = `
     "severity": "warning",
   },
   {
-    "message": "Module "@e18e/fake-3" can be replaced with a more performant alternative. See the list of available alternatives at https://github.com/es-tooling/eslint-plugin-depend/blob/main/docs/rules/request-alternatives.md.",
+    "message": "Module "@e18e/fake-3" can be replaced with a more performant alternative. See the list of available alternatives at https://github.com/es-tooling/module-replacements/blob/main/docs/modules/request-alternatives.md.",
     "score": 0,
     "severity": "warning",
   },
@@ -91,7 +91,7 @@ exports[`Custom Manifests > should prioritize custom replacements over built-in 
       "severity": "warning",
     },
     {
-      "message": "Module "@e18e/fake-3" can be replaced with a more performant alternative. See the list of available alternatives at https://github.com/es-tooling/eslint-plugin-depend/blob/main/docs/rules/request-alternatives.md.",
+      "message": "Module "@e18e/fake-3" can be replaced with a more performant alternative. See the list of available alternatives at https://github.com/es-tooling/module-replacements/blob/main/docs/modules/request-alternatives.md.",
       "score": 0,
       "severity": "warning",
     },
