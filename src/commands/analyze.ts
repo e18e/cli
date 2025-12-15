@@ -19,7 +19,7 @@ function formatBytes(bytes: number) {
   return `${size.toFixed(1)} ${units[unitIndex]}`;
 }
 
-export async function run(ctx: CommandContext<typeof meta.args>) {
+export async function run(ctx: CommandContext<typeof meta>) {
   const [_commandName, providedPath] = ctx.positionals;
   const baseTarball = ctx.values['base-tarball'];
   const targetTarball = ctx.values['target-tarball'];

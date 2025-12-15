@@ -9,7 +9,7 @@ import type {Replacement} from '../types.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {getPackageJson} from '../utils/package-json.js';
 
-export async function run(ctx: CommandContext<typeof meta.args>) {
+export async function run(ctx: CommandContext<typeof meta>) {
   const [_commandName, ...targetModules] = ctx.positionals;
   const dryRun = ctx.values['dry-run'] === true;
   const interactive = ctx.values.interactive === true;
