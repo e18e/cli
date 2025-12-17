@@ -97,17 +97,3 @@ export async function createTestPackageWithDependencies(
     await createTestPackage(depDir, dep);
   }
 }
-
-export function createMockTarball(files: Array<{name: string; content: any}>) {
-  return {
-    files: files.map((file) => ({
-      name: file.name,
-      data: new TextEncoder().encode(
-        typeof file.content === 'string'
-          ? file.content
-          : JSON.stringify(file.content)
-      )
-    })),
-    rootDir: 'package'
-  };
-}
