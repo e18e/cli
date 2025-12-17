@@ -34,8 +34,7 @@
     "url": "git+https://github.com/e18e/cli.git"
   },
   "keywords": [
-    "e18e",
-    "attw",
+    "e18e",    
     "dependencies",
     "dependency",
     "publint"
