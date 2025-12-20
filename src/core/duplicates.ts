@@ -173,4 +173,3 @@ function setsEqual(a: Set<string>, b: Set<string>): boolean {
   }
   return true;
 }
-
