@@ -61,7 +61,9 @@ export interface TrustSummary {
  * @param meta - Package metadata from the npm registry
  * @returns The provenance status of the package
  */
-export function getProvenance(meta: PackageProvenanceMetadata): ProvenanceStatus {
+export function getProvenance(
+  meta: PackageProvenanceMetadata
+): ProvenanceStatus {
   if (meta._npmUser?.trustedPublisher) {
     return 'trusted-with-provenance';
   }
@@ -157,4 +159,3 @@ export function computeTrustSummary(
     total: trusted + provenance + untrusted
   };
 }
-

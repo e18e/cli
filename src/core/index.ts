@@ -3,4 +3,3 @@
  * by external tools like the e18e GitHub Action.
  */
 export * from './trust.js';
-
