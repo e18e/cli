@@ -46,11 +46,11 @@
   },
   "homepage": "https://github.com/e18e/cli#readme",
   "dependencies": {
-    "@clack/prompts": "^1.0.0-alpha.8",
+    "@clack/prompts": "^1.0.0-alpha.9",
     "@publint/pack": "^0.1.2",
     "debug": "^4.4.3",
     "fdir": "^6.5.0",
-    "gunshi": "^0.27.4",
+    "gunshi": "^0.27.5",
     "lockparse": "^0.5.0",
     "module-replacements": "^2.10.1",
     "module-replacements-codemods": "^1.2.0",
