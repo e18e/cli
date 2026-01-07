@@ -9,6 +9,7 @@ import type {
 } from '../types.js';
 import type {FileSystem} from '../file-system.js';
 import {normalizePath} from '../utils/path.js';
+import {ParsedLockFile, traverse, VisitorFn} from 'lockparse';
 
 interface DependencyNode {
   name: string;
@@ -328,4 +329,165 @@ export async function runDependencyAnalysis(
   }
 
   return {stats, messages};
+}
+
+type ResolvedDependency = {
+  name: string;
+  version: string;
+  //key: string; // lockfile identity
+  parents: string[];
+};
+
+async function getInitialStats(context: AnalysisContext): Promise<Stats> {
+  const lockfile = context.lockfile;
+
+  if (!lockfile) {
+    throw new Error('No package-lock.json found.');
+  }
+
+  const installSize = await context.fs.getInstallSize();
+  const root = lockfile.root;
+  const stats: Stats = {
+    name: root.name,
+    version: root.version,
+    installSize,
+    dependencyCount: {
+      production: root.dependencies.length,
+      development: root.devDependencies.length,
+      esm: 0,
+      cjs: 0,
+      duplicate: 0
+    }
+  };
+  return stats;
+}
+
+function exportOutput(
+  stats: Stats,
+  duplicateDependencies: Map<string, ResolvedDependency[]>,
+  cjsDependencies: number,
+  esmDependencies: number
+) {
+  const messages: Message[] = [];
+  stats.dependencyCount.cjs = cjsDependencies;
+  stats.dependencyCount.esm = esmDependencies;
+
+  if (duplicateDependencies.size > 0) {
+    stats.dependencyCount.duplicate = duplicateDependencies.size;
+
+    for (const duplicate of duplicateDependencies.values()) {
+      const severityColor = colors.green;
+
+      let message = `${severityColor('[duplicate dependency]')} ${colors.bold(duplicate[0].name)} has ${duplicate.length} installed versions:`;
+
+      for (const version of duplicate) {
+        for (const parent of version.parents) {
+          message += `\n ${colors.gray(version.version)} via ${colors.gray(parent)}`;
+        }
+      }
+      message += '\n';
+
+      // if (duplicate.suggestions && duplicate.suggestions.length > 0) {
+      //   message += '\nSuggestions:';
+      //   for (const suggestion of duplicate.suggestions) {
+      //     message += `    ${colors.blue('💡')} ${colors.gray(suggestion)}`;
+      //   }
+      // }
+
+      messages.push({
+        message,
+        severity: 'warning',
+        score: 0
+      });
+    }
+  }
+
+  return {stats, messages};
+}
+
+function resolveDependencies(
+  lockfile: ParsedLockFile
+): Map<string, ResolvedDependency[]> {
+  const resolvedDependencies: Map<string, ResolvedDependency[]> = new Map();
+  for (const pkg of lockfile.packages) {
+    const entry: ResolvedDependency = {
+      name: pkg.name,
+      version: pkg.version,
+      parents: []
+    };
+    if (!resolvedDependencies.has(pkg.name)) {
+      resolvedDependencies.set(pkg.name, [entry]);
+    } else {
+      const packageEntries = resolvedDependencies.get(pkg.name);
+      if (!packageEntries?.some((x) => x.version === pkg.version)) {
+        packageEntries?.push(entry);
+      }
+    }
+  }
+  return resolvedDependencies;
+}
+
+async function computeParents(
+  lockfile: ParsedLockFile,
+  duplicateDependencies: Map<string, ResolvedDependency[]>
+) {
+  const visitorFn: VisitorFn = (node, parent, path) => {
+    if (!duplicateDependencies.has(node.name) || !path) {
+      return;
+    }
+    const resolvedDependencies = duplicateDependencies.get(node.name);
+    if (!resolvedDependencies) {
+      return;
+    }
+
+    //get the correct version
+    const version = resolvedDependencies.find(
+      (x) => x.version === node.version
+    );
+    if (!version) {
+      return;
+    }
+    if (!parent) {
+      return;
+    }
+
+    const parentPath = `${parent.name}@${parent.version}`;
+    if (version.parents.includes(parentPath)) {
+      return;
+    }
+
+    version.parents.push(parentPath);
+  };
+  const visitor = {
+    dependency: visitorFn,
+    devDependency: visitorFn,
+    optionalDependency: visitorFn
+  };
+
+  traverse(lockfile.root, visitor);
+}
+
+export async function runDependencyAnalysisNEW(
+  context: AnalysisContext
+): Promise<ReportPluginResult> {
+  const lockfile = context.lockfile;
+
+  if (!lockfile) {
+    throw new Error('No package-lock.json found.');
+  }
+
+  const stats: Stats = await getInitialStats(context);
+
+  const resolvedDependencies = resolveDependencies(lockfile);
+  const duplicateDependencies: Map<string, ResolvedDependency[]> = new Map();
+  for (const [packageName, dependencies] of resolvedDependencies) {
+    if (dependencies.length <= 1) {
+      continue;
+    }
+    duplicateDependencies.set(packageName, dependencies);
+  }
+
+  await computeParents(lockfile, duplicateDependencies);
+
+  return exportOutput(stats, duplicateDependencies, 0, 0);
 }
