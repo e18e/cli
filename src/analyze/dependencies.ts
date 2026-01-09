@@ -334,7 +334,6 @@ export async function runDependencyAnalysis(
 type ResolvedDependency = {
   name: string;
   version: string;
-  //key: string; // lockfile identity
   parents: string[];
 };
 
@@ -354,8 +353,8 @@ async function getInitialStats(context: AnalysisContext): Promise<Stats> {
     dependencyCount: {
       production: root.dependencies.length,
       development: root.devDependencies.length,
-      esm: 0,
       cjs: 0,
+      esm: 0,
       duplicate: 0
     }
   };
@@ -364,47 +363,73 @@ async function getInitialStats(context: AnalysisContext): Promise<Stats> {
 
 function exportOutput(
   stats: Stats,
-  duplicateDependencies: Map<string, ResolvedDependency[]>,
-  cjsDependencies: number,
-  esmDependencies: number
+  duplicateDependencies: Map<string, ResolvedDependency[]>
 ) {
   const messages: Message[] = [];
-  stats.dependencyCount.cjs = cjsDependencies;
-  stats.dependencyCount.esm = esmDependencies;
+  if (duplicateDependencies.size === 0) {
+    return {stats, messages};
+  }
 
-  if (duplicateDependencies.size > 0) {
-    stats.dependencyCount.duplicate = duplicateDependencies.size;
+  stats.dependencyCount.duplicate = duplicateDependencies.size;
 
-    for (const duplicate of duplicateDependencies.values()) {
-      const severityColor = colors.green;
+  for (const duplicate of duplicateDependencies.values()) {
+    const severityColor = colors.green;
+    let message = `${severityColor('[duplicate dependency]')} ${colors.bold(duplicate[0].name)} has ${duplicate.length} installed versions:`;
 
-      let message = `${severityColor('[duplicate dependency]')} ${colors.bold(duplicate[0].name)} has ${duplicate.length} installed versions:`;
-
-      for (const version of duplicate) {
-        for (const parent of version.parents) {
-          message += `\n ${colors.gray(version.version)} via ${colors.gray(parent)}`;
-        }
-      }
-      message += '\n';
-
-      // if (duplicate.suggestions && duplicate.suggestions.length > 0) {
-      //   message += '\nSuggestions:';
-      //   for (const suggestion of duplicate.suggestions) {
-      //     message += `    ${colors.blue('💡')} ${colors.gray(suggestion)}`;
-      //   }
-      // }
-
-      messages.push({
-        message,
-        severity: 'warning',
-        score: 0
-      });
+    for (const version of duplicate) {
+      message += `\n${colors.yellow(version.version)} via the following ${version.parents.length} package(s) ${colors.blue(version.parents.join(', '))}`;
     }
+
+    const suggestions = generateSuggestionsForDuplicate(duplicate);
+
+    if (suggestions.length > 0) {
+      message += '\n💡 Suggestions';
+      for (const suggestion of suggestions) {
+        message += `${colors.gray(suggestion)}`;
+      }
+    }
+    message += '\n';
+    messages.push({
+      message,
+      severity: 'warning',
+      score: 0
+    });
   }
 
   return {stats, messages};
 }
 
+/**
+ * Generates suggestions for resolving duplicates
+ */
+function generateSuggestionsForDuplicate(
+  resolvedDependencies: ResolvedDependency[]
+): string[] {
+  const suggestions: string[] = [];
+
+  // Find the package version with the most parents
+  const mostCommonVersion = resolvedDependencies.sort(
+    (a, b) => b.parents.length - a.parents.length
+  )[0];
+
+  if (mostCommonVersion?.parents.length > 1) {
+    suggestions.push(
+      `\n- Consider standardizing on version ${mostCommonVersion.version} as this version is the most commonly used.`
+    );
+  }
+
+  // Suggest checking for newer versions of consuming packages
+  suggestions.push(
+    `\n- Consider upgrading consuming packages as this may resolve this duplicate version.`
+  );
+
+  return suggestions;
+}
+
+/**
+ * Computes a map of package names to their versions
+ * @param lockfile
+ */
 function resolveDependencies(
   lockfile: ParsedLockFile
 ): Map<string, ResolvedDependency[]> {
@@ -427,12 +452,17 @@ function resolveDependencies(
   return resolvedDependencies;
 }
 
+/**
+ * Compute all the parent packages that use each duplicate dependency
+ * @param lockfile
+ * @param duplicateDependencies
+ */
 async function computeParents(
   lockfile: ParsedLockFile,
   duplicateDependencies: Map<string, ResolvedDependency[]>
 ) {
-  const visitorFn: VisitorFn = (node, parent, path) => {
-    if (!duplicateDependencies.has(node.name) || !path) {
+  const visitorFn: VisitorFn = (node, parent, _path) => {
+    if (!duplicateDependencies.has(node.name) || !parent) {
       return;
     }
     const resolvedDependencies = duplicateDependencies.get(node.name);
@@ -445,9 +475,6 @@ async function computeParents(
       (x) => x.version === node.version
     );
     if (!version) {
-      return;
-    }
-    if (!parent) {
       return;
     }
 
@@ -467,6 +494,11 @@ async function computeParents(
   traverse(lockfile.root, visitor);
 }
 
+/**
+ * Find duplicate packages and output suggested fixes
+ * @param context
+ * @returns
+ */
 export async function runDependencyAnalysisNEW(
   context: AnalysisContext
 ): Promise<ReportPluginResult> {
@@ -489,5 +521,5 @@ export async function runDependencyAnalysisNEW(
 
   await computeParents(lockfile, duplicateDependencies);
 
-  return exportOutput(stats, duplicateDependencies, 0, 0);
+  return exportOutput(stats, duplicateDependencies);
 }
