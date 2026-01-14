@@ -17,7 +17,7 @@ export async function runDuplicateDependencyAnalysis(
   const lockfile = context.lockfile;
 
   if (!lockfile) {
-    throw new Error('No package-lock.json found.');
+    throw new Error('No lock file found.');
   }
 
   const duplicateDependencies = resolveDuplicateDependencies(lockfile);
