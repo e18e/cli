@@ -26,7 +26,8 @@ export async function runDuplicateDependencyAnalysis(
 }
 
 /**
- * Computes a map of package names to their unique versions and then finds the packages with multiple versions
+ * Computes a map of package names to their unique versions using the lock file
+ * It returns just the packages with multiple versions
  * @param lockfile
  */
 function resolveDuplicateDependencies(
@@ -42,8 +43,11 @@ function resolveDuplicateDependencies(
       resolvedDependencies.set(pkg.name, [entry]);
     } else {
       const packageEntries = resolvedDependencies.get(pkg.name);
-      if (!packageEntries?.some((x) => x.version === pkg.version)) {
-        packageEntries?.push(entry);
+      if (
+        packageEntries &&
+        !packageEntries.some((x) => x.version === pkg.version)
+      ) {
+        packageEntries.push(entry);
       }
     }
   }
@@ -77,7 +81,7 @@ async function computeParents(
       return;
     }
 
-    //get the correct version
+    // get the correct version
     const version = resolvedVersions.find((x) => x.version === node.version);
     if (!version) {
       return;
