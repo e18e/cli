@@ -12,19 +12,17 @@ import type {
 } from '../types.js';
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
-import {
-  runDependencyAnalysis,
-  runDependencyAnalysisNEW
-} from './dependencies.js';
+import {runDependencyAnalysis} from './dependencies.js';
 import {runPlugins} from '../plugin-runner.js';
 import {getPackageJson, detectLockfile} from '../utils/package-json.js';
 import {parse as parseLockfile} from 'lockparse';
+import {runDuplicateDependencyAnalysis} from './duplicate-dependencies.js';
 
 const plugins: ReportPlugin[] = [
   runPublint,
   runReplacements,
   runDependencyAnalysis,
-  runDependencyAnalysisNEW
+  runDuplicateDependencyAnalysis
 ];
 
 async function computeInfo(fileSystem: FileSystem) {
