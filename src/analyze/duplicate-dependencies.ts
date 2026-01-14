@@ -3,7 +3,6 @@ import {ParsedLockFile, traverse, VisitorFn} from 'lockparse';
 import {AnalysisContext, Message, ReportPluginResult} from '../types.js';
 
 type Version = {
-  name: string;
   version: string;
   parents: string[];
 };
@@ -36,7 +35,6 @@ function resolveDuplicateDependencies(
   const resolvedDependencies: Map<string, Version[]> = new Map();
   for (const pkg of lockfile.packages) {
     const entry: Version = {
-      name: pkg.name,
       version: pkg.version,
       parents: []
     };
