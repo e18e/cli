@@ -2,10 +2,10 @@ import colors from 'picocolors';
 import {ParsedLockFile, traverse, VisitorFn} from 'lockparse';
 import {AnalysisContext, Message, ReportPluginResult} from '../types.js';
 
-type Version = {
+interface Version {
   version: string;
   parents: string[];
-};
+}
 
 /**
  * Outputs packages with duplicate versions and suggest possible fixes
