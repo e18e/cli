@@ -53,7 +53,7 @@ export interface Replacement {
 }
 
 export interface ReportPluginResult {
-  stats?: Stats;
+  stats?: Partial<Stats>;
   messages: Message[];
 }
 

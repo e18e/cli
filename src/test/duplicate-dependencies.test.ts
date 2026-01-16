@@ -1,11 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest';
 import {LocalFileSystem} from '../local-file-system.js';
-import {
-  createTempDir,
-  cleanupTempDir,
-  createTestPackageWithDependencies,
-  type TestPackage
-} from './utils.js';
+import {createTempDir, cleanupTempDir} from './utils.js';
 import type {AnalysisContext} from '../types.js';
 import {runDuplicateDependencyAnalysis} from '../analyze/duplicate-dependencies.js';
 import {ParsedDependency} from 'lockparse';

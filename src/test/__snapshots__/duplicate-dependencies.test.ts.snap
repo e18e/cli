@@ -15,6 +15,15 @@ exports[`Duplicate Dependency Detection > should detect multiple versions 1`] = 
       "severity": "warning",
     },
   ],
+  "stats": {
+    "extraStats": [
+      {
+        "label": "Duplicate Dependency Count",
+        "name": "duplicateDependencyCount",
+        "value": 1,
+      },
+    ],
+  },
 }
 `;
 
