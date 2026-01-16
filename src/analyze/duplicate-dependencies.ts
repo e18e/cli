@@ -105,8 +105,17 @@ async function computeParents(
 
 function exportOutput(duplicateDependencies: Map<string, Version[]>) {
   const messages: Message[] = [];
+  const stats: Partial<Stats> = {
+    extraStats: [
+      {
+        name: 'duplicateDependencyCount',
+        value: duplicateDependencies.size,
+        label: 'Duplicate Dependency Count'
+      }
+    ]
+  };
   if (duplicateDependencies.size === 0) {
-    return {messages};
+    return {stats, messages};
   }
 
   for (const [packageName, duplicate] of duplicateDependencies) {
@@ -132,16 +141,6 @@ function exportOutput(duplicateDependencies: Map<string, Version[]>) {
       score: 0
     });
   }
-
-  const stats: Partial<Stats> = {
-    extraStats: [
-      {
-        name: 'duplicateDependencyCount',
-        value: duplicateDependencies.size,
-        label: 'Duplicate Dependency Count'
-      }
-    ]
-  };
 
   return {stats, messages};
 }

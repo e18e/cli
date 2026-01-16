@@ -30,5 +30,14 @@ exports[`Duplicate Dependency Detection > should detect multiple versions 1`] = 
 exports[`Duplicate Dependency Detection > should not detect duplicates when there are none 1`] = `
 {
   "messages": [],
+  "stats": {
+    "extraStats": [
+      {
+        "label": "Duplicate Dependency Count",
+        "name": "duplicateDependencyCount",
+        "value": 0,
+      },
+    ],
+  },
 }
 `;
