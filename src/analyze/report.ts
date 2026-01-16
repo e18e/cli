@@ -49,7 +49,6 @@ export async function report(options: Options) {
       production: 0,
       development: 0,
       cjs: 0,
-      duplicate: 0,
       esm: 0
     },
     extraStats

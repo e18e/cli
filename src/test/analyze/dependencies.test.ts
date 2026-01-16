@@ -30,7 +30,6 @@ describe('analyzeDependencies (local)', () => {
         dependencyCount: {
           cjs: 0,
           esm: 0,
-          duplicate: 0,
           production: 0,
           development: 0
         },

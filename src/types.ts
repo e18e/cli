@@ -24,7 +24,6 @@ export interface Stats {
     development: number;
     cjs: number;
     esm: number;
-    duplicate: number;
   };
   extraStats?: Stat[];
 }

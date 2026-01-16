@@ -30,7 +30,6 @@ describe('Duplicate Dependency Detection', () => {
         dependencyCount: {
           production: 0,
           development: 0,
-          duplicate: 0,
           esm: 0,
           cjs: 0
         },
