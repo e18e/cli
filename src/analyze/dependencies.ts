@@ -23,17 +23,6 @@ export async function runDependencyAnalysis(
   const installSize = await context.fs.getInstallSize();
   const prodDependencies = Object.keys(pkg.dependencies || {}).length;
   const devDependencies = Object.keys(pkg.devDependencies || {}).length;
-  const stats: Stats = {
-    name: pkg.name,
-    version: pkg.version,
-    installSize,
-    dependencyCount: {
-      production: prodDependencies,
-      development: devDependencies,
-      esm: 0,
-      cjs: 0
-    }
-  };
 
   let cjsDependencies = 0;
   let esmDependencies = 0;
@@ -84,8 +73,17 @@ export async function runDependencyAnalysis(
   // Start traversal from root
   await traverse('/package.json', 0, 'root');
 
-  stats.dependencyCount.cjs = cjsDependencies;
-  stats.dependencyCount.esm = esmDependencies;
+  const stats: Partial<Stats> = {
+    name: pkg.name,
+    version: pkg.version,
+    installSize,
+    dependencyCount: {
+      production: prodDependencies,
+      development: devDependencies,
+      esm: esmDependencies,
+      cjs: cjsDependencies
+    }
+  };
 
   return {stats, messages};
 }
