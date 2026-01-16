@@ -3,43 +3,49 @@
 exports[`CLI > should display package report 1`] = `
 "[36me18e[39m (cli <version>)
 
-[90mT[39m  Analyzing...
-[90m|[39m
-[34m•[39m  Summary
-[90m|[39m  [36mPackage Name[39m                mock-package
-[90m|[39m  [36mVersion[39m                     1.0.0
-[90m|[39m  [36mInstall Size[39m                53.0 B
-[90m|[39m  [36mDependencies[39m                1 (1 production, 0 development)
-[90m|[39m  [36mES Modules[39m                  100% (1 ESM, 0 CJS)
-[90m|[39m  [36mDuplicate Dependency Count[39m  0
-[90m|[39m
-[34m•[39m  Results:
-[90m|[39m
-[90m|[39m
-[90m—[39m  Done!
+[90m┌[39m  Analyzing...
+[90m│[39m
+[34m●[39m  Summary
+[90m│[39m  [36mPackage Name[39m                mock-package
+[90m│[39m  [36mVersion[39m                     1.0.0
+[90m│[39m  [36mInstall Size[39m                53.0 B
+[90m│[39m  [36mDependencies[39m                1 (1 production, 0 development)
+[90m│[39m  [36mES Modules[39m                  100% (1 ESM, 0 CJS)
+[90m│[39m  [36mDuplicate Dependency Count[39m  0
+[90m│[39m
+[34m●[39m  Results:
+[90m│[39m
+[90m│[39m
+[90m└[39m  Done!
 
 "
 `;
 
-exports[`CLI > should display package report 2`] = `""`;
+exports[`CLI > should display package report 2`] = `
+"Debugger listening on ws://127.0.0.1:60355/7104db3a-6048-4275-b117-855e57a4546d
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+Waiting for the debugger to disconnect...
+"
+`;
 
 exports[`CLI > should run successfully with default options 1`] = `
 "[36me18e[39m (cli <version>)
 
-[90mT[39m  Analyzing...
-[90m|[39m
-[34m•[39m  Summary
-[90m|[39m  [36mPackage Name[39m                mock-package
-[90m|[39m  [36mVersion[39m                     1.0.0
-[90m|[39m  [36mInstall Size[39m                53.0 B
-[90m|[39m  [36mDependencies[39m                1 (1 production, 0 development)
-[90m|[39m  [36mES Modules[39m                  100% (1 ESM, 0 CJS)
-[90m|[39m  [36mDuplicate Dependency Count[39m  0
-[90m|[39m
-[34m•[39m  Results:
-[90m|[39m
-[90m|[39m
-[90m—[39m  Done!
+[90m┌[39m  Analyzing...
+[90m│[39m
+[34m●[39m  Summary
+[90m│[39m  [36mPackage Name[39m                mock-package
+[90m│[39m  [36mVersion[39m                     1.0.0
+[90m│[39m  [36mInstall Size[39m                53.0 B
+[90m│[39m  [36mDependencies[39m                1 (1 production, 0 development)
+[90m│[39m  [36mES Modules[39m                  100% (1 ESM, 0 CJS)
+[90m│[39m  [36mDuplicate Dependency Count[39m  0
+[90m│[39m
+[34m●[39m  Results:
+[90m│[39m
+[90m│[39m
+[90m└[39m  Done!
 
 "
 `;
