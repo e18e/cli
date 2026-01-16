@@ -1,28 +1,12 @@
 import {analyzePackageModuleType} from '../compute-type.js';
 import type {
-  PackageJsonLike,
   ReportPluginResult,
   Message,
   Stats,
   AnalysisContext
 } from '../types.js';
-import type {FileSystem} from '../file-system.js';
 import {normalizePath} from '../utils/path.js';
-
-// TODO Move this to a utilities file
-/**
- * Attempts to parse a `package.json` file
- */
-async function parsePackageJson(
-  fileSystem: FileSystem,
-  path: string
-): Promise<PackageJsonLike | null> {
-  try {
-    return JSON.parse(await fileSystem.readFile(path));
-  } catch {
-    return null;
-  }
-}
+import {getPackageJson} from '../utils/package-json.js';
 
 export async function runDependencyAnalysis(
   context: AnalysisContext
@@ -60,7 +44,7 @@ export async function runDependencyAnalysis(
     depth: number,
     pathInTree: string
   ) {
-    const depPkg = await parsePackageJson(context.fs, packagePath);
+    const depPkg = await getPackageJson(context.fs, packagePath);
     if (!depPkg || !depPkg.name) return;
 
     // Only count CJS/ESM for non-root packages
@@ -83,7 +67,7 @@ export async function runDependencyAnalysis(
 
       if (!packageMatch) {
         for (const packageFile of packageFiles) {
-          const depPkg = await parsePackageJson(context.fs, packageFile);
+          const depPkg = await getPackageJson(context.fs, packageFile);
           if (depPkg !== null && depPkg.name === depName) {
             packageMatch = packageFile;
             break;

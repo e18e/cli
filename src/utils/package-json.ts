@@ -4,12 +4,13 @@ import type {FileSystem} from '../file-system.js';
 import type {PackageJsonLike} from '../types.js';
 
 export async function getPackageJson(
-  fileSystem: FileSystem
+  fileSystem: FileSystem,
+  path: string = '/package.json'
 ): Promise<PackageJsonLike | null> {
   let packageJsonText: string;
 
   try {
-    packageJsonText = await fileSystem.readFile('/package.json');
+    packageJsonText = await fileSystem.readFile(path);
   } catch {
     // No package.json found
     return null;
