@@ -5,7 +5,6 @@ import type {FileSystem} from '../file-system.js';
 import type {
   Options,
   ReportPlugin,
-  Stat,
   Stats,
   Message,
   AnalysisContext
@@ -41,19 +40,6 @@ async function computeInfo(fileSystem: FileSystem) {
 export async function report(options: Options) {
   const {root = process.cwd()} = options ?? {};
 
-  const extraStats: Stat[] = [];
-  const stats: Stats = {
-    name: 'unknown',
-    version: 'unknown',
-    dependencyCount: {
-      production: 0,
-      development: 0,
-      cjs: 0,
-      duplicate: 0,
-      esm: 0
-    },
-    extraStats
-  };
   const messages: Message[] = [];
 
   const fileSystem = new LocalFileSystem(root);
@@ -89,6 +75,18 @@ export async function report(options: Options) {
     lockfileFilename,
     packageFile ?? undefined
   );
+
+  const stats: Stats = {
+    name: packageFile.name,
+    version: packageFile.version,
+    dependencyCount: {
+      production: 0,
+      development: 0,
+      cjs: 0,
+      esm: 0
+    },
+    extraStats: []
+  };
 
   const context: AnalysisContext = {
     fs: fileSystem,

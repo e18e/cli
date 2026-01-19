@@ -1,83 +1,28 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`Duplicate Dependency Detection > should detect exact duplicate dependencies 1`] = `
+exports[`Duplicate Dependency Detection > should detect multiple versions 1`] = `
 {
   "messages": [
     {
-      "message": "[34m[duplicate dependency][39m [1mshared-lib[22m has 2 installed versions:
- [90m2.0.0[39m via [90mroot > package-a > shared-lib[39m
- [90m2.0.0[39m via [90mroot > package-b > shared-lib[39m
-Suggestions:    [34m💡[39m [90mConsider standardizing on version 2.0.0 (used by 2 dependencies)[39m    [34m💡[39m [90mCheck if newer versions of consuming packages (package-a, package-b) would resolve this duplicate[39m",
+      "message": "[32m[duplicate dependency][39m [1mshared-lib[22m has 2 installed versions:
+[33m1.0.0[39m via the following 2 package(s) [34mpackage-a@1.0.0, package-c@1.0.0[39m
+[33m2.0.0[39m via the following 1 package(s) [34mpackage-b@1.0.0[39m
+💡 Suggestions[90m
+- Consider standardizing on version 1.0.0 as this version is the most commonly used.[39m[90m
+- Consider upgrading consuming packages as this may resolve this duplicate version.[39m
+",
       "score": 0,
       "severity": "warning",
     },
   ],
   "stats": {
-    "dependencyCount": {
-      "cjs": 4,
-      "development": 0,
-      "duplicate": 1,
-      "esm": 0,
-      "production": 2,
-    },
-    "installSize": 1151,
-    "name": "test-package",
-    "version": "1.0.0",
-  },
-}
-`;
-
-exports[`Duplicate Dependency Detection > should detect version conflicts 1`] = `
-{
-  "messages": [
-    {
-      "message": "[33m[duplicate dependency][39m [1mshared-lib[22m has 3 installed versions:
- [90m1.0.0[39m via [90mroot > package-a > shared-lib[39m
- [90m1.0.0[39m via [90mroot > package-b > shared-lib[39m
- [90m2.0.0[39m via [90mshared-lib[39m
-Suggestions:    [34m💡[39m [90mConsider standardizing on version 1.0.0 (used by 2 dependencies)[39m    [34m💡[39m [90mCheck if newer versions of consuming packages (package-a, package-b) would resolve this duplicate[39m",
-      "score": 0,
-      "severity": "warning",
-    },
-  ],
-  "stats": {
-    "dependencyCount": {
-      "cjs": 4,
-      "development": 0,
-      "duplicate": 1,
-      "esm": 0,
-      "production": 2,
-    },
-    "installSize": 1416,
-    "name": "test-package",
-    "version": "1.0.0",
-  },
-}
-`;
-
-exports[`Duplicate Dependency Detection > should generate suggestions for duplicates 1`] = `
-{
-  "messages": [
-    {
-      "message": "[34m[duplicate dependency][39m [1mshared-lib[22m has 2 installed versions:
- [90m2.0.0[39m via [90mroot > package-a > shared-lib[39m
- [90m2.0.0[39m via [90mroot > package-b > shared-lib[39m
-Suggestions:    [34m💡[39m [90mConsider standardizing on version 2.0.0 (used by 2 dependencies)[39m    [34m💡[39m [90mCheck if newer versions of consuming packages (package-a, package-b) would resolve this duplicate[39m",
-      "score": 0,
-      "severity": "warning",
-    },
-  ],
-  "stats": {
-    "dependencyCount": {
-      "cjs": 4,
-      "development": 0,
-      "duplicate": 1,
-      "esm": 0,
-      "production": 2,
-    },
-    "installSize": 1151,
-    "name": "test-package",
-    "version": "1.0.0",
+    "extraStats": [
+      {
+        "label": "Duplicate Dependency Count",
+        "name": "duplicateDependencyCount",
+        "value": 1,
+      },
+    ],
   },
 }
 `;
@@ -86,16 +31,13 @@ exports[`Duplicate Dependency Detection > should not detect duplicates when ther
 {
   "messages": [],
   "stats": {
-    "dependencyCount": {
-      "cjs": 1,
-      "development": 0,
-      "duplicate": 0,
-      "esm": 0,
-      "production": 1,
-    },
-    "installSize": 262,
-    "name": "test-package",
-    "version": "1.0.0",
+    "extraStats": [
+      {
+        "label": "Duplicate Dependency Count",
+        "name": "duplicateDependencyCount",
+        "value": 0,
+      },
+    ],
   },
 }
 `;

@@ -1,16 +1,9 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest';
-import {runDependencyAnalysis} from '../analyze/dependencies.js';
 import {LocalFileSystem} from '../local-file-system.js';
-import {
-  createTempDir,
-  cleanupTempDir,
-  createTestPackage,
-  createTestPackageWithDependencies,
-  type TestPackage
-} from './utils.js';
+import {createTempDir, cleanupTempDir} from './utils.js';
 import type {AnalysisContext} from '../types.js';
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import {runDuplicateDependencyAnalysis} from '../analyze/duplicate-dependencies.js';
+import {ParsedDependency} from 'lockparse';
 
 describe('Duplicate Dependency Detection', () => {
   let tempDir: string;
@@ -20,6 +13,62 @@ describe('Duplicate Dependency Detection', () => {
   beforeEach(async () => {
     tempDir = await createTempDir();
     fileSystem = new LocalFileSystem(tempDir);
+  });
+
+  afterEach(async () => {
+    await cleanupTempDir(tempDir);
+  });
+
+  it('should detect multiple versions', async () => {
+    const sharedLibv1: ParsedDependency = {
+      name: 'shared-lib',
+      version: '1.0.0',
+      dependencies: [],
+      devDependencies: [],
+      optionalDependencies: [],
+      peerDependencies: []
+    };
+    const sharedLibv2: ParsedDependency = {
+      name: 'shared-lib',
+      version: '2.0.0',
+      dependencies: [],
+      devDependencies: [],
+      optionalDependencies: [],
+      peerDependencies: []
+    };
+    const packageA: ParsedDependency = {
+      name: 'package-a',
+      version: '1.0.0',
+      dependencies: [sharedLibv1],
+      devDependencies: [],
+      peerDependencies: [],
+      optionalDependencies: []
+    };
+    const packageB: ParsedDependency = {
+      name: 'package-b',
+      version: '1.0.0',
+      dependencies: [sharedLibv2],
+      devDependencies: [],
+      peerDependencies: [],
+      optionalDependencies: []
+    };
+    const packageC: ParsedDependency = {
+      name: 'package-c',
+      version: '1.0.0',
+      dependencies: [sharedLibv1],
+      devDependencies: [],
+      peerDependencies: [],
+      optionalDependencies: []
+    };
+    const testPkg: ParsedDependency = {
+      name: 'test-package',
+      version: '1.0.0',
+      dependencies: [packageA, packageB, packageC],
+      devDependencies: [],
+      optionalDependencies: [],
+      peerDependencies: []
+    };
+    //set the context
     context = {
       fs: fileSystem,
       root: '.',
@@ -30,7 +79,6 @@ describe('Duplicate Dependency Detection', () => {
         dependencyCount: {
           production: 0,
           development: 0,
-          duplicate: 0,
           esm: 0,
           cjs: 0
         },
@@ -38,11 +86,18 @@ describe('Duplicate Dependency Detection', () => {
       },
       lockfile: {
         type: 'npm',
-        packages: [],
+        packages: [
+          testPkg,
+          packageA,
+          packageB,
+          packageC,
+          sharedLibv1,
+          sharedLibv2
+        ],
         root: {
-          name: 'test-package',
+          name: 'root-package',
           version: '1.0.0',
-          dependencies: [],
+          dependencies: [testPkg],
           devDependencies: [],
           optionalDependencies: [],
           peerDependencies: []
@@ -53,169 +108,81 @@ describe('Duplicate Dependency Detection', () => {
         version: '1.0.0'
       }
     };
-  });
 
-  afterEach(async () => {
-    await cleanupTempDir(tempDir);
-  });
-
-  it('should detect exact duplicate dependencies', async () => {
-    const rootPackage: TestPackage = {
-      name: 'test-package',
-      version: '1.0.0',
-      dependencies: {
-        'package-a': '1.0.0',
-        'package-b': '1.0.0'
-      }
-    };
-
-    const dependencies: TestPackage[] = [
-      {
-        name: 'package-a',
-        version: '1.0.0',
-        dependencies: {
-          'shared-lib': '2.0.0'
-        }
-      },
-      {
-        name: 'package-b',
-        version: '1.0.0',
-        dependencies: {
-          'shared-lib': '2.0.0'
-        }
-      },
-      {
-        name: 'shared-lib',
-        version: '2.0.0'
-      }
-    ];
-
-    await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
-
-    const stats = await runDependencyAnalysis(context);
-
-    expect(stats).toMatchSnapshot();
-  });
-
-  it('should detect version conflicts', async () => {
-    const rootPackage: TestPackage = {
-      name: 'test-package',
-      version: '1.0.0',
-      dependencies: {
-        'package-a': '1.0.0',
-        'package-b': '1.0.0'
-      }
-    };
-
-    // Create root package
-    await createTestPackage(tempDir, rootPackage, {createNodeModules: true});
-
-    // Create package-a with shared-lib v1.0.0
-    const packageADir = path.join(tempDir, 'node_modules', 'package-a');
-    await fs.mkdir(packageADir);
-    await createTestPackage(packageADir, {
-      name: 'package-a',
-      version: '1.0.0',
-      dependencies: {
-        'shared-lib': '1.0.0'
-      }
-    });
-
-    // Create package-b with shared-lib v2.0.0
-    const packageBDir = path.join(tempDir, 'node_modules', 'package-b');
-    await fs.mkdir(packageBDir);
-    await createTestPackage(packageBDir, {
-      name: 'package-b',
-      version: '1.0.0',
-      dependencies: {
-        'shared-lib': '2.0.0'
-      }
-    });
-
-    // Create shared-lib v1.0.0
-    const sharedLibV1Dir = path.join(tempDir, 'node_modules', 'shared-lib');
-    await fs.mkdir(sharedLibV1Dir);
-    await createTestPackage(sharedLibV1Dir, {
-      name: 'shared-lib',
-      version: '1.0.0'
-    });
-
-    // Create shared-lib v2.0.0 in a nested location
-    const sharedLibV2Dir = path.join(
-      tempDir,
-      'node_modules',
-      'package-b',
-      'node_modules',
-      'shared-lib'
-    );
-    await fs.mkdir(sharedLibV2Dir, {recursive: true});
-    await createTestPackage(sharedLibV2Dir, {
-      name: 'shared-lib',
-      version: '2.0.0'
-    });
-
-    const stats = await runDependencyAnalysis(context);
+    const stats = await runDuplicateDependencyAnalysis(context);
 
     expect(stats).toMatchSnapshot();
   });
 
   it('should not detect duplicates when there are none', async () => {
-    const rootPackage: TestPackage = {
-      name: 'test-package',
+    const sharedLibv1: ParsedDependency = {
+      name: 'shared-lib',
       version: '1.0.0',
-      dependencies: {
-        'package-a': '1.0.0'
-      }
+      dependencies: [],
+      devDependencies: [],
+      optionalDependencies: [],
+      peerDependencies: []
     };
 
-    const dependencies: TestPackage[] = [
-      {
-        name: 'package-a',
+    const packageA: ParsedDependency = {
+      name: 'package-a',
+      version: '1.0.0',
+      dependencies: [sharedLibv1],
+      devDependencies: [],
+      peerDependencies: [],
+      optionalDependencies: []
+    };
+    const packageB: ParsedDependency = {
+      name: 'package-b',
+      version: '1.0.0',
+      dependencies: [sharedLibv1],
+      devDependencies: [],
+      peerDependencies: [],
+      optionalDependencies: []
+    };
+    const testPkg: ParsedDependency = {
+      name: 'test-package',
+      version: '1.0.0',
+      dependencies: [packageA, packageB],
+      devDependencies: [],
+      optionalDependencies: [],
+      peerDependencies: []
+    };
+    //set the context
+    context = {
+      fs: fileSystem,
+      root: '.',
+      messages: [],
+      stats: {
+        name: 'unknown',
+        version: 'unknown',
+        dependencyCount: {
+          production: 0,
+          development: 0,
+          esm: 0,
+          cjs: 0
+        },
+        extraStats: []
+      },
+      lockfile: {
+        type: 'npm',
+        packages: [testPkg, packageA, packageB, sharedLibv1],
+        root: {
+          name: 'root-package',
+          version: '1.0.0',
+          dependencies: [testPkg],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
         version: '1.0.0'
       }
-    ];
-
-    await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
-
-    const stats = await runDependencyAnalysis(context);
-
-    expect(stats).toMatchSnapshot();
-  });
-
-  it('should generate suggestions for duplicates', async () => {
-    const rootPackage: TestPackage = {
-      name: 'test-package',
-      version: '1.0.0',
-      dependencies: {
-        'package-a': '1.0.0',
-        'package-b': '1.0.0'
-      }
     };
 
-    const dependencies: TestPackage[] = [
-      {
-        name: 'package-a',
-        version: '1.0.0',
-        dependencies: {
-          'shared-lib': '2.0.0'
-        }
-      },
-      {
-        name: 'package-b',
-        version: '1.0.0',
-        dependencies: {
-          'shared-lib': '2.0.0'
-        }
-      },
-      {
-        name: 'shared-lib',
-        version: '2.0.0'
-      }
-    ];
-
-    await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
-
-    const stats = await runDependencyAnalysis(context);
+    const stats = await runDuplicateDependencyAnalysis(context);
 
     expect(stats).toMatchSnapshot();
   });

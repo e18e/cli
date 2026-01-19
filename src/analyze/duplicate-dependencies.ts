@@ -1,6 +1,6 @@
 import colors from 'picocolors';
 import {ParsedLockFile, traverse, VisitorFn} from 'lockparse';
-import {AnalysisContext, Message, ReportPluginResult} from '../types.js';
+import {AnalysisContext, Message, ReportPluginResult, Stats} from '../types.js';
 
 interface Version {
   version: string;
@@ -105,8 +105,17 @@ async function computeParents(
 
 function exportOutput(duplicateDependencies: Map<string, Version[]>) {
   const messages: Message[] = [];
+  const stats: Partial<Stats> = {
+    extraStats: [
+      {
+        name: 'duplicateDependencyCount',
+        value: duplicateDependencies.size,
+        label: 'Duplicate Dependency Count'
+      }
+    ]
+  };
   if (duplicateDependencies.size === 0) {
-    return {messages};
+    return {stats, messages};
   }
 
   for (const [packageName, duplicate] of duplicateDependencies) {
@@ -133,7 +142,7 @@ function exportOutput(duplicateDependencies: Map<string, Version[]>) {
     });
   }
 
-  return {messages};
+  return {stats, messages};
 }
 
 /**

@@ -30,7 +30,6 @@ describe('analyzeDependencies (local)', () => {
         dependencyCount: {
           cjs: 0,
           esm: 0,
-          duplicate: 0,
           production: 0,
           development: 0
         },
@@ -105,6 +104,12 @@ describe('analyzeDependencies (local)', () => {
         type: 'commonjs'
       }
     ];
+    //update package json on context
+    context.packageFile.dependencies = {
+      'cjs-package': '1.0.0',
+      'esm-package': '1.0.0'
+    };
+    context.packageFile.devDependencies = {'dev-package': '1.0.0'};
 
     await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
 
@@ -113,6 +118,10 @@ describe('analyzeDependencies (local)', () => {
   });
 
   it('should handle symlinks', async () => {
+    //update package json on context
+    context.packageFile.dependencies = {
+      'test-package': '1.0.0'
+    };
     // Create root package
     await createTestPackage(
       tempDir,
@@ -147,6 +156,10 @@ describe('analyzeDependencies (local)', () => {
   });
 
   it('should handle missing node_modules', async () => {
+    //update package json on context
+    context.packageFile.dependencies = {
+      'test-package': '1.0.0'
+    };
     await createTestPackage(tempDir, {
       name: 'test-package',
       version: '1.0.0',
