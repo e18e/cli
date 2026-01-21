@@ -78,7 +78,7 @@ export async function report(options: Options) {
 
   const stats: Stats = {
     name: packageFile.name || 'unknown',
-    version: packageFile.version || 'unknown',
+    version: packageFile.version || '0.0.0',
     dependencyCount: {
       production: 0,
       development: 0,
