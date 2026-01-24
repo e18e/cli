@@ -6,4 +6,4 @@ export type {Message, Options, PackageModuleType, Stat};
 export {report} from './analyze/report.js';
 
 // Core modules - reusable logic for external tools
-export * from './core/index.js';
+export * from './core/trust.js';

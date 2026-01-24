@@ -18,26 +18,6 @@ export type ProvenanceStatus =
   | 'none';
 
 /**
- * Metadata about an npm package version, containing provenance information.
- * This is a subset of the full npm registry metadata.
- */
-export interface PackageProvenanceMetadata {
-  name: string;
-  version: string;
-  dist?: {
-    attestations?: {
-      url: string;
-      provenance?: unknown;
-    };
-  };
-  _npmUser?: {
-    name: string;
-    email: string;
-    trustedPublisher?: unknown;
-  };
-}
-
-/**
  * Result of computing the minimum trust level across a set of packages.
  */
 export interface MinTrustLevelResult {
@@ -58,12 +38,13 @@ export interface TrustSummary {
 /**
  * Determines the provenance status of a package from its metadata.
  *
- * @param meta - Package metadata from the npm registry
+ * @param meta - Package metadata from the npm registry (must have `dist?.attestations?.provenance` and/or `_npmUser?.trustedPublisher`)
  * @returns The provenance status of the package
  */
-export function getProvenance(
-  meta: PackageProvenanceMetadata
-): ProvenanceStatus {
+export function getProvenance(meta: {
+  dist?: { attestations?: { provenance?: unknown } };
+  _npmUser?: { trustedPublisher?: unknown };
+}): ProvenanceStatus {
   if (meta._npmUser?.trustedPublisher) {
     return 'trusted-with-provenance';
   }
