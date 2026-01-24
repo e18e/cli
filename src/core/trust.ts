@@ -42,8 +42,8 @@ export interface TrustSummary {
  * @returns The provenance status of the package
  */
 export function getProvenance(meta: {
-  dist?: { attestations?: { provenance?: unknown } };
-  _npmUser?: { trustedPublisher?: unknown };
+  dist?: {attestations?: {provenance?: unknown}};
+  _npmUser?: {trustedPublisher?: unknown};
 }): ProvenanceStatus {
   if (meta._npmUser?.trustedPublisher) {
     return 'trusted-with-provenance';
