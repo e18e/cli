@@ -11,6 +11,9 @@ const stripVersion = (str: string): string =>
     '(cli <version>)'
   );
 
+const normalizeStderr = (str: string): string =>
+  str.replace(/\(node:\d+\)/g, '(node:<pid>)');
+
 beforeAll(async () => {
   // Create a temporary directory for the test package
   tempDir = await createTempDir();
@@ -80,13 +83,13 @@ describe('CLI', () => {
     }
     expect(code).toBe(0);
     expect(stripVersion(stdout)).toMatchSnapshot();
-    expect(stderr).toBe('');
+    expect(normalizeStderr(stderr)).toMatchSnapshot();
   });
 
   it('should display package report', async () => {
     const {stdout, stderr, code} = await runCliProcess(['analyze'], tempDir);
     expect(code).toBe(0);
     expect(stripVersion(stdout)).toMatchSnapshot();
-    expect(stderr).toMatchSnapshot();
+    expect(normalizeStderr(stderr)).toMatchSnapshot();
   });
 });

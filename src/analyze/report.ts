@@ -81,9 +81,7 @@ export async function report(options: Options) {
     version: packageFile.version || '0.0.0',
     dependencyCount: {
       production: 0,
-      development: 0,
-      cjs: 0,
-      esm: 0
+      development: 0
     },
     extraStats: []
   };

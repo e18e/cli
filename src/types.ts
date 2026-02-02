@@ -22,8 +22,6 @@ export interface Stats {
   dependencyCount: {
     production: number;
     development: number;
-    cjs: number;
-    esm: number;
   };
   extraStats?: Stat[];
 }

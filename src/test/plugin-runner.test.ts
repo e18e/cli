@@ -11,7 +11,7 @@ const fsMock: FileSystem = {
   fileExists: async () => false
 };
 
-const depCounts = {production: 0, development: 0, cjs: 0, esm: 0, duplicate: 0};
+const depCounts = {production: 0, development: 0};
 
 describe('runPlugins', () => {
   it('should aggregate messages and merge stats with extraStats de-dup', async () => {
