@@ -4,12 +4,12 @@ exports[`Duplicate Dependency Detection > should detect multiple versions 1`] = 
 {
   "messages": [
     {
-      "message": "[duplicate dependency] shared-lib has 2 installed versions:
-1.0.0 via the following 2 package(s) package-a@1.0.0, package-c@1.0.0
-2.0.0 via the following 1 package(s) package-b@1.0.0
-💡 Suggestions
-- Consider standardizing on version 1.0.0 as this version is the most commonly used.
-- Consider upgrading consuming packages as this may resolve this duplicate version.
+      "message": "[32m[duplicate dependency][39m [1mshared-lib[22m has 2 installed versions:
+[33m1.0.0[39m via the following 2 package(s) [34mpackage-a@1.0.0, package-c@1.0.0[39m
+[33m2.0.0[39m via the following 1 package(s) [34mpackage-b@1.0.0[39m
+💡 Suggestions[90m
+- Consider standardizing on version 1.0.0 as this version is the most commonly used.[39m[90m
+- Consider upgrading consuming packages as this may resolve this duplicate version.[39m
 ",
       "score": 0,
       "severity": "warning",
