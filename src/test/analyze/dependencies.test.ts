@@ -28,8 +28,6 @@ describe('analyzeDependencies (local)', () => {
         name: 'unknown',
         version: 'unknown',
         dependencyCount: {
-          cjs: 0,
-          esm: 0,
           production: 0,
           development: 0
         },

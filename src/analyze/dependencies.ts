@@ -1,4 +1,3 @@
-import {analyzePackageModuleType} from '../compute-type.js';
 import type {
   ReportPluginResult,
   Message,
@@ -24,28 +23,10 @@ export async function runDependencyAnalysis(
   const prodDependencies = Object.keys(pkg.dependencies || {}).length;
   const devDependencies = Object.keys(pkg.devDependencies || {}).length;
 
-  let cjsDependencies = 0;
-  let esmDependencies = 0;
-
   // Recursively traverse dependencies
-  async function traverse(
-    packagePath: string,
-    depth: number,
-    pathInTree: string
-  ) {
+  async function traverse(packagePath: string, pathInTree: string) {
     const depPkg = await getPackageJson(context.fs, packagePath);
     if (!depPkg || !depPkg.name) return;
-
-    // Only count CJS/ESM for non-root packages
-    if (depth > 0) {
-      const type = analyzePackageModuleType(depPkg);
-      if (type === 'cjs') cjsDependencies++;
-      if (type === 'esm') esmDependencies++;
-      if (type === 'dual') {
-        cjsDependencies++;
-        esmDependencies++;
-      }
-    }
 
     for (const depName of Object.keys(depPkg.dependencies || {})) {
       let packageMatch = packageFiles.find((packageFile) =>
@@ -65,13 +46,13 @@ export async function runDependencyAnalysis(
       }
 
       if (packageMatch) {
-        await traverse(packageMatch, depth + 1, pathInTree + ' > ' + depName);
+        await traverse(packageMatch, pathInTree + ' > ' + depName);
       }
     }
   }
 
   // Start traversal from root
-  await traverse('/package.json', 0, 'root');
+  await traverse('/package.json', 'root');
 
   const stats: Partial<Stats> = {
     name: pkg.name,
@@ -79,9 +60,7 @@ export async function runDependencyAnalysis(
     installSize,
     dependencyCount: {
       production: prodDependencies,
-      development: devDependencies,
-      esm: esmDependencies,
-      cjs: cjsDependencies
+      development: devDependencies
     }
   };
 

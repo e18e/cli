@@ -78,9 +78,7 @@ describe('Duplicate Dependency Detection', () => {
         version: 'unknown',
         dependencyCount: {
           production: 0,
-          development: 0,
-          esm: 0,
-          cjs: 0
+          development: 0
         },
         extraStats: []
       },
@@ -158,9 +156,7 @@ describe('Duplicate Dependency Detection', () => {
         version: 'unknown',
         dependencyCount: {
           production: 0,
-          development: 0,
-          esm: 0,
-          cjs: 0
+          development: 0
         },
         extraStats: []
       },

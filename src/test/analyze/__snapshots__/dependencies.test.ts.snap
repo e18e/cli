@@ -5,9 +5,7 @@ exports[`analyzeDependencies (local) > should analyze dependencies correctly 1`]
   "messages": [],
   "stats": {
     "dependencyCount": {
-      "cjs": 1,
       "development": 1,
-      "esm": 1,
       "production": 2,
     },
     "installSize": 956,
@@ -22,9 +20,7 @@ exports[`analyzeDependencies (local) > should handle empty project 1`] = `
   "messages": [],
   "stats": {
     "dependencyCount": {
-      "cjs": 0,
       "development": 0,
-      "esm": 0,
       "production": 0,
     },
     "installSize": 0,
@@ -39,9 +35,7 @@ exports[`analyzeDependencies (local) > should handle missing node_modules 1`] = 
   "messages": [],
   "stats": {
     "dependencyCount": {
-      "cjs": 0,
       "development": 0,
-      "esm": 0,
       "production": 1,
     },
     "installSize": 0,
@@ -56,9 +50,7 @@ exports[`analyzeDependencies (local) > should handle symlinks 1`] = `
   "messages": [],
   "stats": {
     "dependencyCount": {
-      "cjs": 0,
       "development": 0,
-      "esm": 1,
       "production": 1,
     },
     "installSize": 297,
