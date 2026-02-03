@@ -128,7 +128,9 @@ describe('migrate --all', () => {
       tempDir
     );
     const output = stdout + stderr;
-    expect(output).toContain('No fixable replacements found in project dependencies');
+    expect(output).toContain(
+      'No fixable replacements found in project dependencies'
+    );
     expect(code).toBe(0);
   });
 });
