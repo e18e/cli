@@ -170,7 +170,5 @@ export async function run(ctx: CommandContext<typeof meta>) {
     log.success(`${filename} ${colors.dim(`(${totalMigrations} migrated)`)}`);
   }
 
-  prompts.outro(
-    `Migration complete - ${filesMigratedCount} files migrated.`
-  );
+  prompts.outro(`Migration complete - ${filesMigratedCount} files migrated.`);
 }
