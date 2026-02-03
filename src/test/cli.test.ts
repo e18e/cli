@@ -116,21 +116,24 @@ describe('migrate --all', () => {
       expect(code).toBe(0);
       const output = stdout + stderr;
       expect(output).toContain('Migration complete');
+      expect(output).toContain('files migrated');
       expect(output).toContain('chalk');
     } finally {
       await cleanupTempDir(chalkDir);
     }
   });
 
-  it('should show message when --all is used but no fixable replacements exist in dependencies', async () => {
+  it('should run to completion and show Migration complete when --all has no fixable replacements', async () => {
     const {stdout, stderr, code} = await runCliProcess(
       ['migrate', '--all'],
       tempDir
     );
     const output = stdout + stderr;
+    expect(code).toBe(0);
+    expect(output).toContain('Migration complete');
+    expect(output).toContain('0 files migrated');
     expect(output).toContain(
       'No fixable replacements found in project dependencies'
     );
-    expect(code).toBe(0);
   });
 });

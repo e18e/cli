@@ -68,8 +68,9 @@ export async function run(ctx: CommandContext<typeof meta>) {
       fixableReplacementsTargets.has(rep.from)
     );
     if (selectedReplacements.length === 0) {
-      prompts.cancel('No fixable replacements found in project dependencies.');
-      return;
+      prompts.log.message(
+        'No fixable replacements found in project dependencies.'
+      );
     }
   } else {
     if (targetModules.length === 0) {
@@ -127,6 +128,8 @@ export async function run(ctx: CommandContext<typeof meta>) {
     return;
   }
 
+  let filesMigratedCount = 0;
+
   for (const filename of files) {
     const log = prompts.taskLog({
       title: `${filename}...`,
@@ -161,8 +164,13 @@ export async function run(ctx: CommandContext<typeof meta>) {
       }
       totalMigrations++;
     }
+    if (totalMigrations > 0) {
+      filesMigratedCount++;
+    }
     log.success(`${filename} ${colors.dim(`(${totalMigrations} migrated)`)}`);
   }
 
-  prompts.outro('Migration complete.');
+  prompts.outro(
+    `Migration complete - ${filesMigratedCount} files migrated.`
+  );
 }
