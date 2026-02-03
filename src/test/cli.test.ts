@@ -93,3 +93,42 @@ describe('CLI', () => {
     expect(normalizeStderr(stderr)).toMatchSnapshot();
   });
 });
+
+describe('migrate --all', () => {
+  it('should migrate all fixable replacements with --all --dry-run when project has fixable deps', async () => {
+    const chalkDir = await createTempDir();
+    await createTestPackage(chalkDir, {
+      name: 'chalk-test',
+      version: '1.0.0',
+      type: 'module',
+      main: 'index.js',
+      dependencies: {chalk: '^4.0.0'}
+    });
+    await fs.writeFile(
+      path.join(chalkDir, 'index.js'),
+      "import chalk from 'chalk';\nconsole.log(chalk.cyan('hello'));"
+    );
+    try {
+      const {stdout, stderr, code} = await runCliProcess(
+        ['migrate', '--all', '--dry-run'],
+        chalkDir
+      );
+      expect(code).toBe(0);
+      const output = stdout + stderr;
+      expect(output).toContain('Migration complete');
+      expect(output).toContain('chalk');
+    } finally {
+      await cleanupTempDir(chalkDir);
+    }
+  });
+
+  it('should show message when --all is used but no fixable replacements exist in dependencies', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', '--all'],
+      tempDir
+    );
+    const output = stdout + stderr;
+    expect(output).toContain('No fixable replacements found in project dependencies');
+    expect(code).toBe(0);
+  });
+});

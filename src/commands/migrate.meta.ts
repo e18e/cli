@@ -2,6 +2,12 @@ export const meta = {
   name: 'migrate',
   description: 'Migrate from a package to a more performant alternative.',
   args: {
+    all: {
+      type: 'boolean',
+      default: false,
+      description:
+        'Migrate all fixable replacements that exist in project dependencies.'
+    },
     'dry-run': {
       type: 'boolean',
       default: false,
