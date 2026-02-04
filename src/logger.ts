@@ -1,13 +1,13 @@
-import debug from 'debug';
+import {createDebug, enable} from 'obug';
 
 // Function to enable debug programmatically
 export function enableDebug(pattern: string = 'e18e:*') {
-  debug.enable(pattern);
+  enable(pattern);
 }
 
 // Create debug instances for different parts of the application
-const cliDebug = debug('e18e:cli');
-const fileSystemDebug = debug('e18e:cli:filesystem');
+const cliDebug = createDebug('e18e:cli');
+const fileSystemDebug = cliDebug.extend('filesystem');
 
 // Export the debug instances for use in different modules
 export const logger = {
