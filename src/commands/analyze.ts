@@ -1,7 +1,7 @@
 import {type CommandContext} from 'gunshi';
 import {promises as fsp, type Stats} from 'node:fs';
 import * as prompts from '@clack/prompts';
-import c from 'picocolors';
+import {styleText} from 'node:util';
 import {meta} from './analyze.meta.js';
 import {report} from '../index.js';
 import {enableDebug} from '../logger.js';
@@ -95,9 +95,12 @@ export async function run(ctx: CommandContext<typeof meta>) {
 
   for (const [label, value] of summaryPairs) {
     const paddingSize = longestStatName - label.length + value.length + 2;
-    prompts.log.message(`${c.cyan(`${label}`)}${value.padStart(paddingSize)}`, {
-      spacing: 0
-    });
+    prompts.log.message(
+      `${styleText('cyan', `${label}`)}${value.padStart(paddingSize)}`,
+      {
+        spacing: 0
+      }
+    );
   }
 
   prompts.log.info('Results:');
@@ -113,27 +116,33 @@ export async function run(ctx: CommandContext<typeof meta>) {
 
     // Display errors
     if (errorMessages.length > 0) {
-      prompts.log.message(c.red('Errors:'), {spacing: 0});
+      prompts.log.message(styleText('red', 'Errors:'), {spacing: 0});
       for (const msg of errorMessages) {
-        prompts.log.message(`  ${c.red('•')} ${msg.message}`, {spacing: 0});
+        prompts.log.message(`  ${styleText('red', '•')} ${msg.message}`, {
+          spacing: 0
+        });
       }
       prompts.log.message('', {spacing: 0});
     }
 
     // Display warnings
     if (warningMessages.length > 0) {
-      prompts.log.message(c.yellow('Warnings:'), {spacing: 0});
+      prompts.log.message(styleText('yellow', 'Warnings:'), {spacing: 0});
       for (const msg of warningMessages) {
-        prompts.log.message(`  ${c.yellow('•')} ${msg.message}`, {spacing: 0});
+        prompts.log.message(`  ${styleText('yellow', '•')} ${msg.message}`, {
+          spacing: 0
+        });
       }
       prompts.log.message('', {spacing: 0});
     }
 
     // Display suggestions
     if (suggestionMessages.length > 0) {
-      prompts.log.message(c.blue('Suggestions:'), {spacing: 0});
+      prompts.log.message(styleText('blue', 'Suggestions:'), {spacing: 0});
       for (const msg of suggestionMessages) {
-        prompts.log.message(`  ${c.blue('•')} ${msg.message}`, {spacing: 0});
+        prompts.log.message(`  ${styleText('blue', '•')} ${msg.message}`, {
+          spacing: 0
+        });
       }
       prompts.log.message('', {spacing: 0});
     }
