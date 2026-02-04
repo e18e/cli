@@ -67,11 +67,6 @@ export async function run(ctx: CommandContext<typeof meta>) {
     selectedReplacements = fixableReplacements.filter((rep) =>
       fixableReplacementsTargets.has(rep.from)
     );
-    if (selectedReplacements.length === 0) {
-      prompts.log.message(
-        'No fixable replacements found in project dependencies.'
-      );
-    }
   } else {
     if (targetModules.length === 0) {
       prompts.cancel(

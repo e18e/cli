@@ -132,8 +132,5 @@ describe('migrate --all', () => {
     expect(code).toBe(0);
     expect(output).toContain('Migration complete');
     expect(output).toContain('0 files migrated');
-    expect(output).toContain(
-      'No fixable replacements found in project dependencies'
-    );
   });
 });
