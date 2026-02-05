@@ -94,7 +94,10 @@ describe('CLI', () => {
   });
 });
 
-const basicChalkFixture = path.join(__dirname, '../../test/fixtures/basic-chalk');
+const basicChalkFixture = path.join(
+  __dirname,
+  '../../test/fixtures/basic-chalk'
+);
 
 describe('migrate --all', () => {
   it('should migrate all fixable replacements with --all --dry-run when project has fixable deps', async () => {
