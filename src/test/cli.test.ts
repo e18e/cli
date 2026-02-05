@@ -99,6 +99,19 @@ const basicChalkFixture = path.join(
   '../../test/fixtures/basic-chalk'
 );
 
+describe('analyze fixable summary', () => {
+  it('includes fixable-by-migrate summary when project has fixable replacement', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['analyze'],
+      basicChalkFixture
+    );
+    const output = stdout + stderr;
+    expect(code).toBe(0);
+    expect(output).toContain('fixable by');
+    expect(output).toContain('npx @e18e/cli migrate');
+  });
+});
+
 describe('migrate --all', () => {
   it('should migrate all fixable replacements with --all --dry-run when project has fixable deps', async () => {
     const {stdout, stderr, code} = await runCliProcess(

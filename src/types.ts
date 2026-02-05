@@ -5,6 +5,8 @@ import type {ParsedLockFile} from 'lockparse';
 export interface Options {
   root?: string;
   manifest?: string[];
+  /** Package names that have a codemod (fixable by migrate). */
+  fixableByMigrate?: string[];
 }
 
 export interface StatLike<T> {
@@ -30,6 +32,8 @@ export interface Message {
   severity: 'error' | 'warning' | 'suggestion';
   score: number;
   message: string;
+  /** Command that can fix this message (e.g. 'migrate'). */
+  fixableBy?: string;
 }
 
 export interface PackageJsonLike {

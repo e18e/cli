@@ -3,6 +3,7 @@ import {promises as fsp, type Stats} from 'node:fs';
 import * as prompts from '@clack/prompts';
 import {styleText} from 'node:util';
 import {meta} from './analyze.meta.js';
+import {fixableReplacements} from './fixable-replacements.js';
 import {report} from '../index.js';
 import {enableDebug} from '../logger.js';
 
@@ -17,6 +18,37 @@ function formatBytes(bytes: number) {
   }
 
   return `${size.toFixed(1)} ${units[unitIndex]}`;
+}
+
+const BULLET_INDENT = 4; // "  • " = 4 visible chars before message
+const CONTINUATION_INDENT = '    ';
+
+function wrapMessage(
+  text: string,
+  bulletPrefix: string,
+  width: number = process.stdout?.columns ?? 80
+): string {
+  const maxContentWidth = Math.max(20, width - BULLET_INDENT);
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let current = '';
+
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length <= maxContentWidth) {
+      current = next;
+    } else {
+      if (current) lines.push(current);
+      current = word;
+    }
+  }
+  if (current) lines.push(current);
+
+  return lines
+    .map((line, i) =>
+      i === 0 ? `${bulletPrefix}${line}` : `${CONTINUATION_INDENT}${line}`
+    )
+    .join('\n');
 }
 
 export async function run(ctx: CommandContext<typeof meta>) {
@@ -53,7 +85,8 @@ export async function run(ctx: CommandContext<typeof meta>) {
 
   const {stats, messages} = await report({
     root,
-    manifest: customManifests
+    manifest: customManifests,
+    fixableByMigrate: fixableReplacements.map((r) => r.from)
   });
 
   prompts.log.info('Summary');
@@ -118,7 +151,8 @@ export async function run(ctx: CommandContext<typeof meta>) {
     if (errorMessages.length > 0) {
       prompts.log.message(styleText('red', 'Errors:'), {spacing: 0});
       for (const msg of errorMessages) {
-        prompts.log.message(`  ${styleText('red', '•')} ${msg.message}`, {
+        const bullet = styleText('red', '•');
+        prompts.log.message(wrapMessage(msg.message, `  ${bullet} `), {
           spacing: 0
         });
       }
@@ -129,7 +163,8 @@ export async function run(ctx: CommandContext<typeof meta>) {
     if (warningMessages.length > 0) {
       prompts.log.message(styleText('yellow', 'Warnings:'), {spacing: 0});
       for (const msg of warningMessages) {
-        prompts.log.message(`  ${styleText('yellow', '•')} ${msg.message}`, {
+        const bullet = styleText('yellow', '•');
+        prompts.log.message(wrapMessage(msg.message, `  ${bullet} `), {
           spacing: 0
         });
       }
@@ -140,12 +175,26 @@ export async function run(ctx: CommandContext<typeof meta>) {
     if (suggestionMessages.length > 0) {
       prompts.log.message(styleText('blue', 'Suggestions:'), {spacing: 0});
       for (const msg of suggestionMessages) {
-        prompts.log.message(`  ${styleText('blue', '•')} ${msg.message}`, {
+        const bullet = styleText('blue', '•');
+        prompts.log.message(wrapMessage(msg.message, `  ${bullet} `), {
           spacing: 0
         });
       }
       prompts.log.message('', {spacing: 0});
     }
+
+    const errorCount = errorMessages.length;
+    const warningCount = warningMessages.length;
+    const suggestionCount = suggestionMessages.length;
+    const fixableCount = messages.filter((m) => m.fixableBy === 'migrate').length;
+    const parts: string[] = [];
+    if (errorCount > 0) parts.push(`${errorCount} error${errorCount === 1 ? '' : 's'}`);
+    if (warningCount > 0) parts.push(`${warningCount} warning${warningCount === 1 ? '' : 's'}`);
+    if (suggestionCount > 0) parts.push(`${suggestionCount} suggestion${suggestionCount === 1 ? '' : 's'}`);
+    let summary = parts.join(', ');
+    if (fixableCount > 0)
+      summary += ` (${fixableCount} fixable by \`npx @e18e/cli migrate\`)`;
+    prompts.log.message(styleText('dim', summary), {spacing: 0});
   }
   prompts.outro('Done!');
 }
