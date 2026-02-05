@@ -1,4 +1,4 @@
-import colors from 'picocolors';
+import {styleText} from 'node:util';
 import {ParsedLockFile, traverse, VisitorFn} from 'lockparse';
 import {AnalysisContext, Message, ReportPluginResult, Stats} from '../types.js';
 
@@ -119,11 +119,10 @@ function exportOutput(duplicateDependencies: Map<string, Version[]>) {
   }
 
   for (const [packageName, duplicate] of duplicateDependencies) {
-    const severityColor = colors.green;
-    let message = `${severityColor('[duplicate dependency]')} ${colors.bold(packageName)} has ${duplicate.length} installed versions:`;
+    let message = `${styleText('green', '[duplicate dependency]')} ${styleText('bold', packageName)} has ${duplicate.length} installed versions:`;
 
     for (const version of duplicate) {
-      message += `\n${colors.yellow(version.version)} via the following ${version.parents.length} package(s) ${colors.blue(version.parents.join(', '))}`;
+      message += `\n${styleText('yellow', version.version)} via the following ${version.parents.length} package(s) ${styleText('blue', version.parents.join(', '))}`;
     }
 
     const suggestions = generateSuggestionsForDuplicate(duplicate);
@@ -131,7 +130,7 @@ function exportOutput(duplicateDependencies: Map<string, Version[]>) {
     if (suggestions.length > 0) {
       message += '\n💡 Suggestions';
       for (const suggestion of suggestions) {
-        message += `${colors.gray(suggestion)}`;
+        message += `${styleText('gray', suggestion)}`;
       }
     }
     message += '\n';

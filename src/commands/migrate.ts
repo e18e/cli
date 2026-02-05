@@ -1,6 +1,6 @@
 import {type CommandContext} from 'gunshi';
 import * as prompts from '@clack/prompts';
-import colors from 'picocolors';
+import {styleText} from 'node:util';
 import {meta} from './migrate.meta.js';
 import {glob} from 'tinyglobby';
 import {readFile, writeFile} from 'node:fs/promises';
@@ -105,7 +105,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
       targetNames.length > 6
         ? `${targetNames.slice(0, 6).join(', ')} and ${targetNames.length - 6} more`
         : targetNames.join(', ');
-    prompts.log.message(`Targets: ${colors.dim(targetModuleSummary)}`);
+    prompts.log.message(`Targets: ${styleText('dim', targetModuleSummary)}`);
   }
 
   const cwd = ctx.env.cwd ?? process.cwd();
@@ -118,7 +118,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
 
   if (files.length === 0) {
     prompts.cancel(
-      `No files found matching the pattern: ${colors.dim(include)}`
+      `No files found matching the pattern: ${styleText('dim', include)}`
     );
     return;
   }
@@ -162,7 +162,9 @@ export async function run(ctx: CommandContext<typeof meta>) {
     if (totalMigrations > 0) {
       filesMigratedCount++;
     }
-    log.success(`${filename} ${colors.dim(`(${totalMigrations} migrated)`)}`);
+    log.success(
+      `${filename} ${styleText('dim', `(${totalMigrations} migrated)`)}`
+    );
   }
 
   prompts.outro(`Migration complete - ${filesMigratedCount} files migrated.`);

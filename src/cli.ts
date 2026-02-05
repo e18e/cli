@@ -1,6 +1,6 @@
 import {createRequire} from 'node:module';
 import {cli, define, lazy, type LazyCommand} from 'gunshi';
-import c from 'picocolors';
+import {styleText} from 'node:util';
 import {meta as analyzeMeta} from './commands/analyze.meta.js';
 import {meta as migrateMeta} from './commands/migrate.meta.js';
 import {renderUsage} from 'gunshi/renderer';
@@ -32,6 +32,6 @@ const subCommands = new Map<string, LazyCommand<any>>([
 cli(process.argv.slice(2), defaultCommand, {
   name: 'cli',
   version,
-  description: `${c.cyan('e18e')}`,
+  description: `${styleText('cyan', 'e18e')}`,
   subCommands
 });
