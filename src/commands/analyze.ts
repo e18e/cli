@@ -186,11 +186,18 @@ export async function run(ctx: CommandContext<typeof meta>) {
     const errorCount = errorMessages.length;
     const warningCount = warningMessages.length;
     const suggestionCount = suggestionMessages.length;
-    const fixableCount = messages.filter((m) => m.fixableBy === 'migrate').length;
+    const fixableCount = messages.filter(
+      (m) => m.fixableBy === 'migrate'
+    ).length;
     const parts: string[] = [];
-    if (errorCount > 0) parts.push(`${errorCount} error${errorCount === 1 ? '' : 's'}`);
-    if (warningCount > 0) parts.push(`${warningCount} warning${warningCount === 1 ? '' : 's'}`);
-    if (suggestionCount > 0) parts.push(`${suggestionCount} suggestion${suggestionCount === 1 ? '' : 's'}`);
+    if (errorCount > 0)
+      parts.push(`${errorCount} error${errorCount === 1 ? '' : 's'}`);
+    if (warningCount > 0)
+      parts.push(`${warningCount} warning${warningCount === 1 ? '' : 's'}`);
+    if (suggestionCount > 0)
+      parts.push(
+        `${suggestionCount} suggestion${suggestionCount === 1 ? '' : 's'}`
+      );
     let summary = parts.join(', ');
     if (fixableCount > 0)
       summary += ` (${fixableCount} fixable by \`npx @e18e/cli migrate\`)`;
