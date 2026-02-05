@@ -93,3 +93,33 @@ describe('CLI', () => {
     expect(normalizeStderr(stderr)).toMatchSnapshot();
   });
 });
+
+const basicChalkFixture = path.join(
+  __dirname,
+  '../../test/fixtures/basic-chalk'
+);
+
+describe('migrate --all', () => {
+  it('should migrate all fixable replacements with --all --dry-run when project has fixable deps', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', '--all', '--dry-run'],
+      basicChalkFixture
+    );
+    expect(code).toBe(0);
+    const output = stdout + stderr;
+    expect(output).toContain('Migration complete');
+    expect(output).toContain('files migrated');
+    expect(output).toContain('chalk');
+  });
+
+  it('should run to completion and show Migration complete when --all has no fixable replacements', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', '--all'],
+      tempDir
+    );
+    const output = stdout + stderr;
+    expect(code).toBe(0);
+    expect(output).toContain('Migration complete');
+    expect(output).toContain('0 files migrated');
+  });
+});

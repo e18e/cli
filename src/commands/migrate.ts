@@ -11,6 +11,7 @@ import {getPackageJson} from '../utils/package-json.js';
 
 export async function run(ctx: CommandContext<typeof meta>) {
   const [_commandName, ...targetModules] = ctx.positionals;
+  const all = ctx.values.all === true;
   const dryRun = ctx.values['dry-run'] === true;
   const interactive = ctx.values.interactive === true;
   const include = ctx.values.include;
@@ -37,7 +38,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
       .map((rep) => rep.from)
   );
 
-  if (interactive) {
+  if (interactive && !all) {
     const additionalTargets = await prompts.autocompleteMultiselect({
       message: 'Select packages to migrate',
       maxItems: 10,
@@ -60,34 +61,50 @@ export async function run(ctx: CommandContext<typeof meta>) {
     }
   }
 
-  if (targetModules.length === 0) {
-    prompts.cancel(
-      'Error: Please specify a package to migrate. For example, `migrate chalk`'
-    );
-    return;
-  }
+  let selectedReplacements: Replacement[];
 
-  const selectedReplacements: Replacement[] = [];
-
-  for (const targetModule of targetModules) {
-    const replacement = fixableReplacements.find(
-      (rep) => rep.from === targetModule
+  if (all) {
+    selectedReplacements = fixableReplacements.filter((rep) =>
+      fixableReplacementsTargets.has(rep.from)
     );
-    if (!replacement) {
+  } else {
+    if (targetModules.length === 0) {
       prompts.cancel(
-        `Error: Target package has no available migrations (${targetModule})`
+        'Error: Please specify a package to migrate. For example, `migrate chalk`'
       );
       return;
     }
 
-    selectedReplacements.push(replacement);
+    selectedReplacements = [];
+
+    for (const targetModule of targetModules) {
+      if (!fixableReplacementsTargets.has(targetModule)) {
+        prompts.cancel(
+          `Error: Target package is not in project dependencies (${targetModule})`
+        );
+        return;
+      }
+
+      const replacement = fixableReplacements.find(
+        (rep) => rep.from === targetModule
+      );
+      if (!replacement) {
+        prompts.cancel(
+          `Error: Target package has no available migrations (${targetModule})`
+        );
+        return;
+      }
+
+      selectedReplacements.push(replacement);
+    }
   }
 
   if (!interactive) {
+    const targetNames = selectedReplacements.map((r) => r.from);
     const targetModuleSummary =
-      targetModules.length > 6
-        ? `${targetModules.slice(0, 6).join(', ')} and ${targetModules.length - 6} more`
-        : targetModules.join(', ');
+      targetNames.length > 6
+        ? `${targetNames.slice(0, 6).join(', ')} and ${targetNames.length - 6} more`
+        : targetNames.join(', ');
     prompts.log.message(`Targets: ${styleText('dim', targetModuleSummary)}`);
   }
 
@@ -105,6 +122,8 @@ export async function run(ctx: CommandContext<typeof meta>) {
     );
     return;
   }
+
+  let filesMigratedCount = 0;
 
   for (const filename of files) {
     const log = prompts.taskLog({
@@ -140,10 +159,13 @@ export async function run(ctx: CommandContext<typeof meta>) {
       }
       totalMigrations++;
     }
+    if (totalMigrations > 0) {
+      filesMigratedCount++;
+    }
     log.success(
       `${filename} ${styleText('dim', `(${totalMigrations} migrated)`)}`
     );
   }
 
-  prompts.outro('Migration complete.');
+  prompts.outro(`Migration complete - ${filesMigratedCount} files migrated.`);
 }
