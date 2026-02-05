@@ -148,4 +148,24 @@ export async function run(ctx: CommandContext<typeof meta>) {
     }
   }
   prompts.outro('Done!');
+
+  // Exit with non-zero when messages meet the fail threshold (--log-level)
+  const severityRank: Record<string, number> = {
+    error: 3,
+    warning: 2,
+    suggestion: 1
+  };
+  const failThresholdRank: Record<string, number> = {
+    error: 3,
+    warn: 2,
+    info: 1,
+    debug: 0
+  };
+  const thresholdRank = failThresholdRank[logLevel] ?? 0;
+  const hasFailingMessages =
+    thresholdRank > 0 &&
+    messages.some((m) => severityRank[m.severity] >= thresholdRank);
+  if (hasFailingMessages) {
+    process.exit(1);
+  }
 }

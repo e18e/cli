@@ -94,6 +94,74 @@ describe('CLI', () => {
   });
 });
 
+describe('analyze exit codes', () => {
+  it('exits 1 when path is not a directory', async () => {
+    const {code} = await runCliProcess(['analyze', '/nonexistent-path']);
+    expect(code).toBe(1);
+  });
+
+  it('exits 0 with --log-level=debug', async () => {
+    const {code} = await runCliProcess(
+      ['analyze', '--log-level=debug'],
+      tempDir
+    );
+    expect(code).toBe(0);
+  });
+
+  it('exits 1 with default log-level when analysis has messages', async () => {
+    const dirWithMessages = await createTempDir();
+    await createTestPackage(dirWithMessages, {
+      name: 'pkg-with-chalk',
+      version: '1.0.0',
+      type: 'module',
+      main: 'index.js',
+      dependencies: {chalk: '^4.0.0'}
+    });
+    const nodeModules = path.join(dirWithMessages, 'node_modules');
+    await fs.mkdir(nodeModules, {recursive: true});
+    await fs.mkdir(path.join(nodeModules, 'chalk'), {recursive: true});
+    await fs.writeFile(
+      path.join(nodeModules, 'chalk', 'package.json'),
+      JSON.stringify({
+        name: 'chalk',
+        version: '4.1.2',
+        type: 'module'
+      })
+    );
+    const {code} = await runCliProcess(['analyze'], dirWithMessages);
+    await cleanupTempDir(dirWithMessages);
+    expect(code).toBe(1);
+  });
+
+  it('exits 0 with --log-level=debug when analysis has messages', async () => {
+    const dirWithMessages = await createTempDir();
+    await createTestPackage(dirWithMessages, {
+      name: 'pkg-with-chalk',
+      version: '1.0.0',
+      type: 'module',
+      main: 'index.js',
+      dependencies: {chalk: '^4.0.0'}
+    });
+    const nodeModules = path.join(dirWithMessages, 'node_modules');
+    await fs.mkdir(nodeModules, {recursive: true});
+    await fs.mkdir(path.join(nodeModules, 'chalk'), {recursive: true});
+    await fs.writeFile(
+      path.join(nodeModules, 'chalk', 'package.json'),
+      JSON.stringify({
+        name: 'chalk',
+        version: '4.1.2',
+        type: 'module'
+      })
+    );
+    const {code} = await runCliProcess(
+      ['analyze', '--log-level=debug'],
+      dirWithMessages
+    );
+    await cleanupTempDir(dirWithMessages);
+    expect(code).toBe(0);
+  });
+});
+
 const basicChalkFixture = path.join(
   __dirname,
   '../../test/fixtures/basic-chalk'

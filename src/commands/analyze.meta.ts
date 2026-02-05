@@ -6,7 +6,8 @@ export const meta = {
       type: 'enum',
       choices: ['debug', 'info', 'warn', 'error'],
       default: 'info',
-      description: 'Set the log level (debug | info | warn | error)'
+      description:
+        'Set the log level and the minimum severity that causes a non-zero exit code (debug | info | warn | error)'
     },
     manifest: {
       type: 'string',
