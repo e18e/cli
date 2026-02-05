@@ -94,33 +94,19 @@ describe('CLI', () => {
   });
 });
 
+const basicChalkFixture = path.join(__dirname, '../../test/fixtures/basic-chalk');
+
 describe('migrate --all', () => {
   it('should migrate all fixable replacements with --all --dry-run when project has fixable deps', async () => {
-    const chalkDir = await createTempDir();
-    await createTestPackage(chalkDir, {
-      name: 'chalk-test',
-      version: '1.0.0',
-      type: 'module',
-      main: 'index.js',
-      dependencies: {chalk: '^4.0.0'}
-    });
-    await fs.writeFile(
-      path.join(chalkDir, 'index.js'),
-      "import chalk from 'chalk';\nconsole.log(chalk.cyan('hello'));"
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', '--all', '--dry-run'],
+      basicChalkFixture
     );
-    try {
-      const {stdout, stderr, code} = await runCliProcess(
-        ['migrate', '--all', '--dry-run'],
-        chalkDir
-      );
-      expect(code).toBe(0);
-      const output = stdout + stderr;
-      expect(output).toContain('Migration complete');
-      expect(output).toContain('files migrated');
-      expect(output).toContain('chalk');
-    } finally {
-      await cleanupTempDir(chalkDir);
-    }
+    expect(code).toBe(0);
+    const output = stdout + stderr;
+    expect(output).toContain('Migration complete');
+    expect(output).toContain('files migrated');
+    expect(output).toContain('chalk');
   });
 
   it('should run to completion and show Migration complete when --all has no fixable replacements', async () => {
