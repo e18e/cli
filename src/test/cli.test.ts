@@ -2,7 +2,12 @@ import {describe, it, expect, beforeAll, afterAll} from 'vitest';
 import {spawn} from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
-import {createTempDir, cleanupTempDir, createTestPackage} from './utils.js';
+import {
+  createTempDir,
+  cleanupTempDir,
+  createTestPackage,
+  createTestPackageWithDependencies
+} from './utils.js';
 
 let tempDir: string;
 const stripVersion = (str: string): string =>
@@ -94,16 +99,36 @@ describe('CLI', () => {
   });
 });
 
+let fixableTempDir: string;
 const basicChalkFixture = path.join(
   __dirname,
   '../../test/fixtures/basic-chalk'
 );
 
 describe('analyze fixable summary', () => {
+  beforeAll(async () => {
+    fixableTempDir = await createTempDir();
+    await createTestPackageWithDependencies(
+      fixableTempDir,
+      {
+        name: 'foo',
+        version: '0.0.1',
+        type: 'module',
+        main: 'lib/main.js',
+        dependencies: {chalk: '^4.0.0'}
+      },
+      [{name: 'chalk', version: '4.1.2', type: 'module'}]
+    );
+  });
+
+  afterAll(async () => {
+    await cleanupTempDir(fixableTempDir);
+  });
+
   it('includes fixable-by-migrate summary when project has fixable replacement', async () => {
     const {stdout, stderr, code} = await runCliProcess(
       ['analyze'],
-      basicChalkFixture
+      fixableTempDir
     );
     const output = stdout + stderr;
     expect(code).toBe(0);
