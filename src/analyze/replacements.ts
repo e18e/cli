@@ -109,9 +109,7 @@ export async function runReplacements(
     ...replacements.all.moduleReplacements
   ];
 
-  const fixableByMigrate = new Set(
-    fixableReplacements.map((r) => r.from)
-  );
+  const fixableByMigrate = new Set(fixableReplacements.map((r) => r.from));
 
   for (const name of Object.keys(packageJson.dependencies)) {
     // Find replacement (custom replacements take precedence due to order)
