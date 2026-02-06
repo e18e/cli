@@ -14,6 +14,11 @@ const stripVersion = (str: string): string =>
 const normalizeStderr = (str: string): string =>
   str.replace(/\(node:\d+\)/g, '(node:<pid>)');
 
+const basicChalkFixture = path.join(
+  __dirname,
+  '../../test/fixtures/basic-chalk'
+);
+
 beforeAll(async () => {
   // Create a temporary directory for the test package
   tempDir = await createTempDir();
@@ -94,10 +99,33 @@ describe('CLI', () => {
   });
 });
 
-const basicChalkFixture = path.join(
-  __dirname,
-  '../../test/fixtures/basic-chalk'
-);
+describe('analyze exit codes', () => {
+  it('exits 1 when path is not a directory', async () => {
+    const {code} = await runCliProcess(['analyze', '/nonexistent-path']);
+    expect(code).toBe(1);
+  });
+
+  it('exits 0 with --log-level=debug', async () => {
+    const {code} = await runCliProcess(
+      ['analyze', '--log-level=debug'],
+      tempDir
+    );
+    expect(code).toBe(0);
+  });
+
+  it('exits 1 with default log-level when analysis has messages', async () => {
+    const {code} = await runCliProcess(['analyze'], basicChalkFixture);
+    expect(code).toBe(1);
+  });
+
+  it('exits 0 with --log-level=debug when analysis has messages', async () => {
+    const {code} = await runCliProcess(
+      ['analyze', '--log-level=debug'],
+      basicChalkFixture
+    );
+    expect(code).toBe(0);
+  });
+});
 
 describe('migrate --all', () => {
   it('should migrate all fixable replacements with --all --dry-run when project has fixable deps', async () => {

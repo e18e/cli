@@ -19,6 +19,18 @@ function formatBytes(bytes: number) {
   return `${size.toFixed(1)} ${units[unitIndex]}`;
 }
 
+const SEVERITY_RANK: Record<string, number> = {
+  error: 3,
+  warning: 2,
+  suggestion: 1
+};
+const FAIL_THRESHOLD_RANK: Record<string, number> = {
+  error: 3,
+  warn: 2,
+  info: 1,
+  debug: 0
+};
+
 export async function run(ctx: CommandContext<typeof meta>) {
   const [_commandName, providedPath] = ctx.positionals;
   const logLevel = ctx.values['log-level'];
@@ -148,4 +160,13 @@ export async function run(ctx: CommandContext<typeof meta>) {
     }
   }
   prompts.outro('Done!');
+
+  // Exit with non-zero when messages meet the fail threshold (--log-level)
+  const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;
+  const hasFailingMessages =
+    thresholdRank > 0 &&
+    messages.some((m) => SEVERITY_RANK[m.severity] >= thresholdRank);
+  if (hasFailingMessages) {
+    process.exit(1);
+  }
 }
