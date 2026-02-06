@@ -153,10 +153,7 @@ describe('analyze fixable summary', () => {
   });
 
   it('includes fixable-by-migrate summary when project has fixable replacement', async () => {
-    const {stdout, stderr, code} = await runCliProcess(
-      ['analyze'],
-      tempDir
-    );
+    const {stdout, stderr, code} = await runCliProcess(['analyze'], tempDir);
     const output = stdout + stderr;
     expect(code).toBe(0);
     expect(output).toContain('fixable by');
