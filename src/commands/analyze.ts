@@ -6,6 +6,7 @@ import {meta} from './analyze.meta.js';
 import {fixableReplacements} from './fixable-replacements.js';
 import {report} from '../index.js';
 import {enableDebug} from '../logger.js';
+import {wrapAnsi} from 'fast-wrap-ansi';
 
 function formatBytes(bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB'];
@@ -18,37 +19,6 @@ function formatBytes(bytes: number) {
   }
 
   return `${size.toFixed(1)} ${units[unitIndex]}`;
-}
-
-const BULLET_INDENT = 4; // "  • " = 4 visible chars before message
-const CONTINUATION_INDENT = '    ';
-
-function wrapMessage(
-  text: string,
-  bulletPrefix: string,
-  width: number = process.stdout?.columns ?? 80
-): string {
-  const maxContentWidth = Math.max(20, width - BULLET_INDENT);
-  const words = text.split(/\s+/);
-  const lines: string[] = [];
-  let current = '';
-
-  for (const word of words) {
-    const next = current ? `${current} ${word}` : word;
-    if (next.length <= maxContentWidth) {
-      current = next;
-    } else {
-      if (current) lines.push(current);
-      current = word;
-    }
-  }
-  if (current) lines.push(current);
-
-  return lines
-    .map((line, i) =>
-      i === 0 ? `${bulletPrefix}${line}` : `${CONTINUATION_INDENT}${line}`
-    )
-    .join('\n');
 }
 
 export async function run(ctx: CommandContext<typeof meta>) {
@@ -141,6 +111,15 @@ export async function run(ctx: CommandContext<typeof meta>) {
 
   // Display tool analysis results
   if (messages.length > 0) {
+    const width = process.stdout?.columns ?? 80;
+    const maxContentWidth = Math.max(20, width - 4);
+
+    const formatBulletMessage = (text: string, bullet: string) =>
+      wrapAnsi(text, maxContentWidth)
+        .split('\n')
+        .map((line, i) => (i === 0 ? `  ${bullet} ${line}` : `    ${line}`))
+        .join('\n');
+
     const errorMessages = messages.filter((m) => m.severity === 'error');
     const warningMessages = messages.filter((m) => m.severity === 'warning');
     const suggestionMessages = messages.filter(
@@ -152,7 +131,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
       prompts.log.message(styleText('red', 'Errors:'), {spacing: 0});
       for (const msg of errorMessages) {
         const bullet = styleText('red', '•');
-        prompts.log.message(wrapMessage(msg.message, `  ${bullet} `), {
+        prompts.log.message(formatBulletMessage(msg.message, bullet), {
           spacing: 0
         });
       }
@@ -164,7 +143,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
       prompts.log.message(styleText('yellow', 'Warnings:'), {spacing: 0});
       for (const msg of warningMessages) {
         const bullet = styleText('yellow', '•');
-        prompts.log.message(wrapMessage(msg.message, `  ${bullet} `), {
+        prompts.log.message(formatBulletMessage(msg.message, bullet), {
           spacing: 0
         });
       }
@@ -176,7 +155,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
       prompts.log.message(styleText('blue', 'Suggestions:'), {spacing: 0});
       for (const msg of suggestionMessages) {
         const bullet = styleText('blue', '•');
-        prompts.log.message(wrapMessage(msg.message, `  ${bullet} `), {
+        prompts.log.message(formatBulletMessage(msg.message, bullet), {
           spacing: 0
         });
       }
