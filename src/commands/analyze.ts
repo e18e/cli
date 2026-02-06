@@ -3,7 +3,6 @@ import {promises as fsp, type Stats} from 'node:fs';
 import * as prompts from '@clack/prompts';
 import {styleText} from 'node:util';
 import {meta} from './analyze.meta.js';
-import {fixableReplacements} from './fixable-replacements.js';
 import {report} from '../index.js';
 import {enableDebug} from '../logger.js';
 import {wrapAnsi} from 'fast-wrap-ansi';
@@ -55,8 +54,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
 
   const {stats, messages} = await report({
     root,
-    manifest: customManifests,
-    fixableByMigrate: fixableReplacements.map((r) => r.from)
+    manifest: customManifests
   });
 
   prompts.log.info('Summary');
