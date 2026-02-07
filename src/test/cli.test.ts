@@ -3,6 +3,7 @@ import {spawn} from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import {existsSync} from 'node:fs';
+import {execSync} from 'node:child_process';
 import {
   createTempDir,
   cleanupTempDir,
@@ -125,7 +126,6 @@ describe('analyze exit codes', () => {
   beforeAll(async () => {
     const nodeModules = path.join(basicChalkFixture, 'node_modules');
     if (!existsSync(nodeModules)) {
-      const {execSync} = await import('node:child_process');
       execSync('npm install', {cwd: basicChalkFixture, stdio: 'pipe'});
     }
   });
@@ -174,7 +174,6 @@ describe('migrate --all', () => {
   beforeAll(async () => {
     const nodeModules = path.join(basicChalkFixture, 'node_modules');
     if (!existsSync(nodeModules)) {
-      const {execSync} = await import('node:child_process');
       execSync('npm install', {cwd: basicChalkFixture, stdio: 'pipe'});
     }
   });
