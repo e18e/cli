@@ -2,6 +2,8 @@ import {describe, it, expect, beforeAll, afterAll} from 'vitest';
 import {spawn} from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
+import {existsSync} from 'node:fs';
+import {stripVTControlCharacters} from 'node:util';
 import {
   createTempDir,
   cleanupTempDir,
@@ -10,12 +12,14 @@ import {
 } from './utils.js';
 
 let tempDir: string;
+let fixableTempDir: string;
 const stripVersion = (str: string): string =>
   str.replace(
     new RegExp(/\(cli v\d+\.\d+\.\d+(?:-\S+)?\)/, 'g'),
     '(cli <version>)'
   );
 
+const stripAnsi = (str: string): string => stripVTControlCharacters(str);
 const normalizeStderr = (str: string): string =>
   str.replace(/\(node:\d+\)/g, '(node:<pid>)');
 
@@ -25,10 +29,8 @@ const basicChalkFixture = path.join(
 );
 
 beforeAll(async () => {
-  // Create a temporary directory for the test package
+  // Create temp dir for mock package (no fixable replacements)
   tempDir = await createTempDir();
-
-  // Create a test package with some files
   await createTestPackage(tempDir, {
     name: 'mock-package',
     version: '1.0.0',
@@ -38,14 +40,10 @@ beforeAll(async () => {
       'some-dep': '1.0.0'
     }
   });
-
-  // Create a simple index.js file
   await fs.writeFile(
     path.join(tempDir, 'index.js'),
     'console.log("Hello, world!");'
   );
-
-  // Create node_modules with a dependency
   const nodeModules = path.join(tempDir, 'node_modules');
   await fs.mkdir(nodeModules, {recursive: true});
   await fs.mkdir(path.join(nodeModules, 'some-dep'), {recursive: true});
@@ -57,10 +55,25 @@ beforeAll(async () => {
       type: 'module'
     })
   );
+
+  // Create temp dir for fixable replacements (chalk)
+  fixableTempDir = await createTempDir();
+  await createTestPackageWithDependencies(
+    fixableTempDir,
+    {
+      name: 'foo',
+      version: '0.0.1',
+      type: 'module',
+      main: 'lib/main.js',
+      dependencies: {chalk: '^4.0.0'}
+    },
+    [{name: 'chalk', version: '4.1.2', type: 'module'}]
+  );
 });
 
 afterAll(async () => {
   await cleanupTempDir(tempDir);
+  await cleanupTempDir(fixableTempDir);
 });
 
 function runCliProcess(
@@ -87,24 +100,38 @@ function runCliProcess(
 
 describe('CLI', () => {
   it('should run successfully with default options', async () => {
-    const {stdout, stderr, code} = await runCliProcess(['analyze'], tempDir);
+    const {stdout, stderr, code} = await runCliProcess(
+      ['analyze', '--log-level=debug'],
+      tempDir
+    );
     if (code !== 0) {
       console.error('CLI Error:', stderr);
     }
     expect(code).toBe(0);
-    expect(stripVersion(stdout)).toMatchSnapshot();
-    expect(normalizeStderr(stderr)).toMatchSnapshot();
+    expect(stripAnsi(stripVersion(stdout))).toMatchSnapshot();
+    expect(stripAnsi(normalizeStderr(stderr))).toMatchSnapshot();
   });
 
   it('should display package report', async () => {
-    const {stdout, stderr, code} = await runCliProcess(['analyze'], tempDir);
+    const {stdout, stderr, code} = await runCliProcess(
+      ['analyze', '--log-level=debug'],
+      tempDir
+    );
     expect(code).toBe(0);
-    expect(stripVersion(stdout)).toMatchSnapshot();
-    expect(normalizeStderr(stderr)).toMatchSnapshot();
+    expect(stripAnsi(stripVersion(stdout))).toMatchSnapshot();
+    expect(stripAnsi(normalizeStderr(stderr))).toMatchSnapshot();
   });
 });
 
 describe('analyze exit codes', () => {
+  beforeAll(async () => {
+    const nodeModules = path.join(basicChalkFixture, 'node_modules');
+    if (!existsSync(nodeModules)) {
+      const {execSync} = await import('node:child_process');
+      execSync('npm install', {cwd: basicChalkFixture, stdio: 'pipe'});
+    }
+  });
+
   it('exits 1 when path is not a directory', async () => {
     const {code} = await runCliProcess(['analyze', '/nonexistent-path']);
     expect(code).toBe(1);
@@ -133,27 +160,11 @@ describe('analyze exit codes', () => {
 });
 
 describe('analyze fixable summary', () => {
-  beforeAll(async () => {
-    tempDir = await createTempDir();
-    await createTestPackageWithDependencies(
-      tempDir,
-      {
-        name: 'foo',
-        version: '0.0.1',
-        type: 'module',
-        main: 'lib/main.js',
-        dependencies: {chalk: '^4.0.0'}
-      },
-      [{name: 'chalk', version: '4.1.2', type: 'module'}]
-    );
-  });
-
-  afterAll(async () => {
-    await cleanupTempDir(tempDir);
-  });
-
   it('includes fixable-by-migrate summary when project has fixable replacement', async () => {
-    const {stdout, stderr, code} = await runCliProcess(['analyze'], tempDir);
+    const {stdout, stderr, code} = await runCliProcess(
+      ['analyze', '--log-level=debug'],
+      fixableTempDir
+    );
     const output = stdout + stderr;
     expect(code).toBe(0);
     expect(output).toContain('fixable by');
@@ -162,6 +173,14 @@ describe('analyze fixable summary', () => {
 });
 
 describe('migrate --all', () => {
+  beforeAll(async () => {
+    const nodeModules = path.join(basicChalkFixture, 'node_modules');
+    if (!existsSync(nodeModules)) {
+      const {execSync} = await import('node:child_process');
+      execSync('npm install', {cwd: basicChalkFixture, stdio: 'pipe'});
+    }
+  });
+
   it('should migrate all fixable replacements with --all --dry-run when project has fixable deps', async () => {
     const {stdout, stderr, code} = await runCliProcess(
       ['migrate', '--all', '--dry-run'],

@@ -33,7 +33,9 @@ const FAIL_THRESHOLD_RANK: Record<string, number> = {
 };
 
 export async function run(ctx: CommandContext<typeof meta>) {
-  const [_commandName, providedPath] = ctx.positionals;
+  // Gunshi passes subcommand name as first positional; path is optional second
+  const providedPath =
+    ctx.positionals.length > 1 ? ctx.positionals[1] : undefined;
   const logLevel = ctx.values['log-level'];
   let root: string | undefined = undefined;
 
