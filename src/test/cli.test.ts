@@ -3,7 +3,6 @@ import {spawn} from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import {existsSync} from 'node:fs';
-import {stripVTControlCharacters} from 'node:util';
 import {
   createTempDir,
   cleanupTempDir,
@@ -19,7 +18,6 @@ const stripVersion = (str: string): string =>
     '(cli <version>)'
   );
 
-const stripAnsi = (str: string): string => stripVTControlCharacters(str);
 const normalizeStderr = (str: string): string =>
   str.replace(/\(node:\d+\)/g, '(node:<pid>)');
 
@@ -108,8 +106,8 @@ describe('CLI', () => {
       console.error('CLI Error:', stderr);
     }
     expect(code).toBe(0);
-    expect(stripAnsi(stripVersion(stdout))).toMatchSnapshot();
-    expect(stripAnsi(normalizeStderr(stderr))).toMatchSnapshot();
+    expect(stripVersion(stdout)).toMatchSnapshot();
+    expect(normalizeStderr(stderr)).toMatchSnapshot();
   });
 
   it('should display package report', async () => {
@@ -118,8 +116,8 @@ describe('CLI', () => {
       tempDir
     );
     expect(code).toBe(0);
-    expect(stripAnsi(stripVersion(stdout))).toMatchSnapshot();
-    expect(stripAnsi(normalizeStderr(stderr))).toMatchSnapshot();
+    expect(stripVersion(stdout)).toMatchSnapshot();
+    expect(normalizeStderr(stderr)).toMatchSnapshot();
   });
 });
 
