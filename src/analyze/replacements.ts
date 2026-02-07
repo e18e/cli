@@ -1,6 +1,7 @@
 import * as replacements from 'module-replacements';
 import type {ManifestModule, ModuleReplacement} from 'module-replacements';
 import type {ReportPluginResult, AnalysisContext} from '../types.js';
+import {fixableReplacements} from '../commands/fixable-replacements.js';
 import {getPackageJson} from '../utils/package-json.js';
 import {resolve, dirname, basename} from 'node:path';
 import {
@@ -108,6 +109,8 @@ export async function runReplacements(
     ...replacements.all.moduleReplacements
   ];
 
+  const fixableByMigrate = new Set(fixableReplacements.map((r) => r.from));
+
   for (const name of Object.keys(packageJson.dependencies)) {
     // Find replacement (custom replacements take precedence due to order)
     const replacement = allReplacements.find(
@@ -118,18 +121,22 @@ export async function runReplacements(
       continue;
     }
 
+    const fixableBy = fixableByMigrate.has(name) ? 'migrate' : undefined;
+
     // Handle each replacement type using the same logic for both custom and built-in
     if (replacement.type === 'none') {
       result.messages.push({
         severity: 'warning',
         score: 0,
-        message: `Module "${name}" can be removed, and native functionality used instead`
+        message: `Module "${name}" can be removed, and native functionality used instead`,
+        ...(fixableBy && {fixableBy})
       });
     } else if (replacement.type === 'simple') {
       result.messages.push({
         severity: 'warning',
         score: 0,
-        message: `Module "${name}" can be replaced. ${replacement.replacement}.`
+        message: `Module "${name}" can be replaced. ${replacement.replacement}.`,
+        ...(fixableBy && {fixableBy})
       });
     } else if (replacement.type === 'native') {
       const enginesNode = packageJson.engines?.node;
@@ -156,7 +163,8 @@ export async function runReplacements(
       result.messages.push({
         severity: 'warning',
         score: 0,
-        message: fullMessage
+        message: fullMessage,
+        ...(fixableBy && {fixableBy})
       });
     } else if (replacement.type === 'documented') {
       const docUrl = getDocsUrl(replacement.docPath);
@@ -165,7 +173,8 @@ export async function runReplacements(
       result.messages.push({
         severity: 'warning',
         score: 0,
-        message: fullMessage
+        message: fullMessage,
+        ...(fixableBy && {fixableBy})
       });
     }
   }

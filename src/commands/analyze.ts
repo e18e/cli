@@ -5,6 +5,7 @@ import {styleText} from 'node:util';
 import {meta} from './analyze.meta.js';
 import {report} from '../index.js';
 import {enableDebug} from '../logger.js';
+import {wrapAnsi} from 'fast-wrap-ansi';
 
 function formatBytes(bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB'];
@@ -32,7 +33,9 @@ const FAIL_THRESHOLD_RANK: Record<string, number> = {
 };
 
 export async function run(ctx: CommandContext<typeof meta>) {
-  const [_commandName, providedPath] = ctx.positionals;
+  // Gunshi passes subcommand name as first positional; path is optional second
+  const providedPath =
+    ctx.positionals.length > 1 ? ctx.positionals[1] : undefined;
   const logLevel = ctx.values['log-level'];
   let root: string | undefined = undefined;
 
@@ -120,6 +123,15 @@ export async function run(ctx: CommandContext<typeof meta>) {
 
   // Display tool analysis results
   if (messages.length > 0) {
+    const width = process.stdout?.columns ?? 80;
+    const maxContentWidth = Math.max(20, width - 4);
+
+    const formatBulletMessage = (text: string, bullet: string) =>
+      wrapAnsi(text, maxContentWidth)
+        .split('\n')
+        .map((line, i) => (i === 0 ? `  ${bullet} ${line}` : `    ${line}`))
+        .join('\n');
+
     const errorMessages = messages.filter((m) => m.severity === 'error');
     const warningMessages = messages.filter((m) => m.severity === 'warning');
     const suggestionMessages = messages.filter(
@@ -130,7 +142,8 @@ export async function run(ctx: CommandContext<typeof meta>) {
     if (errorMessages.length > 0) {
       prompts.log.message(styleText('red', 'Errors:'), {spacing: 0});
       for (const msg of errorMessages) {
-        prompts.log.message(`  ${styleText('red', '•')} ${msg.message}`, {
+        const bullet = styleText('red', '•');
+        prompts.log.message(formatBulletMessage(msg.message, bullet), {
           spacing: 0
         });
       }
@@ -141,7 +154,8 @@ export async function run(ctx: CommandContext<typeof meta>) {
     if (warningMessages.length > 0) {
       prompts.log.message(styleText('yellow', 'Warnings:'), {spacing: 0});
       for (const msg of warningMessages) {
-        prompts.log.message(`  ${styleText('yellow', '•')} ${msg.message}`, {
+        const bullet = styleText('yellow', '•');
+        prompts.log.message(formatBulletMessage(msg.message, bullet), {
           spacing: 0
         });
       }
@@ -152,12 +166,33 @@ export async function run(ctx: CommandContext<typeof meta>) {
     if (suggestionMessages.length > 0) {
       prompts.log.message(styleText('blue', 'Suggestions:'), {spacing: 0});
       for (const msg of suggestionMessages) {
-        prompts.log.message(`  ${styleText('blue', '•')} ${msg.message}`, {
+        const bullet = styleText('blue', '•');
+        prompts.log.message(formatBulletMessage(msg.message, bullet), {
           spacing: 0
         });
       }
       prompts.log.message('', {spacing: 0});
     }
+
+    const errorCount = errorMessages.length;
+    const warningCount = warningMessages.length;
+    const suggestionCount = suggestionMessages.length;
+    const fixableCount = messages.filter(
+      (m) => m.fixableBy === 'migrate'
+    ).length;
+    const parts: string[] = [];
+    if (errorCount > 0)
+      parts.push(`${errorCount} error${errorCount === 1 ? '' : 's'}`);
+    if (warningCount > 0)
+      parts.push(`${warningCount} warning${warningCount === 1 ? '' : 's'}`);
+    if (suggestionCount > 0)
+      parts.push(
+        `${suggestionCount} suggestion${suggestionCount === 1 ? '' : 's'}`
+      );
+    let summary = parts.join(', ');
+    if (fixableCount > 0)
+      summary += ` (${fixableCount} fixable by \`npx @e18e/cli migrate\`)`;
+    prompts.log.message(styleText('dim', summary), {spacing: 0});
   }
   prompts.outro('Done!');
 

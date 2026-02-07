@@ -30,6 +30,8 @@ export interface Message {
   severity: 'error' | 'warning' | 'suggestion';
   score: number;
   message: string;
+  /** Command that can fix this message (e.g. 'migrate'). */
+  fixableBy?: string;
 }
 
 export interface PackageJsonLike {
