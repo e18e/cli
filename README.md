@@ -34,6 +34,14 @@ You can learn more about the CLI by going through the [documentation](https://e1
 
 We're happy you'd like to get involved! Please join our [Discord](https://chat.e18e.dev) server to discuss with others.
 
+## Sponsors
+
+<p align="center">
+  <a href="https://e18e.dev/sponsors.svg">
+    <img src="https://e18e.dev/sponsors.svg" alt="e18e community sponsors" />
+  </a>
+</p>
+
 ## License
 
 MIT License @2025 - Present e18e contributors.
