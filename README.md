@@ -37,7 +37,7 @@ We're happy you'd like to get involved! Please join our [Discord](https://chat.e
 ## Sponsors
 
 <p align="center">
-  <a href="https://e18e.dev/sponsors.svg">
+  <a href="https://github.com/sponsors/e18e">
     <img src="https://e18e.dev/sponsors.svg" alt="e18e community sponsors" />
   </a>
 </p>
