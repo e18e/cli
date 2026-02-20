@@ -153,6 +153,53 @@ describe('analyzeDependencies (local)', () => {
     expect(stats).toMatchSnapshot();
   });
 
+  it('should handle circular dependencies without hanging', async () => {
+    context.packageFile.dependencies = {
+      'package-a': '1.0.0'
+    };
+
+    await createTestPackage(
+      tempDir,
+      {
+        name: 'test-package',
+        version: '1.0.0',
+        dependencies: {
+          'package-a': '1.0.0'
+        }
+      },
+      {createNodeModules: true}
+    );
+
+    const nodeModules = path.join(tempDir, 'node_modules');
+
+    // package-a depends on package-b
+    const pkgADir = path.join(nodeModules, 'package-a');
+    await fs.mkdir(pkgADir, {recursive: true});
+    await fs.writeFile(
+      path.join(pkgADir, 'package.json'),
+      JSON.stringify({
+        name: 'package-a',
+        version: '1.0.0',
+        dependencies: {'package-b': '1.0.0'}
+      })
+    );
+
+    // package-b depends on package-a (circular)
+    const pkgBDir = path.join(nodeModules, 'package-b');
+    await fs.mkdir(pkgBDir, {recursive: true});
+    await fs.writeFile(
+      path.join(pkgBDir, 'package.json'),
+      JSON.stringify({
+        name: 'package-b',
+        version: '1.0.0',
+        dependencies: {'package-a': '1.0.0'}
+      })
+    );
+
+    const result = await runDependencyAnalysis(context);
+    expect(result.stats?.dependencyCount?.production).toBe(1);
+  });
+
   it('should handle missing node_modules', async () => {
     //update package json on context
     context.packageFile.dependencies = {

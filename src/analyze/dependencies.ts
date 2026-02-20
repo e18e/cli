@@ -2,7 +2,8 @@ import type {
   ReportPluginResult,
   Message,
   Stats,
-  AnalysisContext
+  AnalysisContext,
+  PackageJsonLike
 } from '../types.js';
 import {normalizePath} from '../utils/path.js';
 import {getPackageJson} from '../utils/package-json.js';
@@ -23,36 +24,47 @@ export async function runDependencyAnalysis(
   const prodDependencies = Object.keys(pkg.dependencies || {}).length;
   const devDependencies = Object.keys(pkg.devDependencies || {}).length;
 
-  // Recursively traverse dependencies
-  async function traverse(packagePath: string, pathInTree: string) {
-    const depPkg = await getPackageJson(context.fs, packagePath);
+  const packageFilesByName = new Map<string, string>();
+  for (const file of packageFiles) {
+    const normalized = normalizePath(file);
+    const match = normalized.match(
+      /\/node_modules\/((?:@[^/]+\/)?[^/]+)\/package\.json$/
+    );
+    if (match) {
+      packageFilesByName.set(match[1], file);
+    }
+  }
+
+  const pkgCache = new Map<string, PackageJsonLike | null>();
+
+  async function getCachedPackageJson(pkgPath: string) {
+    if (pkgCache.has(pkgPath)) {
+      return pkgCache.get(pkgPath);
+    }
+    const result = await getPackageJson(context.fs, pkgPath);
+    pkgCache.set(pkgPath, result);
+    return result;
+  }
+
+  const visited = new Set<string>();
+
+  async function traverse(packagePath: string) {
+    if (visited.has(packagePath)) return;
+    visited.add(packagePath);
+
+    const depPkg = await getCachedPackageJson(packagePath);
     if (!depPkg || !depPkg.name) return;
 
     for (const depName of Object.keys(depPkg.dependencies || {})) {
-      let packageMatch = packageFiles.find((packageFile) =>
-        normalizePath(packageFile).endsWith(
-          `/node_modules/${depName}/package.json`
-        )
-      );
-
-      if (!packageMatch) {
-        for (const packageFile of packageFiles) {
-          const depPkg = await getPackageJson(context.fs, packageFile);
-          if (depPkg !== null && depPkg.name === depName) {
-            packageMatch = packageFile;
-            break;
-          }
-        }
-      }
+      const packageMatch = packageFilesByName.get(depName);
 
       if (packageMatch) {
-        await traverse(packageMatch, pathInTree + ' > ' + depName);
+        await traverse(packageMatch);
       }
     }
   }
 
-  // Start traversal from root
-  await traverse('/package.json', 'root');
+  await traverse('/package.json');
 
   const stats: Partial<Stats> = {
     name: pkg.name,
