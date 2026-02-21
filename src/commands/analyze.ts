@@ -48,7 +48,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
 
   // Path can be a directory (analyze project)
   if (providedPath) {
-    let stat: Stats | null = null;
+    let stat: Stats | null;
     try {
       stat = await fsp.stat(providedPath);
     } catch {
