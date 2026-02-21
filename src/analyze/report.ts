@@ -57,7 +57,9 @@ export async function report(options: Options) {
     lockfile = await fileSystem.readFile(lockfileFilename);
   } catch (err) {
     const lockfilePath = join(root, lockfileFilename);
-    throw new Error(`Failed to read lockfile at ${lockfilePath}: ${err}`);
+    throw new Error(`Failed to read lockfile at ${lockfilePath}: ${err}`, {
+      cause: err
+    });
   }
 
   try {
@@ -65,7 +67,8 @@ export async function report(options: Options) {
   } catch (err) {
     const packageFilePath = join(root, 'package.json');
     throw new Error(
-      `Failed to read package.json at ${packageFilePath}: ${err}`
+      `Failed to read package.json at ${packageFilePath}: ${err}`,
+      {cause: err}
     );
   }
 
