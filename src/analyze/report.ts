@@ -57,7 +57,9 @@ export async function report(options: Options) {
     lockfile = await fileSystem.readFile(lockfileFilename);
   } catch (err) {
     const lockfilePath = join(root, lockfileFilename);
-    throw new Error(`Failed to read lockfile at ${lockfilePath}: ${err}`, {cause: err});
+    throw new Error(`Failed to read lockfile at ${lockfilePath}: ${err}`, {
+      cause: err
+    });
   }
 
   try {
