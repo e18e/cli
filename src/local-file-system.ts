@@ -6,7 +6,7 @@ import {fdir} from 'fdir';
 import {readFile, stat} from 'node:fs/promises';
 import {normalizePath} from './utils/path.js';
 
-interface CrawlResult {
+interface ScanResult {
   packageFiles: string[];
   installSize: number;
 }
@@ -14,7 +14,7 @@ interface CrawlResult {
 export class LocalFileSystem implements FileSystem {
   #root: string;
   #logger = fileSystemLogger;
-  #crawlResult: CrawlResult | undefined;
+  #scanResult: ScanResult | undefined;
 
   constructor(root: string) {
     this.#root = root;
@@ -24,8 +24,10 @@ export class LocalFileSystem implements FileSystem {
     return this.#root;
   }
 
-  async #crawlNodeModules(): Promise<CrawlResult> {
-    if (this.#crawlResult) return this.#crawlResult;
+  async #scanFiles(): Promise<ScanResult> {
+    if (this.#scanResult) {
+      return this.#scanResult;
+    }
 
     const nodeModulesPath = path.join(this.#root, 'node_modules');
     const packageFiles: string[] = [];
@@ -55,12 +57,12 @@ export class LocalFileSystem implements FileSystem {
       this.#logger.debug('No node_modules directory found');
     }
 
-    this.#crawlResult = {packageFiles, installSize};
-    return this.#crawlResult;
+    this.#scanResult = {packageFiles, installSize};
+    return this.#scanResult;
   }
 
   async listPackageFiles(): Promise<string[]> {
-    const {packageFiles} = await this.#crawlNodeModules();
+    const {packageFiles} = await this.#scanFiles();
     return packageFiles;
   }
 
@@ -69,7 +71,7 @@ export class LocalFileSystem implements FileSystem {
   }
 
   async getInstallSize(): Promise<number> {
-    const {installSize} = await this.#crawlNodeModules();
+    const {installSize} = await this.#scanFiles();
     return installSize;
   }
 
