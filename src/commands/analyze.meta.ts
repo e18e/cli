@@ -14,6 +14,11 @@ export const meta = {
       multiple: true,
       description:
         'Path(s) to custom manifest file(s) for module replacements analysis'
+    },
+    json: {
+      type: 'boolean',
+      default: false,
+      description: 'Output results as JSON to stdout'
     }
   }
 } as const;

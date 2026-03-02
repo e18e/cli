@@ -37,14 +37,17 @@ export async function run(ctx: CommandContext<typeof meta>) {
   const providedPath =
     ctx.positionals.length > 1 ? ctx.positionals[1] : undefined;
   const logLevel = ctx.values['log-level'];
-  let root: string | undefined = undefined;
+  const jsonOutput = ctx.values['json'];
+  let root: string | undefined;
 
   // Enable debug output based on log level
   if (logLevel === 'debug') {
     enableDebug('e18e:*');
   }
 
-  prompts.intro('Analyzing...');
+  if (!jsonOutput) {
+    prompts.intro('Analyzing...');
+  }
 
   // Path can be a directory (analyze project)
   if (providedPath) {
@@ -56,7 +59,11 @@ export async function run(ctx: CommandContext<typeof meta>) {
     }
 
     if (!stat || !stat.isDirectory()) {
-      prompts.cancel(`Path must be a directory: ${providedPath}`);
+      if (jsonOutput) {
+        process.stderr.write(`Path must be a directory: ${providedPath}\n`);
+      } else {
+        prompts.cancel(`Path must be a directory: ${providedPath}`);
+      }
       process.exit(1);
     }
 
@@ -70,6 +77,19 @@ export async function run(ctx: CommandContext<typeof meta>) {
     root,
     manifest: customManifests
   });
+
+  const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;
+  const hasFailingMessages =
+    thresholdRank > 0 &&
+    messages.some((m) => SEVERITY_RANK[m.severity] >= thresholdRank);
+
+  if (jsonOutput) {
+    process.stdout.write(JSON.stringify({stats, messages}, null, 2) + '\n');
+    if (hasFailingMessages) {
+      process.exit(1);
+    }
+    return;
+  }
 
   prompts.log.info('Summary');
 
@@ -197,10 +217,6 @@ export async function run(ctx: CommandContext<typeof meta>) {
   prompts.outro('Done!');
 
   // Exit with non-zero when messages meet the fail threshold (--log-level)
-  const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;
-  const hasFailingMessages =
-    thresholdRank > 0 &&
-    messages.some((m) => SEVERITY_RANK[m.severity] >= thresholdRank);
   if (hasFailingMessages) {
     process.exit(1);
   }

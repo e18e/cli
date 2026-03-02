@@ -157,6 +157,40 @@ describe('analyze exit codes', () => {
   });
 });
 
+describe('analyze --json', () => {
+  beforeAll(async () => {
+    const nodeModules = path.join(basicChalkFixture, 'node_modules');
+    if (!existsSync(nodeModules)) {
+      execSync('npm install', {cwd: basicChalkFixture, stdio: 'pipe'});
+    }
+  });
+
+  it('outputs valid JSON to stdout', async () => {
+    const {stdout, code} = await runCliProcess(
+      ['analyze', '--json', '--log-level=error'],
+      tempDir
+    );
+    expect(code).toBe(0);
+    const parsed = JSON.parse(stdout);
+    expect(parsed).toHaveProperty('stats');
+    expect(parsed).toHaveProperty('messages');
+    expect(parsed.stats).toHaveProperty('name', 'mock-package');
+    expect(parsed.stats).toHaveProperty('version', '1.0.0');
+    expect(parsed.stats).toHaveProperty('dependencyCount');
+    expect(Array.isArray(parsed.messages)).toBe(true);
+  });
+
+  it('exits 1 with --json when messages meet fail threshold', async () => {
+    const {stdout, code} = await runCliProcess(
+      ['analyze', '--json'],
+      basicChalkFixture
+    );
+    expect(code).toBe(1);
+    const parsed = JSON.parse(stdout);
+    expect(parsed.messages.length).toBeGreaterThan(0);
+  });
+});
+
 describe('analyze fixable summary', () => {
   it('includes fixable-by-migrate summary when project has fixable replacement', async () => {
     const {stdout, stderr, code} = await runCliProcess(
