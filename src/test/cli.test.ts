@@ -1,4 +1,4 @@
-import {describe, it, expect, beforeAll, afterAll} from 'vitest';
+import {describe, it, expect, beforeAll, afterAll, afterEach} from 'vitest';
 import {spawn} from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs/promises';
@@ -154,6 +154,49 @@ describe('analyze exit codes', () => {
       basicChalkFixture
     );
     expect(code).toBe(0);
+  });
+});
+
+describe('analyze --json', () => {
+  beforeAll(async () => {
+    const nodeModules = path.join(basicChalkFixture, 'node_modules');
+    if (!existsSync(nodeModules)) {
+      execSync('npm install', {cwd: basicChalkFixture, stdio: 'pipe'});
+    }
+  });
+
+  afterEach(async () => {
+    await fs.rm(path.join(tempDir, 'e18e-cli-results.json'), {force: true});
+    await fs.rm(path.join(basicChalkFixture, 'e18e-cli-results.json'), {
+      force: true
+    });
+  });
+
+  it('writes valid JSON to e18e-cli-results.json', async () => {
+    const {code} = await runCliProcess(
+      ['analyze', '--json', '--log-level=error'],
+      tempDir
+    );
+    expect(code).toBe(0);
+    const outputFile = path.join(tempDir, 'e18e-cli-results.json');
+    const parsed = JSON.parse(await fs.readFile(outputFile, 'utf8'));
+    expect(parsed).toHaveProperty('stats');
+    expect(parsed).toHaveProperty('messages');
+    expect(parsed.stats).toHaveProperty('name', 'mock-package');
+    expect(parsed.stats).toHaveProperty('version', '1.0.0');
+    expect(parsed.stats).toHaveProperty('dependencyCount');
+    expect(Array.isArray(parsed.messages)).toBe(true);
+  });
+
+  it('exits 1 with --json when messages meet fail threshold', async () => {
+    const {code} = await runCliProcess(
+      ['analyze', '--json'],
+      basicChalkFixture
+    );
+    expect(code).toBe(1);
+    const outputFile = path.join(basicChalkFixture, 'e18e-cli-results.json');
+    const parsed = JSON.parse(await fs.readFile(outputFile, 'utf8'));
+    expect(parsed.messages.length).toBeGreaterThan(0);
   });
 });
 

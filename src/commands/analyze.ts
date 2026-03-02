@@ -1,5 +1,6 @@
 import {type CommandContext} from 'gunshi';
 import {promises as fsp, type Stats} from 'node:fs';
+import {join} from 'node:path';
 import * as prompts from '@clack/prompts';
 import {styleText} from 'node:util';
 import {meta} from './analyze.meta.js';
@@ -20,6 +21,8 @@ function formatBytes(bytes: number) {
   return `${size.toFixed(1)} ${units[unitIndex]}`;
 }
 
+const JSON_OUTPUT_FILENAME = 'e18e-cli-results.json';
+
 const SEVERITY_RANK: Record<string, number> = {
   error: 3,
   warning: 2,
@@ -37,7 +40,8 @@ export async function run(ctx: CommandContext<typeof meta>) {
   const providedPath =
     ctx.positionals.length > 1 ? ctx.positionals[1] : undefined;
   const logLevel = ctx.values['log-level'];
-  let root: string | undefined = undefined;
+  const jsonOutput = ctx.values['json'];
+  let root: string | undefined;
 
   // Enable debug output based on log level
   if (logLevel === 'debug') {
@@ -70,6 +74,30 @@ export async function run(ctx: CommandContext<typeof meta>) {
     root,
     manifest: customManifests
   });
+
+  const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;
+  const hasFailingMessages =
+    thresholdRank > 0 &&
+    messages.some((m) => SEVERITY_RANK[m.severity] >= thresholdRank);
+
+  if (jsonOutput) {
+    const outputPath = join(root ?? process.cwd(), JSON_OUTPUT_FILENAME);
+    try {
+      await fsp.writeFile(
+        outputPath,
+        JSON.stringify({stats, messages}, null, 2) + '\n'
+      );
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : String(err);
+      prompts.cancel(`Failed to write output file: ${reason}`);
+      process.exit(1);
+    }
+    prompts.outro(`Output written to ${outputPath}`);
+    if (hasFailingMessages) {
+      process.exit(1);
+    }
+    return;
+  }
 
   prompts.log.info('Summary');
 
@@ -197,10 +225,6 @@ export async function run(ctx: CommandContext<typeof meta>) {
   prompts.outro('Done!');
 
   // Exit with non-zero when messages meet the fail threshold (--log-level)
-  const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;
-  const hasFailingMessages =
-    thresholdRank > 0 &&
-    messages.some((m) => SEVERITY_RANK[m.severity] >= thresholdRank);
   if (hasFailingMessages) {
     process.exit(1);
   }

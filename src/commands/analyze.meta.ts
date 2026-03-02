@@ -14,6 +14,12 @@ export const meta = {
       multiple: true,
       description:
         'Path(s) to custom manifest file(s) for module replacements analysis'
+    },
+    json: {
+      type: 'boolean',
+      default: false,
+      description:
+        'Write results as JSON to e18e-cli-results.json in the analyzed directory'
     }
   }
 } as const;
