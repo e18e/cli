@@ -1,6 +1,5 @@
 import {type CommandContext} from 'gunshi';
 import {promises as fsp, type Stats} from 'node:fs';
-import {join} from 'node:path';
 import * as prompts from '@clack/prompts';
 import {styleText} from 'node:util';
 import {meta} from './analyze.meta.js';
@@ -20,8 +19,6 @@ function formatBytes(bytes: number) {
 
   return `${size.toFixed(1)} ${units[unitIndex]}`;
 }
-
-const JSON_OUTPUT_FILENAME = 'e18e-cli-results.json';
 
 const SEVERITY_RANK: Record<string, number> = {
   error: 3,
@@ -48,7 +45,9 @@ export async function run(ctx: CommandContext<typeof meta>) {
     enableDebug('e18e:*');
   }
 
-  prompts.intro('Analyzing...');
+  if (!jsonOutput) {
+    prompts.intro('Analyzing...');
+  }
 
   // Path can be a directory (analyze project)
   if (providedPath) {
@@ -60,7 +59,11 @@ export async function run(ctx: CommandContext<typeof meta>) {
     }
 
     if (!stat || !stat.isDirectory()) {
-      prompts.cancel(`Path must be a directory: ${providedPath}`);
+      if (jsonOutput) {
+        process.stderr.write(`Path must be a directory: ${providedPath}\n`);
+      } else {
+        prompts.cancel(`Path must be a directory: ${providedPath}`);
+      }
       process.exit(1);
     }
 
@@ -81,18 +84,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
     messages.some((m) => SEVERITY_RANK[m.severity] >= thresholdRank);
 
   if (jsonOutput) {
-    const outputPath = join(root ?? process.cwd(), JSON_OUTPUT_FILENAME);
-    try {
-      await fsp.writeFile(
-        outputPath,
-        JSON.stringify({stats, messages}, null, 2) + '\n'
-      );
-    } catch (err) {
-      const reason = err instanceof Error ? err.message : String(err);
-      prompts.cancel(`Failed to write output file: ${reason}`);
-      process.exit(1);
-    }
-    prompts.outro(`Output written to ${outputPath}`);
+    process.stdout.write(JSON.stringify({stats, messages}, null, 2) + '\n');
     if (hasFailingMessages) {
       process.exit(1);
     }

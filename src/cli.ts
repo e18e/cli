@@ -29,9 +29,13 @@ const subCommands = new Map<string, LazyCommand<any>>([
   ['migrate', lazy(migrateCommand, migrateMeta)]
 ]);
 
-cli(process.argv.slice(2), defaultCommand, {
+const args = process.argv.slice(2);
+const isJsonMode = args[0] === 'analyze' && args.includes('--json');
+
+cli(args, defaultCommand, {
   name: 'cli',
   version,
   description: `${styleText('cyan', 'e18e')}`,
-  subCommands
+  subCommands,
+  renderHeader: isJsonMode ? null : undefined
 });
