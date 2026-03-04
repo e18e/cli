@@ -1,32 +1,67 @@
 {
-  "moduleReplacements": [
-    {
+  "mappings": {
+    "@e18e/fake-0": {
+      "type": "module",
       "moduleName": "@e18e/fake-0",
-      "type": "simple",
-      "replacement": "Use picocolors, kleur, or native console styling"
+      "replacements": ["fake-0-simple"]
     },
-    {
+    "@e18e/fake-1": {
+      "type": "module",
       "moduleName": "@e18e/fake-1",
-      "type": "simple",
-      "replacement": "Use native JavaScript methods or specific lodash functions"
+      "replacements": ["fake-1-simple"]
     },
-    {
+    "@e18e/fake-2": {
+      "type": "module",
       "moduleName": "@e18e/fake-2",
-      "type": "native",
-      "replacement": "Intl.DateTimeFormat or Date methods",
-      "mdnPath": "Global_Objects/Intl/DateTimeFormat",
-      "nodeVersion": "12.0.0"
+      "replacements": ["fake-2-native"]
     },
-    {
+    "@e18e/fake-3": {
+      "type": "module",
       "moduleName": "@e18e/fake-3",
-      "type": "documented",
-      "replacement": "node-fetch, axios, or native fetch",
-      "docPath": "request-alternatives"
+      "replacements": ["fake-3-documented"]
     },
-    {
+    "@e18e/fake-4": {
+      "type": "module",
       "moduleName": "@e18e/fake-4",
-      "type": "none",
-      "replacement": "Use native Promise methods"
+      "replacements": ["fake-4-removal"]
     }
-  ]
+  },
+  "replacements": {
+    "fake-0-simple": {
+      "id": "fake-0-simple",
+      "type": "simple",
+      "description": "Use picocolors, kleur, or native console styling"
+    },
+    "fake-1-simple": {
+      "id": "fake-1-simple",
+      "type": "simple",
+      "description": "Use native JavaScript methods or specific lodash functions"
+    },
+    "fake-2-native": {
+      "id": "fake-2-native",
+      "type": "native",
+      "description": "Intl.DateTimeFormat or Date methods",
+      "url": {
+        "type": "mdn",
+        "id": "Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat"
+      },
+      "engines": [
+        { "engine": "nodejs", "minVersion": "12.0.0" }
+      ]
+    },
+    "fake-3-documented": {
+      "id": "fake-3-documented",
+      "type": "documented",
+      "url": {
+        "type": "e18e",
+        "id": "request-alternatives"
+      },
+      "replacementModule": "node-fetch"
+    },
+    "fake-4-removal": {
+      "id": "fake-4-removal",
+      "type": "removal",
+      "description": "Use native Promise methods"
+    }
+  }
 }
