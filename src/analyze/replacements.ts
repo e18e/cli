@@ -32,9 +32,7 @@ export function resolveUrl(url: KnownUrl): string {
   }
 }
 
-function getNodeMinVersion(
-  engines?: EngineConstraint[]
-): string | undefined {
+function getNodeMinVersion(engines?: EngineConstraint[]): string | undefined {
   return engines?.find((e) => e.engine === 'nodejs')?.minVersion;
 }
 
@@ -171,9 +169,7 @@ export async function runReplacements(
 
       const urlStr = resolveUrl(replacement.url);
       const requires =
-        nodeVersion && !enginesNode
-          ? ` Required Node >= ${nodeVersion}.`
-          : '';
+        nodeVersion && !enginesNode ? ` Required Node >= ${nodeVersion}.` : '';
       const description = replacement.description ?? replacement.id;
       const message = `Module "${name}" can be replaced with native functionality. Use "${description}" instead.${requires}`;
       const fullMessage = `${message} You can read more at ${urlStr}.`;
