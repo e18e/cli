@@ -58,6 +58,27 @@ function isNodeEngineCompatible(
   );
 }
 
+function findFirstCompatibleReplacement(
+  replacementIds: string[],
+  defs: Record<string, ModuleReplacement>,
+  enginesNode: string | undefined
+): ModuleReplacement | undefined {
+  for (const id of replacementIds) {
+    const replacement = defs[id];
+    if (!replacement) continue;
+
+    if (replacement.type === 'native' && enginesNode) {
+      const nodeVersion = getNodeMinVersion(replacement.engines);
+      if (nodeVersion && !isNodeEngineCompatible(nodeVersion, enginesNode)) {
+        continue;
+      }
+    }
+
+    return replacement;
+  }
+  return undefined;
+}
+
 async function loadCustomManifests(
   manifestPaths: string[]
 ): Promise<ManifestModule> {
@@ -121,71 +142,72 @@ export async function runReplacements(
   };
 
   const fixableByMigrate = new Set(fixableReplacements.map((r) => r.from));
+  const enginesNode = packageJson.engines?.node;
 
   for (const name of Object.keys(packageJson.dependencies)) {
     const mapping = allMappings[name];
-    if (!mapping) {
+    if (!mapping?.replacements?.length) {
       continue;
     }
 
-    const replacementIds = mapping.replacements;
-    if (!replacementIds || replacementIds.length === 0) {
-      continue;
-    }
-
-    const replacement = allReplacementDefs[replacementIds[0]];
-    if (!replacement) {
+    const firstCompatible = findFirstCompatibleReplacement(
+      mapping.replacements,
+      allReplacementDefs,
+      enginesNode
+    );
+    if (!firstCompatible) {
       continue;
     }
 
     const fixableBy = fixableByMigrate.has(name) ? 'migrate' : undefined;
+    const mappingUrl = mapping.url ? resolveUrl(mapping.url) : undefined;
 
-    if (replacement.type === 'removal') {
+    if (mappingUrl) {
+      let message = `Module "${name}" can be replaced.`;
+      if (
+        firstCompatible.type === 'documented' &&
+        firstCompatible.replacementModule
+      ) {
+        message += ` We recommend switching to "${firstCompatible.replacementModule}".`;
+      }
+      message += ` See more at ${mappingUrl}.`;
+      result.messages.push({
+        severity: 'warning',
+        score: 0,
+        message,
+        ...(fixableBy && {fixableBy})
+      });
+    } else if (firstCompatible.type === 'removal') {
       result.messages.push({
         severity: 'warning',
         score: 0,
         message: `Module "${name}" can be removed, and native functionality used instead`,
         ...(fixableBy && {fixableBy})
       });
-    } else if (replacement.type === 'simple') {
+    } else if (firstCompatible.type === 'simple') {
       result.messages.push({
         severity: 'warning',
         score: 0,
-        message: `Module "${name}" can be replaced. ${replacement.description}.`,
+        message: `Module "${name}" can be replaced. ${firstCompatible.description}.`,
         ...(fixableBy && {fixableBy})
       });
-    } else if (replacement.type === 'native') {
-      const enginesNode = packageJson.engines?.node;
-      const nodeVersion = getNodeMinVersion(replacement.engines);
-      let supported = true;
-
-      if (nodeVersion && enginesNode) {
-        supported = isNodeEngineCompatible(nodeVersion, enginesNode);
-      }
-
-      if (!supported) {
-        continue;
-      }
-
-      const urlStr = resolveUrl(replacement.url);
+    } else if (firstCompatible.type === 'native') {
+      const nodeVersion = getNodeMinVersion(firstCompatible.engines);
       const requires =
         nodeVersion && !enginesNode ? ` Required Node >= ${nodeVersion}.` : '';
-      const message = `Module "${name}" can be replaced with native functionality.${requires}`;
-      const fullMessage = `${message} You can read more at ${urlStr}.`;
+      const urlStr = resolveUrl(firstCompatible.url);
       result.messages.push({
         severity: 'warning',
         score: 0,
-        message: fullMessage,
+        message: `Module "${name}" can be replaced with native functionality.${requires} You can read more at ${urlStr}.`,
         ...(fixableBy && {fixableBy})
       });
-    } else if (replacement.type === 'documented') {
-      const urlStr = resolveUrl(replacement.url);
-      const message = `Module "${name}" can be replaced with a more performant alternative.`;
-      const fullMessage = `${message} See the list of available alternatives at ${urlStr}.`;
+    } else if (firstCompatible.type === 'documented') {
+      const urlStr = resolveUrl(firstCompatible.url);
       result.messages.push({
         severity: 'warning',
         score: 0,
-        message: fullMessage,
+        message: `Module "${name}" can be replaced with a more performant alternative. See the list of available alternatives at ${urlStr}.`,
         ...(fixableBy && {fixableBy})
       });
     }
