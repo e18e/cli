@@ -170,8 +170,7 @@ export async function runReplacements(
       const urlStr = resolveUrl(replacement.url);
       const requires =
         nodeVersion && !enginesNode ? ` Required Node >= ${nodeVersion}.` : '';
-      const description = replacement.description ?? replacement.id;
-      const message = `Module "${name}" can be replaced with native functionality. Use "${description}" instead.${requires}`;
+      const message = `Module "${name}" can be replaced with native functionality.${requires}`;
       const fullMessage = `${message} You can read more at ${urlStr}.`;
       result.messages.push({
         severity: 'warning',

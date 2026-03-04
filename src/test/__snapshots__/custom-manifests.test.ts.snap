@@ -15,7 +15,7 @@ exports[`Custom Manifests > should load and use custom manifest files 1`] = `
     "severity": "warning",
   },
   {
-    "message": "Module "@e18e/fake-2" can be replaced with native functionality. Use "Intl.DateTimeFormat or Date methods" instead. Required Node >= 12.0.0. You can read more at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat.",
+    "message": "Module "@e18e/fake-2" can be replaced with native functionality. Required Node >= 12.0.0. You can read more at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat.",
     "score": 0,
     "severity": "warning",
   },
@@ -45,7 +45,7 @@ exports[`Custom Manifests > should load multiple manifest files 1`] = `
     "severity": "warning",
   },
   {
-    "message": "Module "@e18e/fake-2" can be replaced with native functionality. Use "Intl.DateTimeFormat or Date methods" instead. Required Node >= 12.0.0. You can read more at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat.",
+    "message": "Module "@e18e/fake-2" can be replaced with native functionality. Required Node >= 12.0.0. You can read more at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat.",
     "score": 0,
     "severity": "warning",
   },
@@ -86,7 +86,7 @@ exports[`Custom Manifests > should prioritize custom replacements over built-in 
       "severity": "warning",
     },
     {
-      "message": "Module "@e18e/fake-2" can be replaced with native functionality. Use "Intl.DateTimeFormat or Date methods" instead. Required Node >= 12.0.0. You can read more at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat.",
+      "message": "Module "@e18e/fake-2" can be replaced with native functionality. Required Node >= 12.0.0. You can read more at https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat.",
       "score": 0,
       "severity": "warning",
     },
