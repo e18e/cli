@@ -3,29 +3,38 @@ import {join, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {all} from 'module-replacements';
 import {codemods} from 'module-replacements-codemods';
-import {fixableReplacements} from '../lib/commands/fixable-replacements.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-async function generateFixableReplacements() {
-  const existingReplacements = new Map(
-    fixableReplacements.map((r) => [r.from, r])
-  );
+function getReplacementTarget(moduleName: string): string {
+  const mapping = all.mappings[moduleName];
+  if (!mapping?.replacements?.length) return moduleName;
 
+  const firstId = mapping.replacements[0]!;
+  const replacement = all.replacements[firstId];
+  if (!replacement) return firstId;
+
+  if (replacement.type === 'documented' && replacement.replacementModule) {
+    return replacement.replacementModule;
+  }
+
+  return replacement.id;
+}
+
+async function generateFixableReplacements() {
   let newCode = `import type { Replacement } from '../types.js';\n`;
   newCode += `import { codemods } from 'module-replacements-codemods';\n\n`;
   newCode += `export const fixableReplacements: Replacement[] = [\n`;
 
   let count = 0;
-  for (const replacement of all.moduleReplacements) {
-    if (replacement.moduleName in codemods) {
-      const existing = existingReplacements.get(replacement.moduleName);
-      const to = existing?.to ?? 'TODO';
+  for (const moduleName of Object.keys(all.mappings)) {
+    if (moduleName in codemods) {
+      const to = getReplacementTarget(moduleName);
 
       newCode += `  {\n`;
-      newCode += `    from: '${replacement.moduleName}',\n`;
+      newCode += `    from: '${moduleName}',\n`;
       newCode += `    to: '${to}',\n`;
-      newCode += `    factory: codemods['${replacement.moduleName}']\n`;
+      newCode += `    factory: codemods['${moduleName}']\n`;
       newCode += `  },\n`;
       count++;
     }
