@@ -188,7 +188,7 @@ export async function runReplacements(
       result.messages.push({
         severity: 'warning',
         score: 0,
-        message: `Module "${name}" can be replaced. ${firstCompatible.description}.`,
+        message: `Module "${name}" can be replaced with inline native syntax. ${firstCompatible.description}.`,
         ...(fixableBy && {fixableBy})
       });
     } else if (firstCompatible.type === 'native') {
