@@ -1,6 +1,5 @@
 import {createRequire} from 'node:module';
 import {join, relative} from 'node:path';
-import {readFile, stat} from 'node:fs/promises';
 import {glob} from 'tinyglobby';
 import {minVersion} from 'semver';
 import type {AnalysisContext, ReportPluginResult} from '../types.js';
@@ -71,34 +70,31 @@ export async function runCoreJsAnalysis(
 
   const files = await glob(SOURCE_GLOB, {
     cwd: context.root,
-    ignore: SOURCE_IGNORE,
-    absolute: true
+    ignore: SOURCE_IGNORE
   });
 
   for (const filePath of files) {
     let source: string;
     try {
-      source = await readFile(filePath, 'utf8');
+      source = await context.fs.readFile(filePath);
     } catch {
       continue;
     }
 
     for (const [, specifier] of source.matchAll(IMPORT_RE)) {
       if (BROAD_IMPORTS.has(specifier)) {
-        const rel = relative(context.root, filePath);
         messages.push({
           severity: 'warning',
           score: 0,
-          message: `Broad core-js import "${specifier}" in ${rel} loads all polyfills at once. Import only the specific modules you need.`
+          message: `Broad core-js import "${specifier}" in ${filePath} loads all polyfills at once. Import only the specific modules you need.`
         });
       } else if (specifier.startsWith('core-js/modules/')) {
         const moduleName = specifier.slice('core-js/modules/'.length);
         if (unnecessarySet.has(moduleName)) {
-          const rel = relative(context.root, filePath);
           messages.push({
             severity: 'suggestion',
             score: 0,
-            message: `core-js polyfill "${moduleName}" imported in ${rel} is unnecessary — your Node.js target (>= ${targetVersion}) already supports this natively.`
+            message: `core-js polyfill "${moduleName}" imported in ${filePath} is unnecessary — your Node.js target (>= ${targetVersion}) already supports this natively.`
           });
         }
       }
@@ -129,12 +125,13 @@ export async function runVendoredCoreJsAnalysis(
   let totalVendoredBytes = 0;
 
   for (const filePath of buildFiles) {
+    const rel = relative(context.root, filePath);
     let source: string;
     let size: number;
     try {
-      [source, {size}] = await Promise.all([
-        readFile(filePath, 'utf8'),
-        stat(filePath)
+      [source, size] = await Promise.all([
+        context.fs.readFile(rel),
+        context.fs.getFileSize(rel)
       ]);
     } catch {
       continue;
@@ -149,7 +146,6 @@ export async function runVendoredCoreJsAnalysis(
     const versionMatch = source.match(/version:"(\d+\.\d+\.\d+)"/);
     const version = versionMatch ? versionMatch[1] : 'unknown';
     const sizeKb = (size / 1024).toFixed(1);
-    const rel = relative(context.root, filePath);
 
     messages.push({
       severity: 'warning',
