@@ -83,4 +83,9 @@ export class LocalFileSystem implements FileSystem {
       return false;
     }
   }
+
+  async getFileSize(filePath: string): Promise<number> {
+    const {size} = await stat(path.join(this.#root, filePath));
+    return size;
+  }
 }

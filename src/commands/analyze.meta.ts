@@ -19,6 +19,11 @@ export const meta = {
       type: 'boolean',
       default: false,
       description: 'Output results as JSON to stdout'
+    },
+    'build-dir': {
+      type: 'string',
+      description:
+        'Path to build output directory to scan for vendored polyfills (e.g. .next, dist, build)'
     }
   }
 } as const;
