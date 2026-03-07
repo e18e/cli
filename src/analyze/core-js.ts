@@ -137,6 +137,8 @@ export async function runVendoredCoreJsAnalysis(
       continue;
     }
 
+    // core-js embeds these strings as runtime literals in its version metadata, so they
+    // typically survive minification — but aggressive dead-code elimination could remove them.
     if (!source.includes('Denis Pushkarev') && !source.includes('zloirock')) {
       continue;
     }
