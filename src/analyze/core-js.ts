@@ -6,7 +6,10 @@ import type {AnalysisContext, ReportPluginResult} from '../types.js';
 
 const cjsRequire = createRequire(import.meta.url);
 const {compat, modules: allModules} = cjsRequire('core-js-compat') as {
-  compat: (opts: {targets: Record<string, string>; inverse?: boolean}) => {
+  compat: (opts: {
+    targets: Record<string, string> | string;
+    inverse?: boolean;
+  }) => {
     list: string[];
   };
   modules: string[];
@@ -137,9 +140,15 @@ export async function runVendoredCoreJsAnalysis(
       continue;
     }
 
-    // core-js embeds these strings as runtime literals in its version metadata, so they
-    // typically survive minification — but aggressive dead-code elimination could remove them.
-    if (!source.includes('Denis Pushkarev') && !source.includes('zloirock')) {
+    // Detection uses multiple signals: author strings and __core-js_shared__ are runtime
+    // literals/globals that typically survive minification; mode:"global" is structural
+    // to core-js version metadata. Aggressive dead-code elimination could still remove them.
+    if (
+      !source.includes('Denis Pushkarev') &&
+      !source.includes('zloirock') &&
+      !source.includes('__core-js_shared__') &&
+      !source.includes('mode:"global"')
+    ) {
       continue;
     }
 

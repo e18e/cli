@@ -361,6 +361,44 @@ describe('runVendoredCoreJsAnalysis', () => {
     expect(vendoredMsg?.message).toContain('dist/bundle.js');
   });
 
+  it('warns when a vendored core-js file is detected via __core-js_shared__', async () => {
+    const buildDir = path.join(tempDir, 'dist');
+    await fs.mkdir(buildDir);
+    await fs.writeFile(
+      path.join(buildDir, 'bundle.js'),
+      `globalThis["__core-js_shared__"]={};var e={version:"3.36.0"};`
+    );
+
+    const context = makeContext(tempDir, {
+      options: {buildDir: 'dist'},
+      packageFile: {name: 'test-package', version: '1.0.0'}
+    });
+
+    const result = await runVendoredCoreJsAnalysis(context);
+
+    expect(result.messages).toHaveLength(1);
+    expect(result.messages[0]?.message).toContain('3.36.0');
+  });
+
+  it('warns when a vendored core-js file is detected via mode:"global"', async () => {
+    const buildDir = path.join(tempDir, 'dist');
+    await fs.mkdir(buildDir);
+    await fs.writeFile(
+      path.join(buildDir, 'bundle.js'),
+      `(r.versions||(r.versions=[])).push({version:"3.37.0",mode:"global"});`
+    );
+
+    const context = makeContext(tempDir, {
+      options: {buildDir: 'dist'},
+      packageFile: {name: 'test-package', version: '1.0.0'}
+    });
+
+    const result = await runVendoredCoreJsAnalysis(context);
+
+    expect(result.messages).toHaveLength(1);
+    expect(result.messages[0]?.message).toContain('3.37.0');
+  });
+
   it('warns when a vendored core-js file is detected via zloirock', async () => {
     const buildDir = path.join(tempDir, '.next');
     await fs.mkdir(buildDir, {recursive: true});
