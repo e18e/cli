@@ -21,7 +21,9 @@ const unnecessaryForNode18 = compat({
   targets: {node: '18.0.0'},
   inverse: true
 }).list;
-const unnecessaryModule = unnecessaryForNode18[0]!;
+const unnecessaryModule = unnecessaryForNode18[0];
+if (!unnecessaryModule)
+  throw new Error('core-js-compat returned empty list for node 18');
 
 function makeContext(
   tempDir: string,
@@ -106,8 +108,10 @@ describe('runCoreJsAnalysis', () => {
     const result = await runCoreJsAnalysis(context);
 
     expect(result.messages).toHaveLength(1);
-    expect(result.messages[0]!.severity).toBe('warning');
-    expect(result.messages[0]!.message).toContain('"core-js"');
+    const broadMsg = result.messages[0];
+    expect(broadMsg).toBeDefined();
+    expect(broadMsg?.severity).toBe('warning');
+    expect(broadMsg?.message).toContain('"core-js"');
   });
 
   it('warns on all broad import variants', async () => {
@@ -153,8 +157,10 @@ describe('runCoreJsAnalysis', () => {
     const result = await runCoreJsAnalysis(context);
 
     expect(result.messages).toHaveLength(1);
-    expect(result.messages[0]!.severity).toBe('suggestion');
-    expect(result.messages[0]!.message).toContain(unnecessaryModule);
+    const suggestionMsg = result.messages[0];
+    expect(suggestionMsg).toBeDefined();
+    expect(suggestionMsg?.severity).toBe('suggestion');
+    expect(suggestionMsg?.message).toContain(unnecessaryModule);
   });
 
   it('emits no message for a require() broad import', async () => {
@@ -171,7 +177,7 @@ describe('runCoreJsAnalysis', () => {
     const result = await runCoreJsAnalysis(context);
 
     expect(result.messages).toHaveLength(1);
-    expect(result.messages[0]!.severity).toBe('warning');
+    expect(result.messages[0]?.severity).toBe('warning');
   });
 
   it('emits no message for a core-js/modules import that is still needed', async () => {
@@ -187,7 +193,10 @@ describe('runCoreJsAnalysis', () => {
       return;
     }
 
-    const neededModule = necessaryForOldNode[0]!;
+    const neededModule = necessaryForOldNode[0];
+    expect(neededModule).toBeDefined();
+    if (!neededModule)
+      throw new Error('necessaryForOldNode was unexpectedly empty');
 
     await fs.writeFile(
       path.join(tempDir, 'index.js'),
@@ -242,7 +251,7 @@ describe('runCoreJsAnalysis', () => {
     const result = await runCoreJsAnalysis(context);
 
     expect(result.messages).toHaveLength(1);
-    expect(result.messages[0]!.severity).toBe('suggestion');
+    expect(result.messages[0]?.severity).toBe('suggestion');
   });
 
   it('falls back to current node version when engines.node is absent', async () => {
@@ -345,9 +354,11 @@ describe('runVendoredCoreJsAnalysis', () => {
     const result = await runVendoredCoreJsAnalysis(context);
 
     expect(result.messages).toHaveLength(1);
-    expect(result.messages[0]!.severity).toBe('warning');
-    expect(result.messages[0]!.message).toContain('3.35.0');
-    expect(result.messages[0]!.message).toContain('dist/bundle.js');
+    const vendoredMsg = result.messages[0];
+    expect(vendoredMsg).toBeDefined();
+    expect(vendoredMsg?.severity).toBe('warning');
+    expect(vendoredMsg?.message).toContain('3.35.0');
+    expect(vendoredMsg?.message).toContain('dist/bundle.js');
   });
 
   it('warns when a vendored core-js file is detected via zloirock', async () => {
@@ -366,7 +377,7 @@ describe('runVendoredCoreJsAnalysis', () => {
     const result = await runVendoredCoreJsAnalysis(context);
 
     expect(result.messages).toHaveLength(1);
-    expect(result.messages[0]!.message).toContain('3.30.0');
+    expect(result.messages[0]?.message).toContain('3.30.0');
   });
 
   it('reports vendoredPolyfillSize in stats', async () => {
@@ -384,10 +395,11 @@ describe('runVendoredCoreJsAnalysis', () => {
 
     const result = await runVendoredCoreJsAnalysis(context);
 
-    expect(result.stats?.extraStats).toHaveLength(1);
-    expect(result.stats?.extraStats![0]!.name).toBe('vendoredPolyfillSize');
-    expect(result.stats?.extraStats![0]!.label).toBe('Vendored Polyfill Size');
-    expect(result.stats?.extraStats![0]!.value).toBe(fileSize);
+    const extraStats = result.stats?.extraStats;
+    expect(extraStats).toHaveLength(1);
+    expect(extraStats?.[0]?.name).toBe('vendoredPolyfillSize');
+    expect(extraStats?.[0]?.label).toBe('Vendored Polyfill Size');
+    expect(extraStats?.[0]?.value).toBe(fileSize);
   });
 
   it('accumulates size across multiple vendored files', async () => {
@@ -405,7 +417,7 @@ describe('runVendoredCoreJsAnalysis', () => {
     const result = await runVendoredCoreJsAnalysis(context);
 
     expect(result.messages).toHaveLength(2);
-    const totalSize = result.stats?.extraStats![0]!.value as number;
+    const totalSize = result.stats?.extraStats?.[0]?.value as number;
     expect(totalSize).toBe(Buffer.byteLength(content, 'utf8') * 2);
   });
 
@@ -436,6 +448,6 @@ describe('runVendoredCoreJsAnalysis', () => {
 
     const result = await runVendoredCoreJsAnalysis(context);
 
-    expect(result.messages[0]!.message).toContain('unknown');
+    expect(result.messages[0]?.message).toContain('unknown');
   });
 });
