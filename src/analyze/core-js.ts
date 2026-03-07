@@ -1,21 +1,11 @@
-import {createRequire} from 'node:module';
 import {join, relative} from 'node:path';
 import {glob} from 'tinyglobby';
 import {minVersion} from 'semver';
 import type {AnalysisContext, ReportPluginResult} from '../types.js';
 
-const cjsRequire = createRequire(import.meta.url);
-const {compat, modules: allModules} = cjsRequire('core-js-compat') as {
-  compat: (opts: {
-    targets: Record<string, string> | string;
-    inverse?: boolean;
-  }) => {
-    list: string[];
-  };
-  modules: string[];
-};
+import coreJsCompat from 'core-js-compat';
 
-const {list: modernUnnecessary} = compat({
+const {list: modernUnnecessary} = coreJsCompat.compat({
   targets: 'last 2 versions',
   inverse: true
 });
@@ -65,7 +55,7 @@ export async function runCoreJsAnalysis(
     }
   }
 
-  const {list: unnecessaryForTarget} = compat({
+  const {list: unnecessaryForTarget} = coreJsCompat.compat({
     targets: {node: targetVersion},
     inverse: true
   });
@@ -124,7 +114,7 @@ export async function runVendoredCoreJsAnalysis(
     return {messages};
   }
 
-  const totalPolyfills = allModules.length;
+  const totalPolyfills = coreJsCompat.modules.length;
   let totalVendoredBytes = 0;
 
   for (const filePath of buildFiles) {
