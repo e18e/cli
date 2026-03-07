@@ -154,7 +154,7 @@ export async function runVendoredCoreJsAnalysis(
     messages.push({
       severity: 'warning',
       score: 0,
-      message: `Vendored core-js ${version} detected in ${rel} (${sizeKb} KB). This bundle includes ${totalPolyfills} polyfills, of which ${MODERN_UNNECESSARY_COUNT} are unnecessary for modern browsers. Consider using a targeted polyfill strategy or removing core-js from your build.`
+      message: `Vendored core-js ${version} detected in ${rel} (${sizeKb} KB). core-js ships ${totalPolyfills} total polyfills, ${MODERN_UNNECESSARY_COUNT} of which are unnecessary for modern browsers. Consider using a targeted polyfill strategy or removing core-js from your build.`
     });
   }
 
