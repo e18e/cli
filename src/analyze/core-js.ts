@@ -150,6 +150,7 @@ export async function runVendoredCoreJsAnalysis(
     const version = versionMatch ? versionMatch[1] : 'unknown';
     const sizeKb = (size / 1024).toFixed(1);
     const rel = relative(context.root, filePath);
+
     messages.push({
       severity: 'warning',
       score: 0,
