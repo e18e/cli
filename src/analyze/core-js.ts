@@ -13,7 +13,7 @@ const {compat, modules: allModules} = cjsRequire('core-js-compat') as {
 };
 
 const {list: modernUnnecessary} = compat({
-  targets: {chrome: '109', edge: '109', firefox: '109', safari: '16'},
+  targets: 'last 2 versions',
   inverse: true
 });
 const MODERN_UNNECESSARY_COUNT = modernUnnecessary.length;
