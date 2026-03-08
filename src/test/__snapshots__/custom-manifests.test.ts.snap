@@ -10,7 +10,7 @@ exports[`Custom Manifests > should load and use custom manifest files 1`] = `
     "severity": "warning",
   },
   {
-    "message": "Module "@e18e/fake-1" can be replaced. Use native JavaScript methods or specific lodash functions.",
+    "message": "Module "@e18e/fake-1" can be replaced with inline native syntax. Use native JavaScript methods or specific lodash functions.",
     "score": 0,
     "severity": "warning",
   },
@@ -40,7 +40,7 @@ exports[`Custom Manifests > should load multiple manifest files 1`] = `
     "severity": "warning",
   },
   {
-    "message": "Module "@e18e/fake-1" can be replaced. Use native JavaScript methods or specific lodash functions.",
+    "message": "Module "@e18e/fake-1" can be replaced with inline native syntax. Use native JavaScript methods or specific lodash functions.",
     "score": 0,
     "severity": "warning",
   },
@@ -60,7 +60,7 @@ exports[`Custom Manifests > should load multiple manifest files 1`] = `
     "severity": "warning",
   },
   {
-    "message": "Module "@e18e/fake-5" can be replaced. Use Fastify, Koa, or native Node.js http module.",
+    "message": "Module "@e18e/fake-5" can be replaced with inline native syntax. Use Fastify, Koa, or native Node.js http module.",
     "score": 0,
     "severity": "warning",
   },
@@ -81,7 +81,7 @@ exports[`Custom Manifests > should prioritize custom replacements over built-in 
       "severity": "warning",
     },
     {
-      "message": "Module "@e18e/fake-1" can be replaced. Use native JavaScript methods or specific lodash functions.",
+      "message": "Module "@e18e/fake-1" can be replaced with inline native syntax. Use native JavaScript methods or specific lodash functions.",
       "score": 0,
       "severity": "warning",
     },
