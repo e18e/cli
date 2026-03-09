@@ -173,7 +173,9 @@ export async function runReplacements(
       case 'native': {
         const nodeVersion = getNodeMinVersion(firstCompatible.engines);
         const requires =
-          nodeVersion && !enginesNode ? ` Required Node >= ${nodeVersion}.` : '';
+          nodeVersion && !enginesNode
+            ? ` Required Node >= ${nodeVersion}.`
+            : '';
         const urlStr = resolveUrl(firstCompatible.url);
         message = `Module "${name}" can be replaced with native functionality.${requires} You can read more at ${urlStr}.`;
         break;
