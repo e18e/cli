@@ -181,12 +181,7 @@ export async function runReplacements(
         break;
       }
       case 'documented':
-        if (firstCompatible.replacementModule) {
-          message = `Module "${name}" can be replaced with a more performant alternative. For this project, we recommend switching to "${firstCompatible.replacementModule}".`;
-        } else {
-          const urlStr = resolveUrl(firstCompatible.url);
-          message = `Module "${name}" can be replaced with a more performant alternative. See the list of available alternatives at ${urlStr}.`;
-        }
+        message = `Module "${name}" can be replaced with a more performant alternative.`;
         break;
       default:
         message = `Module "${name}" can be replaced with a more performant alternative.`;
