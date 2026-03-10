@@ -182,14 +182,14 @@ export async function runReplacements(
       }
       case 'documented':
         if (firstCompatible.replacementModule) {
-          message = `Module "${name}" can be replaced. We recommend switching to "${firstCompatible.replacementModule}".`;
+          message = `Module "${name}" can be replaced with a more performant alternative. For this project, we recommend switching to "${firstCompatible.replacementModule}".`;
         } else {
           const urlStr = resolveUrl(firstCompatible.url);
           message = `Module "${name}" can be replaced with a more performant alternative. See the list of available alternatives at ${urlStr}.`;
         }
         break;
       default:
-        message = `Module "${name}" can be replaced.`;
+        message = `Module "${name}" can be replaced with a more performant alternative.`;
     }
     if (mappingUrl) {
       message += ` See more at ${mappingUrl}.`;
