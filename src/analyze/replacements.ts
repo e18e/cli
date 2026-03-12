@@ -1,5 +1,10 @@
 import * as replacements from 'module-replacements';
-import type {ManifestModule, ModuleReplacement} from 'module-replacements';
+import type {
+  ManifestModule,
+  ModuleReplacement,
+  EngineConstraint,
+  KnownUrl
+} from 'module-replacements';
 import type {ReportPluginResult, AnalysisContext} from '../types.js';
 import {fixableReplacements} from '../commands/fixable-replacements.js';
 import {getPackageJson} from '../utils/package-json.js';
@@ -13,53 +18,22 @@ import {
 import {LocalFileSystem} from '../local-file-system.js';
 
 /**
- * Generates a standard URL to the docs of a given rule
- * @param {string} name Rule name
- * @return {string}
+ * Resolves a v3 KnownUrl to a full URL string.
  */
-export function getDocsUrl(name: string): string {
-  return `https://github.com/es-tooling/module-replacements/blob/main/docs/modules/${name}.md`;
-}
-
-/**
- * Generates a URL for the given path on MDN
- * @param {string} path Docs path
- * @return {string}
- */
-export function getMdnUrl(path: string): string {
-  return `https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/${path}`;
-}
-
-async function loadCustomManifests(
-  manifestPaths: string[]
-): Promise<ModuleReplacement[]> {
-  const customReplacements: ModuleReplacement[] = [];
-
-  for (const manifestPath of manifestPaths) {
-    try {
-      const absolutePath = resolve(manifestPath);
-      const manifestDir = dirname(absolutePath);
-      const manifestFileName = basename(absolutePath);
-      const localFileSystem = new LocalFileSystem(manifestDir);
-      const manifestContent = await localFileSystem.readFile(
-        `/${manifestFileName}`
-      );
-      const manifest: ManifestModule = JSON.parse(manifestContent);
-
-      if (
-        manifest.moduleReplacements &&
-        Array.isArray(manifest.moduleReplacements)
-      ) {
-        customReplacements.push(...manifest.moduleReplacements);
-      }
-    } catch (error) {
-      console.warn(
-        `Warning: Failed to load custom manifest from ${manifestPath}: ${error}`
-      );
-    }
+export function resolveUrl(url: KnownUrl): string {
+  if (typeof url === 'string') return url;
+  switch (url.type) {
+    case 'mdn':
+      return `https://developer.mozilla.org/en-US/docs/${url.id}`;
+    case 'node':
+      return `https://nodejs.org/docs/latest/${url.id}`;
+    case 'e18e':
+      return `https://github.com/es-tooling/module-replacements/blob/main/docs/modules/${url.id}.md`;
   }
+}
 
-  return customReplacements;
+function getNodeMinVersion(engines?: EngineConstraint[]): string | undefined {
+  return engines?.find((e) => e.engine === 'nodejs')?.minVersion;
 }
 
 function isNodeEngineCompatible(
@@ -84,6 +58,62 @@ function isNodeEngineCompatible(
   );
 }
 
+function findFirstCompatibleReplacement(
+  replacementIds: string[],
+  defs: Record<string, ModuleReplacement>,
+  enginesNode: string | undefined
+): ModuleReplacement | undefined {
+  for (const id of replacementIds) {
+    const replacement = defs[id];
+    if (!replacement) continue;
+
+    if (replacement.type === 'native' && enginesNode) {
+      const nodeVersion = getNodeMinVersion(replacement.engines);
+      if (nodeVersion && !isNodeEngineCompatible(nodeVersion, enginesNode)) {
+        continue;
+      }
+    }
+
+    return replacement;
+  }
+  return undefined;
+}
+
+async function loadCustomManifests(
+  manifestPaths: string[]
+): Promise<ManifestModule> {
+  const result: ManifestModule = {
+    mappings: {},
+    replacements: {}
+  };
+
+  for (const manifestPath of manifestPaths) {
+    try {
+      const absolutePath = resolve(manifestPath);
+      const manifestDir = dirname(absolutePath);
+      const manifestFileName = basename(absolutePath);
+      const localFileSystem = new LocalFileSystem(manifestDir);
+      const manifestContent = await localFileSystem.readFile(
+        `/${manifestFileName}`
+      );
+      const manifest: ManifestModule = JSON.parse(manifestContent);
+
+      if (manifest.mappings) {
+        Object.assign(result.mappings, manifest.mappings);
+      }
+      if (manifest.replacements) {
+        Object.assign(result.replacements, manifest.replacements);
+      }
+    } catch (error) {
+      console.warn(
+        `Warning: Failed to load custom manifest from ${manifestPath}: ${error}`
+      );
+    }
+  }
+
+  return result;
+}
+
 export async function runReplacements(
   context: AnalysisContext
 ): Promise<ReportPluginResult> {
@@ -94,89 +124,77 @@ export async function runReplacements(
   const packageJson = await getPackageJson(context.fs);
 
   if (!packageJson || !packageJson.dependencies) {
-    // No dependencies
     return result;
   }
 
-  // Load custom manifests
-  const customReplacements = context.options?.manifest
+  const customManifest = context.options?.manifest
     ? await loadCustomManifests(context.options.manifest)
-    : [];
+    : {mappings: {}, replacements: {}};
 
-  // Combine custom and built-in replacements
-  const allReplacements = [
-    ...customReplacements,
-    ...replacements.all.moduleReplacements
-  ];
+  // Custom mappings take precedence over built-in
+  const allMappings = {
+    ...replacements.all.mappings,
+    ...customManifest.mappings
+  };
+  const allReplacementDefs: Record<string, ModuleReplacement> = {
+    ...replacements.all.replacements,
+    ...customManifest.replacements
+  };
 
   const fixableByMigrate = new Set(fixableReplacements.map((r) => r.from));
+  const enginesNode = packageJson.engines?.node;
 
   for (const name of Object.keys(packageJson.dependencies)) {
-    // Find replacement (custom replacements take precedence due to order)
-    const replacement = allReplacements.find(
-      (replacement) => replacement.moduleName === name
-    );
+    const mapping = allMappings[name];
+    if (!mapping?.replacements?.length) {
+      continue;
+    }
 
-    if (!replacement) {
+    const firstCompatible = findFirstCompatibleReplacement(
+      mapping.replacements,
+      allReplacementDefs,
+      enginesNode
+    );
+    if (!firstCompatible) {
       continue;
     }
 
     const fixableBy = fixableByMigrate.has(name) ? 'migrate' : undefined;
+    const mappingUrl = mapping.url ? resolveUrl(mapping.url) : undefined;
 
-    // Handle each replacement type using the same logic for both custom and built-in
-    if (replacement.type === 'none') {
-      result.messages.push({
-        severity: 'warning',
-        score: 0,
-        message: `Module "${name}" can be removed, and native functionality used instead`,
-        ...(fixableBy && {fixableBy})
-      });
-    } else if (replacement.type === 'simple') {
-      result.messages.push({
-        severity: 'warning',
-        score: 0,
-        message: `Module "${name}" can be replaced. ${replacement.replacement}.`,
-        ...(fixableBy && {fixableBy})
-      });
-    } else if (replacement.type === 'native') {
-      const enginesNode = packageJson.engines?.node;
-      let supported = true;
-
-      if (replacement.nodeVersion && enginesNode) {
-        supported = isNodeEngineCompatible(
-          replacement.nodeVersion,
-          enginesNode
-        );
+    let message: string;
+    switch (firstCompatible.type) {
+      case 'removal':
+        message = `Module "${name}" can be removed, and native functionality used instead`;
+        break;
+      case 'simple':
+        message = `Module "${name}" can be replaced with inline native syntax. ${firstCompatible.description}.`;
+        break;
+      case 'native': {
+        const nodeVersion = getNodeMinVersion(firstCompatible.engines);
+        const requires =
+          nodeVersion && !enginesNode
+            ? ` Required Node >= ${nodeVersion}.`
+            : '';
+        const urlStr = resolveUrl(firstCompatible.url);
+        message = `Module "${name}" can be replaced with native functionality.${requires} You can read more at ${urlStr}.`;
+        break;
       }
-
-      if (!supported) {
-        continue;
-      }
-
-      const mdnPath = getMdnUrl(replacement.mdnPath);
-      const requires =
-        replacement.nodeVersion && !enginesNode
-          ? ` Required Node >= ${replacement.nodeVersion}.`
-          : '';
-      const message = `Module "${name}" can be replaced with native functionality. Use "${replacement.replacement}" instead.${requires}`;
-      const fullMessage = `${message} You can read more at ${mdnPath}.`;
-      result.messages.push({
-        severity: 'warning',
-        score: 0,
-        message: fullMessage,
-        ...(fixableBy && {fixableBy})
-      });
-    } else if (replacement.type === 'documented') {
-      const docUrl = getDocsUrl(replacement.docPath);
-      const message = `Module "${name}" can be replaced with a more performant alternative.`;
-      const fullMessage = `${message} See the list of available alternatives at ${docUrl}.`;
-      result.messages.push({
-        severity: 'warning',
-        score: 0,
-        message: fullMessage,
-        ...(fixableBy && {fixableBy})
-      });
+      case 'documented':
+        message = `Module "${name}" can be replaced with a more performant alternative.`;
+        break;
+      default:
+        message = `Module "${name}" can be replaced with a more performant alternative.`;
     }
+    if (mappingUrl) {
+      message += ` See more at ${mappingUrl}.`;
+    }
+    result.messages.push({
+      severity: 'warning',
+      score: 0,
+      message,
+      ...(fixableBy && {fixableBy})
+    });
   }
 
   return result;
