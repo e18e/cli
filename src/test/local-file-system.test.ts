@@ -15,6 +15,21 @@ describe('LocalFileSystem', () => {
     await fs.rm(tempDir, {recursive: true, force: true});
   });
 
+  describe('getFileSize', () => {
+    it('returns the byte size of an existing file', async () => {
+      const content = 'hello world';
+      await fs.writeFile(path.join(tempDir, 'file.txt'), content);
+      const fileSystem = new LocalFileSystem(tempDir);
+      const size = await fileSystem.getFileSize('file.txt');
+      expect(size).toBe(Buffer.byteLength(content, 'utf8'));
+    });
+
+    it('throws for a non-existent file', async () => {
+      const fileSystem = new LocalFileSystem(tempDir);
+      await expect(fileSystem.getFileSize('missing.txt')).rejects.toThrow();
+    });
+  });
+
   describe('fileExists', () => {
     it('should return false when tsconfig.json does not exist', async () => {
       const fileSystem = new LocalFileSystem(tempDir);

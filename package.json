@@ -57,6 +57,7 @@
     "obug": "^2.1.1",
     "package-manager-detector": "^1.6.0",
     "publint": "^0.3.18",
+    "core-js-compat": "^3.48.0",
     "semver": "^7.7.4",
     "tinyglobby": "^0.2.15"
   },
