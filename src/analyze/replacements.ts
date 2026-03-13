@@ -1,6 +1,7 @@
-import * as replacements from 'module-replacements';
 import type {ManifestModule, ModuleReplacement} from 'module-replacements';
 import type {ReportPluginResult, AnalysisContext} from '../types.js';
+import {getManifestByCategory} from '../categories.js';
+import type {Category} from '../categories.js';
 import {fixableReplacements} from '../commands/fixable-replacements.js';
 import {getPackageJson} from '../utils/package-json.js';
 import {resolve, dirname, basename} from 'node:path';
@@ -103,11 +104,25 @@ export async function runReplacements(
     ? await loadCustomManifests(context.options.manifest)
     : [];
 
-  // Combine custom and built-in replacements
-  const allReplacements = [
-    ...customReplacements,
-    ...replacements.all.moduleReplacements
-  ];
+  const manifestByCategory = getManifestByCategory();
+
+  const selectedCategories: readonly Category[] = context.options?.categories
+    ?.length
+    ? context.options.categories
+    : (['native', 'preferred', 'micro-utilities'] as const);
+
+  const byModuleName = new Map<string, ModuleReplacement>();
+  for (const r of customReplacements) {
+    byModuleName.set(r.moduleName, r);
+  }
+  for (const cat of selectedCategories) {
+    for (const r of manifestByCategory[cat].moduleReplacements) {
+      if (!byModuleName.has(r.moduleName)) {
+        byModuleName.set(r.moduleName, r);
+      }
+    }
+  }
+  const allReplacements = [...byModuleName.values()];
 
   const fixableByMigrate = new Set(fixableReplacements.map((r) => r.from));
 

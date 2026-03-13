@@ -22,6 +22,12 @@ export const meta = {
       type: 'string',
       default: '**/*.{ts,js}',
       description: 'Files to migrate'
+    },
+    categories: {
+      type: 'string',
+      default: 'all',
+      description:
+        'Manifest categories to use: native, preferred, micro-utilities, or all (comma-separated). Only affects --all and interactive selection.'
     }
   }
 } as const;

@@ -6,8 +6,23 @@ import {glob} from 'tinyglobby';
 import {readFile, writeFile} from 'node:fs/promises';
 import {fixableReplacements} from './fixable-replacements.js';
 import type {Replacement} from '../types.js';
+import type {Category} from '../categories.js';
+import {getManifestByCategory, parseCategories} from '../categories.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {getPackageJson} from '../utils/package-json.js';
+
+function buildModuleNamesForCategories(
+  selectedCategories: readonly Category[]
+): Set<string> {
+  const manifestByCategory = getManifestByCategory();
+  const set = new Set<string>();
+  for (const cat of selectedCategories) {
+    for (const r of manifestByCategory[cat].moduleReplacements) {
+      set.add(r.moduleName);
+    }
+  }
+  return set;
+}
 
 export async function run(ctx: CommandContext<typeof meta>) {
   const [_commandName, ...targetModules] = ctx.positionals;
@@ -27,14 +42,34 @@ export async function run(ctx: CommandContext<typeof meta>) {
     return;
   }
 
+  let categories: readonly Category[];
+  try {
+    categories = parseCategories(
+      ctx.values['categories'] as string | undefined
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    prompts.cancel(
+      `Invalid --categories: ${msg} Example: --categories=all or --categories=native,preferred`
+    );
+    return;
+  }
+
   const dependencies = {
     ...packageJson.dependencies,
     ...packageJson.devDependencies
   };
 
+  const applyCategoryFilter = all || interactive;
+  const selectedCategoryModuleNames = buildModuleNamesForCategories(categories);
+
   const fixableReplacementsTargets = new Set(
     fixableReplacements
       .filter((rep) => Object.hasOwn(dependencies, rep.from))
+      .filter(
+        (rep) =>
+          !applyCategoryFilter || selectedCategoryModuleNames.has(rep.from)
+      )
       .map((rep) => rep.from)
   );
 

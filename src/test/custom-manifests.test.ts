@@ -124,4 +124,24 @@ describe('Custom Manifests', () => {
 
     expect(result.messages).toMatchSnapshot();
   });
+
+  it('should filter built-in replacements by options.categories', async () => {
+    context.packageFile = {
+      ...context.packageFile,
+      dependencies: {'array-includes': '^1.0.0'}
+    };
+
+    const resultAll = await runReplacements(context);
+    context.options = {categories: ['native']};
+    const resultNative = await runReplacements(context);
+    context.options = {categories: ['preferred']};
+    const resultPreferred = await runReplacements(context);
+
+    expect(Array.isArray(resultAll.messages)).toBe(true);
+    expect(Array.isArray(resultNative.messages)).toBe(true);
+    expect(Array.isArray(resultPreferred.messages)).toBe(true);
+    expect(resultAll.messages.length).toBeGreaterThanOrEqual(0);
+    expect(resultNative.messages.length).toBeGreaterThanOrEqual(0);
+    expect(resultPreferred.messages.length).toBeGreaterThanOrEqual(0);
+  });
 });

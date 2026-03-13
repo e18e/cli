@@ -5,6 +5,7 @@ import {styleText} from 'node:util';
 import {meta} from './analyze.meta.js';
 import {report} from '../index.js';
 import {enableDebug} from '../logger.js';
+import {parseCategories, type Category} from '../categories.js';
 import {wrapAnsi} from 'fast-wrap-ansi';
 
 function formatBytes(bytes: number) {
@@ -70,12 +71,27 @@ export async function run(ctx: CommandContext<typeof meta>) {
     root = providedPath;
   }
 
-  // Then read the manifest
   const customManifests = ctx.values['manifest'];
+  let categories: readonly Category[];
+  try {
+    categories = parseCategories(
+      ctx.values['categories'] as string | undefined
+    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const fullMessage = `Invalid --categories: ${message} Example: --categories=all or --categories=native,preferred`;
+    if (jsonOutput) {
+      process.stderr.write(`${message}\n`);
+    } else {
+      prompts.cancel(fullMessage);
+    }
+    process.exit(1);
+  }
 
   const {stats, messages} = await report({
     root,
-    manifest: customManifests
+    manifest: customManifests,
+    categories
   });
 
   const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;

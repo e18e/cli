@@ -15,6 +15,12 @@ export const meta = {
       description:
         'Path(s) to custom manifest file(s) for module replacements analysis'
     },
+    categories: {
+      type: 'string',
+      default: 'all',
+      description:
+        'Manifest categories to use: native, preferred, micro-utilities, or all (comma-separated)'
+    },
     json: {
       type: 'boolean',
       default: false,
