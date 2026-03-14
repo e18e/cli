@@ -33,7 +33,10 @@ describe('parseCategories', () => {
   });
 
   it('returns multiple categories for comma-separated list', () => {
-    expect(parseCategories('native,preferred')).toEqual(['native', 'preferred']);
+    expect(parseCategories('native,preferred')).toEqual([
+      'native',
+      'preferred'
+    ]);
     expect(parseCategories('native, preferred , micro-utilities')).toEqual([
       'native',
       'preferred',
@@ -64,7 +67,10 @@ describe('parseCategories', () => {
   });
 
   it('treats empty segments after split as omitted', () => {
-    expect(parseCategories('native,,preferred')).toEqual(['native', 'preferred']);
+    expect(parseCategories('native,,preferred')).toEqual([
+      'native',
+      'preferred'
+    ]);
   });
 });
 

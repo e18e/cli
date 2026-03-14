@@ -25,7 +25,10 @@ export function parseCategories(raw: string | undefined): ParsedCategories {
     return 'all';
   }
 
-  const segments = normalized.split(',').map((s) => s.trim()).filter(Boolean);
+  const segments = normalized
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
   if (segments.length === 0) {
     return 'all';
   }
