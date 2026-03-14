@@ -204,6 +204,70 @@ describe('analyze fixable summary', () => {
   });
 });
 
+describe('--categories', () => {
+  it('analyze exits 1 with helpful error for invalid --categories', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['analyze', '--categories=invalid'],
+      tempDir
+    );
+    expect(code).toBe(1);
+    const output = stdout + stderr;
+    expect(output).toContain('Invalid categories');
+    expect(output).toContain('Valid values are');
+    expect(output).toMatch(/native|preferred|micro-utilities|all/);
+  });
+
+  it('analyze exits 1 for invalid category in comma-separated list', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['analyze', '--categories=native,foo,preferred'],
+      tempDir
+    );
+    expect(code).toBe(1);
+    const output = stdout + stderr;
+    expect(output).toContain('Invalid categories');
+    expect(output).toContain('foo');
+  });
+
+  it('migrate exits 1 with helpful error for invalid --categories', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', '--categories=invalid'],
+      tempDir
+    );
+    expect(code).toBe(1);
+    const output = stdout + stderr;
+    expect(output).toContain('Invalid categories');
+  });
+
+  it('analyze runs successfully with --categories=all', async () => {
+    const {code} = await runCliProcess(
+      ['analyze', '--categories=all', '--log-level=error'],
+      tempDir
+    );
+    expect(code).toBe(0);
+  });
+});
+
+describe('migrate --categories', () => {
+  beforeAll(async () => {
+    const nodeModules = path.join(basicChalkFixture, 'node_modules');
+    if (!existsSync(nodeModules)) {
+      execSync('npm install', {cwd: basicChalkFixture, stdio: 'pipe'});
+    }
+  });
+
+  it('migrate --all --dry-run with --categories=native runs to completion and only considers native manifest', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', '--all', '--dry-run', '--categories=native'],
+      basicChalkFixture
+    );
+    expect(code).toBe(0);
+    const output = stdout + stderr;
+    expect(output).toContain('Migration complete');
+    // Chalk is in preferred, not native; so with native-only we get 0 files migrated
+    expect(output).toContain('0 files migrated');
+  });
+});
+
 describe('migrate --all', () => {
   beforeAll(async () => {
     const nodeModules = path.join(basicChalkFixture, 'node_modules');

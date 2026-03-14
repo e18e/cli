@@ -2,6 +2,12 @@ export const meta = {
   name: 'migrate',
   description: 'Migrate from a package to a more performant alternative.',
   args: {
+    categories: {
+      type: 'string',
+      default: 'all',
+      description:
+        'Manifest categories to consider: all, native, preferred, micro-utilities, or comma-separated. Default: all.'
+    },
     all: {
       type: 'boolean',
       default: false,
