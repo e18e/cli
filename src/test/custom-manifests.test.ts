@@ -124,4 +124,19 @@ describe('Custom Manifests', () => {
 
     expect(result.messages).toMatchSnapshot();
   });
+
+  it('should use categories=all by default and produce same result with explicit --categories=all', async () => {
+    const customManifestPath = join(
+      __dirname,
+      '../../test/fixtures/custom-manifest.json'
+    );
+
+    context.options = {manifest: [customManifestPath]};
+    const resultDefault = await runReplacements(context);
+
+    context.options = {manifest: [customManifestPath], categories: 'all'};
+    const resultExplicitAll = await runReplacements(context);
+
+    expect(resultExplicitAll.messages).toEqual(resultDefault.messages);
+  });
 });
