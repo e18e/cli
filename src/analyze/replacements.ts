@@ -7,7 +7,7 @@ import type {
 import type {ReportPluginResult, AnalysisContext} from '../types.js';
 import {fixableReplacements} from '../commands/fixable-replacements.js';
 import {getPackageJson} from '../utils/package-json.js';
-import {parseCategories, getManifestForCategories} from '../categories.js';
+import {getManifestForCategories} from '../categories.js';
 import {resolve, dirname, basename} from 'node:path';
 import {
   satisfies as semverSatisfies,
@@ -132,7 +132,7 @@ export async function runReplacements(
     : {mappings: {}, replacements: {}};
 
   const baseManifest = getManifestForCategories(
-    parseCategories(context.options?.categories)
+    context.options?.categories ?? 'all'
   );
 
   // Custom mappings take precedence over built-in

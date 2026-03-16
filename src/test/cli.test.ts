@@ -204,8 +204,8 @@ describe('analyze fixable summary', () => {
   });
 });
 
-describe('--categories', () => {
-  it('analyze exits 1 with helpful error for invalid --categories', async () => {
+describe('analyze --categories', () => {
+  it('exits 1 with helpful error for invalid --categories', async () => {
     const {stdout, stderr, code} = await runCliProcess(
       ['analyze', '--categories=invalid'],
       tempDir
@@ -217,7 +217,7 @@ describe('--categories', () => {
     expect(output).toMatch(/native|preferred|micro-utilities|all/);
   });
 
-  it('analyze exits 1 for invalid category in comma-separated list', async () => {
+  it('exits 1 for invalid category in comma-separated list', async () => {
     const {stdout, stderr, code} = await runCliProcess(
       ['analyze', '--categories=native,foo,preferred'],
       tempDir
@@ -228,17 +228,7 @@ describe('--categories', () => {
     expect(output).toContain('foo');
   });
 
-  it('migrate exits 1 with helpful error for invalid --categories', async () => {
-    const {stdout, stderr, code} = await runCliProcess(
-      ['migrate', '--categories=invalid'],
-      tempDir
-    );
-    expect(code).toBe(1);
-    const output = stdout + stderr;
-    expect(output).toContain('Invalid categories');
-  });
-
-  it('analyze runs successfully with --categories=all', async () => {
+  it('runs successfully with --categories=all', async () => {
     const {code} = await runCliProcess(
       ['analyze', '--categories=all', '--log-level=error'],
       tempDir
@@ -255,7 +245,17 @@ describe('migrate --categories', () => {
     }
   });
 
-  it('migrate --all --dry-run with --categories=native runs to completion and only considers native manifest', async () => {
+  it('exits 1 with helpful error for invalid --categories', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['migrate', '--categories=invalid'],
+      tempDir
+    );
+    expect(code).toBe(1);
+    const output = stdout + stderr;
+    expect(output).toContain('Invalid categories');
+  });
+
+  it('--all --dry-run with --categories=native runs to completion and only considers native manifest', async () => {
     const {stdout, stderr, code} = await runCliProcess(
       ['migrate', '--all', '--dry-run', '--categories=native'],
       basicChalkFixture

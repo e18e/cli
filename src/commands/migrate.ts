@@ -27,7 +27,8 @@ export async function run(ctx: CommandContext<typeof meta>) {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     prompts.cancel(`Invalid --categories: ${message}`);
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   const manifest = getManifestForCategories(parsedCategories);

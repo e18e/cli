@@ -17,7 +17,7 @@ export type Category = (typeof VALID_CATEGORIES)[number];
 
 export type CategoryKey = Exclude<Category, 'all'>;
 
-export type ParsedCategories = 'all' | CategoryKey[];
+export type ParsedCategories = 'all' | Set<CategoryKey>;
 
 export function parseCategories(raw: string | undefined): ParsedCategories {
   const normalized = raw?.trim() ?? '';
@@ -34,17 +34,14 @@ export function parseCategories(raw: string | undefined): ParsedCategories {
   }
 
   const invalid: string[] = [];
-  const parsed: CategoryKey[] = [];
+  const parsed = new Set<CategoryKey>();
 
   for (const segment of segments) {
     if (segment === 'all') {
       return 'all';
     }
     if (VALID_CATEGORIES.includes(segment as Category)) {
-      const key = segment as CategoryKey;
-      if (!parsed.includes(key)) {
-        parsed.push(key);
-      }
+      parsed.add(segment as CategoryKey);
     } else {
       invalid.push(segment);
     }

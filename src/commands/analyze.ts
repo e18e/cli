@@ -50,8 +50,9 @@ export async function run(ctx: CommandContext<typeof meta>) {
     prompts.intro('Analyzing...');
   }
 
+  let parsedCategories: ReturnType<typeof parseCategories>;
   try {
-    parseCategories(ctx.values.categories ?? 'all');
+    parsedCategories = parseCategories(ctx.values.categories ?? 'all');
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     const descriptiveMessage = `Invalid --categories: ${message}`;
@@ -89,7 +90,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
   const {stats, messages} = await report({
     root,
     manifest: customManifests,
-    categories: ctx.values.categories
+    categories: parsedCategories
   });
 
   const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;

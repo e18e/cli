@@ -26,29 +26,27 @@ describe('parseCategories', () => {
     expect(parseCategories('  all  ')).toBe('all');
   });
 
-  it('returns single category as array', () => {
-    expect(parseCategories('native')).toEqual(['native']);
-    expect(parseCategories('preferred')).toEqual(['preferred']);
-    expect(parseCategories('micro-utilities')).toEqual(['micro-utilities']);
+  it('returns single category as Set', () => {
+    expect(parseCategories('native')).toEqual(new Set(['native']));
+    expect(parseCategories('preferred')).toEqual(new Set(['preferred']));
+    expect(parseCategories('micro-utilities')).toEqual(
+      new Set(['micro-utilities'])
+    );
   });
 
   it('returns multiple categories for comma-separated list', () => {
-    expect(parseCategories('native,preferred')).toEqual([
-      'native',
-      'preferred'
-    ]);
-    expect(parseCategories('native, preferred , micro-utilities')).toEqual([
-      'native',
-      'preferred',
-      'micro-utilities'
-    ]);
+    expect(parseCategories('native,preferred')).toEqual(
+      new Set(['native', 'preferred'])
+    );
+    expect(parseCategories('native, preferred , micro-utilities')).toEqual(
+      new Set(['native', 'preferred', 'micro-utilities'])
+    );
   });
 
   it('deduplicates categories', () => {
-    expect(parseCategories('native,native,preferred')).toEqual([
-      'native',
-      'preferred'
-    ]);
+    expect(parseCategories('native,native,preferred')).toEqual(
+      new Set(['native', 'preferred'])
+    );
   });
 
   it('throws for invalid category', () => {
@@ -67,10 +65,9 @@ describe('parseCategories', () => {
   });
 
   it('treats empty segments after split as omitted', () => {
-    expect(parseCategories('native,,preferred')).toEqual([
-      'native',
-      'preferred'
-    ]);
+    expect(parseCategories('native,,preferred')).toEqual(
+      new Set(['native', 'preferred'])
+    );
   });
 });
 
@@ -84,7 +81,7 @@ describe('getManifestForCategories', () => {
   });
 
   it('returns manifest for single category', () => {
-    const nativeManifest = getManifestForCategories(['native']);
+    const nativeManifest = getManifestForCategories(new Set(['native']));
     expect(nativeManifest).toHaveProperty('mappings');
     expect(nativeManifest).toHaveProperty('replacements');
     expect(Object.keys(nativeManifest.mappings).length).toBeGreaterThanOrEqual(
@@ -93,7 +90,7 @@ describe('getManifestForCategories', () => {
   });
 
   it('returns merged manifest for multiple categories', () => {
-    const manifest = getManifestForCategories(['native', 'preferred']);
+    const manifest = getManifestForCategories(new Set(['native', 'preferred']));
     expect(manifest).toHaveProperty('mappings');
     expect(manifest).toHaveProperty('replacements');
     const allManifest = getManifestForCategories('all');
