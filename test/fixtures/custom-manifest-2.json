@@ -1,14 +1,26 @@
 {
-  "moduleReplacements": [
-    {
+  "mappings": {
+    "@e18e/fake-5": {
+      "type": "module",
       "moduleName": "@e18e/fake-5",
-      "type": "simple",
-      "replacement": "Use Fastify, Koa, or native Node.js http module"
+      "replacements": ["fake-5-simple"]
     },
-    {
+    "@e18e/fake-6": {
+      "type": "module",
       "moduleName": "@e18e/fake-6",
-      "type": "none",
-      "replacement": "Use native JSON.parse or built-in middleware"
+      "replacements": ["fake-6-removal"]
     }
-  ]
+  },
+  "replacements": {
+    "fake-5-simple": {
+      "id": "fake-5-simple",
+      "type": "simple",
+      "description": "Use Fastify, Koa, or native Node.js http module"
+    },
+    "fake-6-removal": {
+      "id": "fake-6-removal",
+      "type": "removal",
+      "description": "Use native JSON.parse or built-in middleware"
+    }
+  }
 }
