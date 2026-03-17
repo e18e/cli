@@ -72,12 +72,12 @@ export async function run(ctx: CommandContext<typeof meta>) {
 
   // Then read the manifest
   const customManifests = ctx.values['manifest'];
-  const buildDir = ctx.values['build-dir'];
+  const srcDirs = ctx.values['src'];
 
   const {stats, messages} = await report({
     root,
     manifest: customManifests,
-    buildDir
+    src: srcDirs
   });
 
   const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;

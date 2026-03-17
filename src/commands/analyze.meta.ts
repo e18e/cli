@@ -20,10 +20,11 @@ export const meta = {
       default: false,
       description: 'Output results as JSON to stdout'
     },
-    'build-dir': {
+    src: {
       type: 'string',
+      multiple: true,
       description:
-        'Path to build output directory to scan for vendored polyfills (e.g. .next, dist, build)'
+        'Path(s) to source directories to scan for imports (e.g. src, app). Defaults to scanning from the project root.'
     }
   }
 } as const;

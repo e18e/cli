@@ -16,15 +16,14 @@ import {runPlugins} from '../plugin-runner.js';
 import {getPackageJson, detectLockfile} from '../utils/package-json.js';
 import {parse as parseLockfile} from 'lockparse';
 import {runDuplicateDependencyAnalysis} from './duplicate-dependencies.js';
-import {runCoreJsAnalysis, runVendoredCoreJsAnalysis} from './core-js.js';
+import {runCoreJsAnalysis} from './core-js.js';
 
 const plugins: ReportPlugin[] = [
   runPublint,
   runReplacements,
   runDependencyAnalysis,
   runDuplicateDependencyAnalysis,
-  runCoreJsAnalysis,
-  runVendoredCoreJsAnalysis
+  runCoreJsAnalysis
 ];
 
 async function computeInfo(fileSystem: FileSystem) {

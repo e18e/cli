@@ -2,10 +2,7 @@ import {describe, it, expect, beforeEach, afterEach} from 'vitest';
 import {createRequire} from 'node:module';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import {
-  runCoreJsAnalysis,
-  runVendoredCoreJsAnalysis
-} from '../../analyze/core-js.js';
+import {runCoreJsAnalysis} from '../../analyze/core-js.js';
 import {LocalFileSystem} from '../../local-file-system.js';
 import {createTempDir, cleanupTempDir} from '../utils.js';
 import type {AnalysisContext} from '../../types.js';
@@ -289,203 +286,55 @@ describe('runCoreJsAnalysis', () => {
 
     expect(result.messages).toHaveLength(0);
   });
-});
 
-describe('runVendoredCoreJsAnalysis', () => {
-  let tempDir: string;
-
-  beforeEach(async () => {
-    tempDir = await createTempDir();
-  });
-
-  afterEach(async () => {
-    await cleanupTempDir(tempDir);
-  });
-
-  it('skips when buildDir is not set', async () => {
-    const context = makeContext(tempDir);
-
-    const result = await runVendoredCoreJsAnalysis(context);
-
-    expect(result.messages).toHaveLength(0);
-    expect(result.stats).toBeUndefined();
-  });
-
-  it('skips when buildDir option is explicitly undefined', async () => {
-    const context = makeContext(tempDir, {options: {buildDir: undefined}});
-
-    const result = await runVendoredCoreJsAnalysis(context);
-
-    expect(result.messages).toHaveLength(0);
-  });
-
-  it('returns no messages when build dir has no vendored core-js', async () => {
-    const buildDir = path.join(tempDir, 'dist');
-    await fs.mkdir(buildDir);
+  it('scans only specified src dirs when options.src is provided', async () => {
+    await fs.mkdir(path.join(tempDir, 'src'), {recursive: true});
+    await fs.mkdir(path.join(tempDir, 'other'), {recursive: true});
     await fs.writeFile(
-      path.join(buildDir, 'bundle.js'),
-      `console.log('hello world');\n`
+      path.join(tempDir, 'src', 'index.js'),
+      `import 'core-js';\n`
+    );
+    // This file is outside src/ and should NOT be scanned
+    await fs.writeFile(
+      path.join(tempDir, 'other', 'index.js'),
+      `import 'core-js';\n`
     );
 
     const context = makeContext(tempDir, {
-      options: {buildDir: 'dist'},
-      packageFile: {name: 'test-package', version: '1.0.0'}
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0',
+        dependencies: {'core-js': '^3.0.0'}
+      },
+      options: {src: ['src']}
     });
 
-    const result = await runVendoredCoreJsAnalysis(context);
-
-    expect(result.messages).toHaveLength(0);
-    expect(result.stats).toBeUndefined();
-  });
-
-  it('warns when a vendored core-js file is detected via Denis Pushkarev', async () => {
-    const buildDir = path.join(tempDir, 'dist');
-    await fs.mkdir(buildDir);
-    await fs.writeFile(
-      path.join(buildDir, 'bundle.js'),
-      `/* Denis Pushkarev */ var e={version:"3.35.0"};`
-    );
-
-    const context = makeContext(tempDir, {
-      options: {buildDir: 'dist'},
-      packageFile: {name: 'test-package', version: '1.0.0'}
-    });
-
-    const result = await runVendoredCoreJsAnalysis(context);
+    const result = await runCoreJsAnalysis(context);
 
     expect(result.messages).toHaveLength(1);
-    const vendoredMsg = result.messages[0];
-    expect(vendoredMsg).toBeDefined();
-    expect(vendoredMsg?.severity).toBe('warning');
-    expect(vendoredMsg?.message).toContain('3.35.0');
-    expect(vendoredMsg?.message).toContain('dist/bundle.js');
+    expect(result.messages[0]?.message).toContain('src');
   });
 
-  it('warns when a vendored core-js file is detected via __core-js_shared__', async () => {
-    const buildDir = path.join(tempDir, 'dist');
-    await fs.mkdir(buildDir);
-    await fs.writeFile(
-      path.join(buildDir, 'bundle.js'),
-      `globalThis["__core-js_shared__"]={};var e={version:"3.36.0"};`
-    );
+  it('scans multiple src dirs when options.src has more than one entry', async () => {
+    for (const dir of ['src', 'app']) {
+      await fs.mkdir(path.join(tempDir, dir), {recursive: true});
+      await fs.writeFile(
+        path.join(tempDir, dir, 'index.js'),
+        `import 'core-js';\n`
+      );
+    }
 
     const context = makeContext(tempDir, {
-      options: {buildDir: 'dist'},
-      packageFile: {name: 'test-package', version: '1.0.0'}
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0',
+        dependencies: {'core-js': '^3.0.0'}
+      },
+      options: {src: ['src', 'app']}
     });
 
-    const result = await runVendoredCoreJsAnalysis(context);
-
-    expect(result.messages).toHaveLength(1);
-    expect(result.messages[0]?.message).toContain('3.36.0');
-  });
-
-  it('warns when a vendored core-js file is detected via mode:"global"', async () => {
-    const buildDir = path.join(tempDir, 'dist');
-    await fs.mkdir(buildDir);
-    await fs.writeFile(
-      path.join(buildDir, 'bundle.js'),
-      `(r.versions||(r.versions=[])).push({version:"3.37.0",mode:"global"});`
-    );
-
-    const context = makeContext(tempDir, {
-      options: {buildDir: 'dist'},
-      packageFile: {name: 'test-package', version: '1.0.0'}
-    });
-
-    const result = await runVendoredCoreJsAnalysis(context);
-
-    expect(result.messages).toHaveLength(1);
-    expect(result.messages[0]?.message).toContain('3.37.0');
-  });
-
-  it('warns when a vendored core-js file is detected via zloirock', async () => {
-    const buildDir = path.join(tempDir, '.next');
-    await fs.mkdir(buildDir, {recursive: true});
-    await fs.writeFile(
-      path.join(buildDir, 'chunks.js'),
-      `/* zloirock */ var e={version:"3.30.0"};`
-    );
-
-    const context = makeContext(tempDir, {
-      options: {buildDir: '.next'},
-      packageFile: {name: 'test-package', version: '1.0.0'}
-    });
-
-    const result = await runVendoredCoreJsAnalysis(context);
-
-    expect(result.messages).toHaveLength(1);
-    expect(result.messages[0]?.message).toContain('3.30.0');
-  });
-
-  it('reports vendoredPolyfillSize in stats', async () => {
-    const buildDir = path.join(tempDir, 'dist');
-    await fs.mkdir(buildDir);
-    const content = `/* Denis Pushkarev */ var e={version:"3.35.0"};`;
-    await fs.writeFile(path.join(buildDir, 'bundle.js'), content);
-
-    const fileSize = Buffer.byteLength(content, 'utf8');
-
-    const context = makeContext(tempDir, {
-      options: {buildDir: 'dist'},
-      packageFile: {name: 'test-package', version: '1.0.0'}
-    });
-
-    const result = await runVendoredCoreJsAnalysis(context);
-
-    const extraStats = result.stats?.extraStats;
-    expect(extraStats).toHaveLength(1);
-    expect(extraStats?.[0]?.name).toBe('vendoredPolyfillSize');
-    expect(extraStats?.[0]?.label).toBe('Vendored Polyfill Size');
-    expect(extraStats?.[0]?.value).toBe(fileSize);
-  });
-
-  it('accumulates size across multiple vendored files', async () => {
-    const buildDir = path.join(tempDir, 'dist');
-    await fs.mkdir(buildDir);
-    const content = `/* Denis Pushkarev */ var e={version:"3.35.0"};`;
-    await fs.writeFile(path.join(buildDir, 'a.js'), content);
-    await fs.writeFile(path.join(buildDir, 'b.js'), content);
-
-    const context = makeContext(tempDir, {
-      options: {buildDir: 'dist'},
-      packageFile: {name: 'test-package', version: '1.0.0'}
-    });
-
-    const result = await runVendoredCoreJsAnalysis(context);
+    const result = await runCoreJsAnalysis(context);
 
     expect(result.messages).toHaveLength(2);
-    const totalSize = result.stats?.extraStats?.[0]?.value as number;
-    expect(totalSize).toBe(Buffer.byteLength(content, 'utf8') * 2);
-  });
-
-  it('handles a missing build directory gracefully', async () => {
-    const context = makeContext(tempDir, {
-      options: {buildDir: 'nonexistent'},
-      packageFile: {name: 'test-package', version: '1.0.0'}
-    });
-
-    const result = await runVendoredCoreJsAnalysis(context);
-
-    expect(result.messages).toHaveLength(0);
-    expect(result.stats).toBeUndefined();
-  });
-
-  it('reports unknown version when version string is absent', async () => {
-    const buildDir = path.join(tempDir, 'dist');
-    await fs.mkdir(buildDir);
-    await fs.writeFile(
-      path.join(buildDir, 'bundle.js'),
-      `/* Denis Pushkarev - no version here */`
-    );
-
-    const context = makeContext(tempDir, {
-      options: {buildDir: 'dist'},
-      packageFile: {name: 'test-package', version: '1.0.0'}
-    });
-
-    const result = await runVendoredCoreJsAnalysis(context);
-
-    expect(result.messages[0]?.message).toContain('unknown');
   });
 });

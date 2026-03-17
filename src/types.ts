@@ -5,7 +5,7 @@ import type {ParsedLockFile} from 'lockparse';
 export interface Options {
   root?: string;
   manifest?: string[];
-  buildDir?: string;
+  src?: string[];
 }
 
 export interface StatLike<T> {

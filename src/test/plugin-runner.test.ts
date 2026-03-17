@@ -8,8 +8,7 @@ const fsMock: FileSystem = {
   listPackageFiles: async () => [],
   readFile: async () => '',
   getInstallSize: async () => 0,
-  fileExists: async () => false,
-  getFileSize: async () => 0
+  fileExists: async () => false
 };
 
 const depCounts = {production: 0, development: 0};

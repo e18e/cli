@@ -1,15 +1,9 @@
-import {join, relative} from 'node:path';
+import {join} from 'node:path';
 import {glob} from 'tinyglobby';
 import {minVersion} from 'semver';
 import type {AnalysisContext, ReportPluginResult} from '../types.js';
 
 import coreJsCompat from 'core-js-compat';
-
-const {list: modernUnnecessary} = coreJsCompat.compat({
-  targets: 'last 2 versions',
-  inverse: true
-});
-const MODERN_UNNECESSARY_COUNT = modernUnnecessary.length;
 
 const BROAD_IMPORTS = new Set([
   'core-js',
@@ -61,10 +55,21 @@ export async function runCoreJsAnalysis(
   });
   const unnecessarySet = new Set(unnecessaryForTarget);
 
-  const files = await glob(SOURCE_GLOB, {
-    cwd: context.root,
-    ignore: SOURCE_IGNORE
-  });
+  const srcDirs = context.options?.src;
+  let files: string[];
+  if (srcDirs && srcDirs.length > 0) {
+    const results = await Promise.all(
+      srcDirs.map(async (dir) => {
+        const matches = await glob(SOURCE_GLOB, {
+          cwd: join(context.root, dir)
+        });
+        return matches.map((f) => join(dir, f));
+      })
+    );
+    files = results.flat();
+  } else {
+    files = await glob(SOURCE_GLOB, {cwd: context.root, ignore: SOURCE_IGNORE});
+  }
 
   for (const filePath of files) {
     let source: string;
@@ -95,78 +100,4 @@ export async function runCoreJsAnalysis(
   }
 
   return {messages};
-}
-
-export async function runVendoredCoreJsAnalysis(
-  context: AnalysisContext
-): Promise<ReportPluginResult> {
-  const messages: ReportPluginResult['messages'] = [];
-
-  if (!context.options?.buildDir) {
-    return {messages};
-  }
-
-  const buildDirAbs = join(context.root, context.options.buildDir);
-  let buildFiles: string[];
-  try {
-    buildFiles = await glob('**/*.js', {cwd: buildDirAbs, absolute: true});
-  } catch {
-    return {messages};
-  }
-
-  const totalPolyfills = coreJsCompat.modules.length;
-  let totalVendoredBytes = 0;
-
-  for (const filePath of buildFiles) {
-    const rel = relative(context.root, filePath);
-    let source: string;
-    let size: number;
-    try {
-      [source, size] = await Promise.all([
-        context.fs.readFile(rel),
-        context.fs.getFileSize(rel)
-      ]);
-    } catch {
-      continue;
-    }
-
-    // Detection uses multiple signals: author strings and __core-js_shared__ are runtime
-    // literals/globals that typically survive minification; mode:"global" is structural
-    // to core-js version metadata. Aggressive dead-code elimination could still remove them.
-    if (
-      !source.includes('Denis Pushkarev') &&
-      !source.includes('zloirock') &&
-      !source.includes('__core-js_shared__') &&
-      !source.includes('mode:"global"')
-    ) {
-      continue;
-    }
-
-    totalVendoredBytes += size;
-
-    const versionMatch = source.match(/version:"(\d+\.\d+\.\d+)"/);
-    const version = versionMatch ? versionMatch[1] : 'unknown';
-    const sizeKb = (size / 1024).toFixed(1);
-
-    messages.push({
-      severity: 'warning',
-      score: 0,
-      message: `Vendored core-js ${version} detected in ${rel} (${sizeKb} KB). core-js ships ${totalPolyfills} total polyfills, ${MODERN_UNNECESSARY_COUNT} of which are unnecessary for modern browsers. Consider using a targeted polyfill strategy or removing core-js from your build.`
-    });
-  }
-
-  const stats: ReportPluginResult['stats'] =
-    totalVendoredBytes > 0
-      ? {
-          extraStats: [
-            {
-              name: 'vendoredPolyfillSize',
-              label: 'Vendored Polyfill Size',
-              value: totalVendoredBytes
-            }
-          ]
-        }
-      : undefined;
-
-  return {messages, stats};
 }
