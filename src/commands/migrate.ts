@@ -8,6 +8,7 @@ import {fixableReplacements} from './fixable-replacements.js';
 import type {Replacement} from '../types.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import {getPackageJson} from '../utils/package-json.js';
+import {parseCategories, getManifestForCategories} from '../categories.js';
 
 export async function run(ctx: CommandContext<typeof meta>) {
   const [_commandName, ...targetModules] = ctx.positionals;
@@ -20,11 +21,27 @@ export async function run(ctx: CommandContext<typeof meta>) {
 
   prompts.intro(`Migrating packages...`);
 
+  let parsedCategories: ReturnType<typeof parseCategories>;
+  try {
+    parsedCategories = parseCategories(ctx.values.categories);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    prompts.cancel(`Invalid --categories: ${message}`);
+    process.exitCode = 1;
+    return;
+  }
+
+  const manifest = getManifestForCategories(parsedCategories);
+  const inScopePackageNames = new Set(Object.keys(manifest.mappings));
+  const inScopeFixableReplacements = fixableReplacements.filter((rep) =>
+    inScopePackageNames.has(rep.from)
+  );
+
   if (!packageJson) {
     prompts.cancel(
       'Error: No package.json found in the current directory. Please run this command in a project directory.'
     );
-    return;
+    process.exit(1);
   }
 
   const dependencies = {
@@ -33,7 +50,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
   };
 
   const fixableReplacementsTargets = new Set(
-    fixableReplacements
+    inScopeFixableReplacements
       .filter((rep) => Object.hasOwn(dependencies, rep.from))
       .map((rep) => rep.from)
   );
@@ -64,7 +81,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
   let selectedReplacements: Replacement[];
 
   if (all) {
-    selectedReplacements = fixableReplacements.filter((rep) =>
+    selectedReplacements = inScopeFixableReplacements.filter((rep) =>
       fixableReplacementsTargets.has(rep.from)
     );
   } else {
@@ -85,7 +102,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
         return;
       }
 
-      const replacement = fixableReplacements.find(
+      const replacement = inScopeFixableReplacements.find(
         (rep) => rep.from === targetModule
       );
       if (!replacement) {

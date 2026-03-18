@@ -9,6 +9,12 @@ export const meta = {
       description:
         'Set the log level and the minimum severity that causes a non-zero exit code (debug | info | warn | error)'
     },
+    categories: {
+      type: 'string',
+      default: 'all',
+      description:
+        'Manifest categories for replacement analysis: all, native, preferred, micro-utilities, or comma-separated (e.g. native,preferred). Default: all.'
+    },
     manifest: {
       type: 'string',
       multiple: true,

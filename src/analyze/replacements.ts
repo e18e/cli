@@ -1,4 +1,3 @@
-import * as replacements from 'module-replacements';
 import type {
   ManifestModule,
   ModuleReplacement,
@@ -8,6 +7,7 @@ import type {
 import type {ReportPluginResult, AnalysisContext} from '../types.js';
 import {fixableReplacements} from '../commands/fixable-replacements.js';
 import {getPackageJson} from '../utils/package-json.js';
+import {getManifestForCategories} from '../categories.js';
 import {resolve, dirname, basename} from 'node:path';
 import {
   satisfies as semverSatisfies,
@@ -131,13 +131,17 @@ export async function runReplacements(
     ? await loadCustomManifests(context.options.manifest)
     : {mappings: {}, replacements: {}};
 
+  const baseManifest = getManifestForCategories(
+    context.options?.categories ?? 'all'
+  );
+
   // Custom mappings take precedence over built-in
   const allMappings = {
-    ...replacements.all.mappings,
+    ...baseManifest.mappings,
     ...customManifest.mappings
   };
   const allReplacementDefs: Record<string, ModuleReplacement> = {
-    ...replacements.all.replacements,
+    ...baseManifest.replacements,
     ...customManifest.replacements
   };
 

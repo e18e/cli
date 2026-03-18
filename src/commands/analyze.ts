@@ -6,6 +6,7 @@ import {meta} from './analyze.meta.js';
 import {report} from '../index.js';
 import {enableDebug} from '../logger.js';
 import {wrapAnsi} from 'fast-wrap-ansi';
+import {parseCategories} from '../categories.js';
 
 function formatBytes(bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB'];
@@ -49,6 +50,20 @@ export async function run(ctx: CommandContext<typeof meta>) {
     prompts.intro('Analyzing...');
   }
 
+  let parsedCategories: ReturnType<typeof parseCategories>;
+  try {
+    parsedCategories = parseCategories(ctx.values.categories ?? 'all');
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const descriptiveMessage = `Invalid --categories: ${message}`;
+    if (jsonOutput) {
+      process.stderr.write(`Error: ${descriptiveMessage}\n`);
+    } else {
+      prompts.cancel(descriptiveMessage);
+    }
+    process.exit(1);
+  }
+
   // Path can be a directory (analyze project)
   if (providedPath) {
     let stat: Stats | null;
@@ -70,12 +85,12 @@ export async function run(ctx: CommandContext<typeof meta>) {
     root = providedPath;
   }
 
-  // Then read the manifest
   const customManifests = ctx.values['manifest'];
 
   const {stats, messages} = await report({
     root,
-    manifest: customManifests
+    manifest: customManifests,
+    categories: parsedCategories
   });
 
   const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;
