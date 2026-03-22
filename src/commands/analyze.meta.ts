@@ -7,7 +7,7 @@ export const meta = {
       choices: ['debug', 'info', 'warn', 'error'],
       default: 'info',
       description:
-        'Set the log level and the minimum severity that causes a non-zero exit code (debug | info | warn | error)'
+        'Which severities are printed (pretty output) and included in JSON messages unless --json-full is set; also the minimum severity for a non-zero exit code (debug | info | warn | error)'
     },
     categories: {
       type: 'string',
@@ -24,7 +24,14 @@ export const meta = {
     json: {
       type: 'boolean',
       default: false,
-      description: 'Output results as JSON to stdout'
+      description:
+        'Output results as JSON to stdout (messages respect --log-level unless --json-full)'
+    },
+    'json-full': {
+      type: 'boolean',
+      default: false,
+      description:
+        'With --json, include every diagnostic in messages regardless of --log-level (exit code still follows --log-level). Ignored without --json.'
     }
   }
 } as const;
