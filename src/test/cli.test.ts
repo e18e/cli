@@ -233,12 +233,7 @@ describe('analyze --json', () => {
 
   it('--json-full includes all messages when --log-level=error', async () => {
     const {stdout, code} = await runCliProcess(
-      [
-        'analyze',
-        '--json',
-        '--json-full',
-        '--log-level=error'
-      ],
+      ['analyze', '--json', '--json-full', '--log-level=error'],
       basicChalkFixture
     );
     expect(code).toBe(0);
