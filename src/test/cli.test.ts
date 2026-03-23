@@ -20,16 +20,7 @@ const stripVersion = (str: string): string =>
   );
 
 const normalizeStderr = (str: string): string =>
-  str
-    .replace(/\(node:\d+\)/g, '(node:<pid>)')
-    .split('\n')
-    .filter(
-      (line) =>
-        !line.includes("NO_COLOR' env is ignored") &&
-        !line.includes('--trace-warnings')
-    )
-    .join('\n')
-    .replace(/\n+$/, '');
+  str.replace(/\(node:\d+\)/g, '(node:<pid>)');
 
 const basicChalkFixture = path.join(
   __dirname,
