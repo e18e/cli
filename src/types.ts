@@ -1,11 +1,13 @@
 import type {FileSystem} from './file-system.js';
 import type {Codemod, CodemodOptions} from 'module-replacements-codemods';
 import type {ParsedLockFile} from 'lockparse';
+import type {ParsedCategories} from './categories.js';
 
 export interface Options {
   root?: string;
   manifest?: string[];
   src?: string[];
+  categories?: ParsedCategories;
 }
 
 export interface StatLike<T> {
