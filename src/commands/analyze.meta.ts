@@ -24,7 +24,7 @@ export const meta = {
       type: 'string',
       multiple: true,
       description:
-        'Path(s) to source directories to scan for imports (e.g. src, app). Defaults to scanning from the project root.'
+        'Glob pattern(s) for source files to scan for imports (e.g. "src/**/*.ts"). Defaults to scanning all JS/TS files from the project root.'
     }
   }
 } as const;

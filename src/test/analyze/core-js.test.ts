@@ -287,7 +287,7 @@ describe('runCoreJsAnalysis', () => {
     expect(result.messages).toHaveLength(0);
   });
 
-  it('scans only specified src dirs when options.src is provided', async () => {
+  it('scans only specified src globs when options.src is provided', async () => {
     await fs.mkdir(path.join(tempDir, 'src'), {recursive: true});
     await fs.mkdir(path.join(tempDir, 'other'), {recursive: true});
     await fs.writeFile(
@@ -306,7 +306,7 @@ describe('runCoreJsAnalysis', () => {
         version: '1.0.0',
         dependencies: {'core-js': '^3.0.0'}
       },
-      options: {src: ['src']}
+      options: {src: ['src/**/*.js']}
     });
 
     const result = await runCoreJsAnalysis(context);
@@ -315,7 +315,7 @@ describe('runCoreJsAnalysis', () => {
     expect(result.messages[0]?.message).toContain('src');
   });
 
-  it('scans multiple src dirs when options.src has more than one entry', async () => {
+  it('scans multiple src globs when options.src has more than one entry', async () => {
     for (const dir of ['src', 'app']) {
       await fs.mkdir(path.join(tempDir, dir), {recursive: true});
       await fs.writeFile(
@@ -330,7 +330,7 @@ describe('runCoreJsAnalysis', () => {
         version: '1.0.0',
         dependencies: {'core-js': '^3.0.0'}
       },
-      options: {src: ['src', 'app']}
+      options: {src: ['src/**/*.js', 'app/**/*.js']}
     });
 
     const result = await runCoreJsAnalysis(context);

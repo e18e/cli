@@ -1,4 +1,3 @@
-import {join} from 'node:path';
 import {glob} from 'tinyglobby';
 import {minVersion} from 'semver';
 import type {AnalysisContext, ReportPluginResult} from '../types.js';
@@ -12,13 +11,13 @@ const BROAD_IMPORTS = new Set([
   'core-js/full'
 ]);
 
-const SOURCE_GLOB = '**/*.{js,ts,mjs,cjs,jsx,tsx}';
+const SOURCE_GLOB = ['**/*.{js,ts,mjs,cjs,jsx,tsx}'];
 const SOURCE_IGNORE = [
-  'node_modules/**',
-  'dist/**',
-  'build/**',
-  'coverage/**',
-  'lib/**'
+  '**/node_modules/**',
+  '**/dist/**',
+  '**/build/**',
+  '**/coverage/**',
+  '**/lib/**'
 ];
 
 const IMPORT_RE =
@@ -55,21 +54,14 @@ export async function runCoreJsAnalysis(
   });
   const unnecessarySet = new Set(unnecessaryForTarget);
 
-  const srcDirs = context.options?.src;
-  let files: string[];
-  if (srcDirs && srcDirs.length > 0) {
-    const results = await Promise.all(
-      srcDirs.map(async (dir) => {
-        const matches = await glob(SOURCE_GLOB, {
-          cwd: join(context.root, dir)
-        });
-        return matches.map((f) => join(dir, f));
-      })
-    );
-    files = results.flat();
-  } else {
-    files = await glob(SOURCE_GLOB, {cwd: context.root, ignore: SOURCE_IGNORE});
-  }
+  const srcGlobs = context.options?.src;
+  const patterns = srcGlobs && srcGlobs.length > 0 ? srcGlobs : SOURCE_GLOB;
+  const allFiles = await glob(patterns, {
+    cwd: context.root,
+    ignore: SOURCE_IGNORE
+  });
+  // filter out any paths that escaped context.root via ../
+  const files = allFiles.filter((f) => !f.startsWith('..'));
 
   for (const filePath of files) {
     let source: string;
