@@ -182,4 +182,81 @@ describe('Duplicate Dependency Detection', () => {
 
     expect(stats).toMatchSnapshot();
   });
+
+  it('should ignore workspace link entries without versions', async () => {
+    const sharedLibv1: ParsedDependency = {
+      name: 'shared-lib',
+      version: '1.0.0',
+      dependencies: [],
+      devDependencies: [],
+      optionalDependencies: [],
+      peerDependencies: []
+    };
+    const sharedLibv2: ParsedDependency = {
+      name: 'shared-lib',
+      version: '2.0.0',
+      dependencies: [],
+      devDependencies: [],
+      optionalDependencies: [],
+      peerDependencies: []
+    };
+    const workspaceLink = {
+      name: 'react-native-dotgrid',
+      dependencies: [],
+      devDependencies: [],
+      optionalDependencies: [],
+      peerDependencies: []
+    } as unknown as ParsedDependency;
+    const packageA: ParsedDependency = {
+      name: 'package-a',
+      version: '1.0.0',
+      dependencies: [sharedLibv1],
+      devDependencies: [],
+      peerDependencies: [],
+      optionalDependencies: []
+    };
+    const packageB: ParsedDependency = {
+      name: 'package-b',
+      version: '1.0.0',
+      dependencies: [sharedLibv2],
+      devDependencies: [],
+      peerDependencies: [],
+      optionalDependencies: []
+    };
+
+    context = {
+      fs: fileSystem,
+      root: '.',
+      messages: [],
+      stats: {
+        name: 'unknown',
+        version: 'unknown',
+        dependencyCount: {
+          production: 0,
+          development: 0
+        },
+        extraStats: []
+      },
+      lockfile: {
+        type: 'npm',
+        packages: [workspaceLink, packageA, packageB, sharedLibv1, sharedLibv2],
+        root: {
+          name: 'root-package',
+          version: '1.0.0',
+          dependencies: [workspaceLink, packageA, packageB],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0'
+      }
+    };
+
+    const stats = await runDuplicateDependencyAnalysis(context);
+
+    expect(stats).toMatchSnapshot();
+  });
 });
