@@ -7,14 +7,6 @@ interface Version {
   parents: string[];
 }
 
-function hasResolvedVersion(
-  pkg: Pick<ParsedLockFile['packages'][number], 'version'>
-): pkg is Pick<ParsedLockFile['packages'][number], 'version'> & {
-  version: string;
-} {
-  return typeof pkg.version === 'string' && pkg.version.length > 0;
-}
-
 /**
  * Outputs packages with duplicate versions and suggest possible fixes
  * @param context
@@ -46,7 +38,7 @@ function resolveDuplicateDependencies(
     // npm workspace links appear in package-lock.json without a version.
     // They are not real installed versions and should not participate in
     // duplicate-version analysis.
-    if (!hasResolvedVersion(pkg)) {
+    if (typeof pkg.version !== 'string' || pkg.version.length === 0) {
       continue;
     }
 
