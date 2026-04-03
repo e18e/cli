@@ -1,0 +1,62 @@
+# Command: `analyze`
+
+[← Back to docs index](../README.md)
+
+Analyzes a package using several built-in checks (publint, replacement suggestions, dependency summary, duplicate versions in the lockfile).
+
+## Examples
+
+```sh
+# Analyze the current directory (must contain package.json + a supported lockfile)
+npx @e18e/cli analyze
+
+# Analyze a different package root
+npx @e18e/cli analyze ./packages/app
+
+# JSON on stdout for scripts and CI; exit code reflects --log-level vs findings
+npx @e18e/cli analyze --json
+
+# Fail CI only on errors, not warnings or suggestions
+npx @e18e/cli analyze --json --log-level error
+
+# Narrow replacement suggestions to the "native" manifest category
+npx @e18e/cli analyze --categories native
+
+# Combine categories
+npx @e18e/cli analyze --categories native,preferred
+
+# Extra replacement manifests (repeat --manifest for each file)
+npx @e18e/cli analyze --manifest ./config/e18e.manifest.json
+```
+
+With a global install, swap `npx @e18e/cli` for `e18e-cli` (same arguments).
+
+## Optional positional argument
+
+- **`[directory]`** — Root of the package to analyze. If omitted, the current working directory is used. Must be a directory (not a file).
+
+## Flags
+
+| Flag | Description |
+|------|-------------|
+| `--log-level <level>` | `debug`, `info`, `warn`, or `error` (default: `info`). Sets minimum log verbosity **and** the minimum message severity that causes a **non-zero exit** (see [Exit codes](./reference.md#exit-codes-analyze)). |
+| `--categories <list>` | Replacement manifest scope: `all`, or comma-separated `native`, `preferred`, `micro-utilities` (e.g. `native,preferred`). Invalid values exit with code `1`. |
+| `--manifest <path>` | Extra replacement manifest file(s); can be passed multiple times. |
+| `--json` | Print `{ stats, messages }` as JSON on stdout and skip the interactive UI. Exit code still follows `--log-level` vs message severities. |
+
+## What the summary metrics mean
+
+The analyze summary is easy to misread; this is what the numbers **actually** represent:
+
+- **Dependencies (production / development)** — Counts of **direct** dependencies only: keys in `dependencies` and `devDependencies` in `package.json`. This is **not** the number of transitive packages in your install graph.
+- **Install size** — Sum of **file sizes under `node_modules`** for the current install (on-disk footprint). It is **not** a separate “dependency tree node count.”
+- **Duplicate dependency** messages — Packages that appear with **more than one resolved version** in the parsed lockfile, with context about dependents. That reflects lock/install reality, not the direct-dependency counts above.
+
+## What analysis includes
+
+Checks are implemented as plugins wired in `report()` (see `src/analyze/report.ts`), including:
+
+- **Publint** — Package publishing best practices.
+- **Replacements** — Suggested swaps from the module-replacements manifests (scoped by `--categories` and optional `--manifest`).
+- **Dependency summary** — Direct dependency counts and install size (as described above).
+- **Duplicate dependencies** — Multiple versions of the same package name in the lockfile.
