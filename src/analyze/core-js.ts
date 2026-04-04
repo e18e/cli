@@ -1,5 +1,6 @@
 import {glob} from 'tinyglobby';
 import {minVersion} from 'semver';
+import {relative, join} from 'path';
 import type {AnalysisContext, ReportPluginResult} from '../types.js';
 
 import coreJsCompat from 'core-js-compat';
@@ -61,7 +62,9 @@ export async function runCoreJsAnalysis(
     ignore: SOURCE_IGNORE
   });
   // filter out any paths that escaped context.root via ../
-  const files = allFiles.filter((f) => !f.startsWith('..'));
+  const files = allFiles.filter(
+    (f) => !relative(context.root, join(context.root, f)).startsWith('..')
+  );
 
   for (const filePath of files) {
     let source: string;
