@@ -52,7 +52,7 @@ npx @e18e/cli migrate chalk
 npx @e18e/cli migrate --interactive
 ```
 
-Run `npx @e18e/cli` with no subcommand to print global usage, or use **`e18e-cli <command> -h`** after a global install. Full flags and examples: [**analyze**](./analyze.md), [**migrate**](./migrate.md). Exit codes and API notes: [**reference**](./reference.md).
+Run `npx @e18e/cli` with no subcommand to print global usage, or use **`e18e-cli <command> -h`** after a global install. Full flags and examples: [**analyze**](./docs/analyze.md), [**migrate**](./docs/migrate.md). Exit codes and API notes: [**reference**](./docs/reference.md).
 
 ## Documentation
 
