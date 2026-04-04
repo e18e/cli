@@ -28,7 +28,7 @@ export function resolveUrl(url: KnownUrl): string {
     case 'node':
       return `https://nodejs.org/docs/latest/${url.id}`;
     case 'e18e':
-      return `https://github.com/es-tooling/module-replacements/blob/main/docs/modules/${url.id}.md`;
+      return `https://github.com/e18e/module-replacements/blob/main/docs/modules/${url.id}.md`;
   }
 }
 
