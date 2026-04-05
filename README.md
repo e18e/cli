@@ -52,15 +52,15 @@ npx @e18e/cli migrate chalk
 npx @e18e/cli migrate --interactive
 ```
 
-Run `npx @e18e/cli` with no subcommand to print global usage, or use **`e18e-cli <command> -h`** after a global install. Full flags and examples: [**analyze**](./docs/analyze.md), [**migrate**](./docs/migrate.md). Exit codes and API notes: [**reference**](./docs/reference.md).
+Run `npx @e18e/cli` with no subcommand to print global usage, or use **`e18e-cli <command> -h`** after a global install. Full flags and examples: [**analyze**](./docs/analyze.md), [**migrate**](./docs/migrate.md). Exit codes live in [analyze](./docs/analyze.md#exit-codes-analyze); experimental library surface: [programmatic API](./docs/programmatic-api.md).
 
 ## Documentation
 
 | Page | Description |
 |------|-------------|
-| [`analyze`](./docs/analyze.md) | Analyze command: examples, flags, metrics, what checks run |
+| [`analyze`](./docs/analyze.md) | Analyze command: examples, flags, metrics, exit codes, what checks run |
 | [`migrate`](./docs/migrate.md) | Migrate command: examples, flags, scope |
-| [Reference](./docs/reference.md) | Exit codes (`analyze`), programmatic API (experimental) |
+| [Programmatic API](./docs/programmatic-api.md) | Experimental `report()` usage and trust exports (`src/index.ts`) |
 
 ## Contributing
 

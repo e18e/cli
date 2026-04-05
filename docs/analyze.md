@@ -39,14 +39,14 @@ With a global install, swap `npx @e18e/cli` for `e18e-cli` (same arguments).
 
 | Flag | Description |
 |------|-------------|
-| `--log-level <level>` | `debug`, `info`, `warn`, or `error` (default: `info`). Sets minimum log verbosity **and** the minimum message severity that causes a **non-zero exit** (see [Exit codes](./reference.md#exit-codes-analyze)). |
+| `--log-level <level>` | `debug`, `info`, `warn`, or `error` (default: `info`). Sets minimum log verbosity **and** the minimum message severity that causes a **non-zero exit** (see [Exit codes](#exit-codes-analyze)). |
 | `--categories <list>` | Replacement manifest scope: `all`, or comma-separated `native`, `preferred`, `micro-utilities` (e.g. `native,preferred`). Invalid values exit with code `1`. |
 | `--manifest <path>` | Extra replacement manifest file(s); can be passed multiple times. |
 | `--json` | Print `{ stats, messages }` as JSON on stdout and skip the interactive UI. Exit code still follows `--log-level` vs message severities. |
 
 ## What the summary metrics mean
 
-The analyze summary is easy to misread; this is what the numbers **actually** represent:
+Here’s what each value in the summary represents:
 
 - **Dependencies (production / development)** — Counts of **direct** dependencies only: keys in `dependencies` and `devDependencies` in `package.json`. This is **not** the number of transitive packages in your install graph.
 - **Install size** — Sum of **file sizes under `node_modules`** for the current install (on-disk footprint). It is **not** a separate “dependency tree node count.”
@@ -60,3 +60,16 @@ Checks are implemented as plugins wired in `report()` (see `src/analyze/report.t
 - **Replacements** — Suggested swaps from the module-replacements manifests (scoped by `--categories` and optional `--manifest`).
 - **Dependency summary** — Direct dependency counts and install size (as described above).
 - **Duplicate dependencies** — Multiple versions of the same package name in the lockfile.
+
+## Exit codes (`analyze`)
+
+Message severities are `error`, `warning`, and `suggestion`. With **`--json`**, results are always printed; the process exits with **`1`** if any message meets or exceeds the severity implied by `--log-level`:
+
+| `--log-level` | Fails (exit `1`) when |
+|---------------|------------------------|
+| `debug` | Never (for exit purposes; still lists all messages) |
+| `info` | Any `error`, `warning`, or `suggestion` |
+| `warn` | `error` or `warning` |
+| `error` | `error` only |
+
+Invalid `--categories` or an invalid analyze path also yields exit code `1`.
