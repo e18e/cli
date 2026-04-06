@@ -27,7 +27,8 @@
     "format:check": "prettier --check src",
     "test": "vitest run --coverage",
     "prepublishOnly": "npm run test",
-    "generate-fixable-replacements": "node scripts/generate-fixable-replacements.ts"
+    "generate-fixable-replacements": "node scripts/generate-fixable-replacements.ts",
+    "generate-syntax-replacements": "node scripts/generate-syntax-replacements.ts"
   },
   "repository": {
     "type": "git",
@@ -47,8 +48,9 @@
   "homepage": "https://github.com/e18e/cli#readme",
   "dependencies": {
     "@clack/prompts": "^1.1.0",
-    "fast-wrap-ansi": "^0.2.0",
+    "@e18e/web-features-codemods": "^0.2.0",
     "@publint/pack": "^0.1.4",
+    "fast-wrap-ansi": "^0.2.0",
     "fdir": "^6.5.0",
     "gunshi": "^0.29.3",
     "lockparse": "^0.5.0",
