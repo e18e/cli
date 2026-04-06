@@ -4,6 +4,13 @@
 
 Analyzes a package using several built-in checks (publint, replacement suggestions, dependency summary, duplicate versions in the lockfile).
 
+## Prerequisites
+
+- A `package.json` at the project root.
+- A supported lockfile next to it: `pnpm-lock.yaml`, `package-lock.json`, `yarn.lock`, or `bun.lock`.
+
+Analysis reads the lockfile and `package.json` together. If no lockfile is found, the CLI errors instead of guessing.
+
 ## Examples
 
 ```sh
@@ -73,3 +80,7 @@ Message severities are `error`, `warning`, and `suggestion`. With **`--json`**, 
 | `error` | `error` only |
 
 Invalid `--categories` or an invalid analyze path also yields exit code `1`.
+
+## Running with `npx`
+
+Some package runners mishandle flags or the `--` separator when invoking a package binary (for example `npx @e18e/cli -- --help` may not do what you expect). If help or subcommand flags behave oddly, run **`e18e-cli`** after a global install, or invoke **`npx @e18e/cli`** with no extra flags and use the [**Usage**](../README.md#usage) examples on the repository README.
