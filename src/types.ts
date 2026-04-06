@@ -54,6 +54,14 @@ export interface Replacement {
   factory: (options: CodemodOptions) => Codemod;
 }
 
+export interface SyntaxReplacement {
+  name: string;
+  codemod: {
+    test(options: {source: string}): boolean;
+    apply(options: {source: string}): string;
+  };
+}
+
 export interface ReportPluginResult {
   stats?: Partial<Stats>;
   messages: Message[];
