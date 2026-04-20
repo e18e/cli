@@ -52,7 +52,7 @@
     "fdir": "^6.5.0",
     "gunshi": "^0.29.4",
     "lockparse": "^0.5.0",
-    "module-replacements": "^3.0.0-beta.4",
+    "module-replacements": "^3.0.0-beta.7",
     "module-replacements-codemods": "^1.2.0",
     "obug": "^2.1.1",
     "package-manager-detector": "^1.6.0",
