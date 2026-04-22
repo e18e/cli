@@ -39,7 +39,7 @@ function messageSeverityRank(m: Message): number {
   return SEVERITY_RANK[m.severity] ?? 2;
 }
 
-function messagesVisibleAtLogLevel(
+function messagesAtOrAboveSeverityThreshold(
   messages: Message[],
   thresholdRank: number
 ): Message[] {
@@ -51,8 +51,9 @@ export async function run(ctx: CommandContext<typeof meta>) {
   const providedPath =
     ctx.positionals.length > 1 ? ctx.positionals[1] : undefined;
   const logLevel = ctx.values['log-level'];
+  const quiet = ctx.values['quiet'];
+  const reportLevel = ctx.values['report-level'];
   const jsonOutput = ctx.values['json'];
-  const jsonFull = ctx.values['json-full'];
   let root: string | undefined;
 
   // Enable debug output based on log level
@@ -108,15 +109,23 @@ export async function run(ctx: CommandContext<typeof meta>) {
   });
 
   const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;
-  const visibleMessages = messagesVisibleAtLogLevel(messages, thresholdRank);
+  const effectiveReportLevel = quiet
+    ? 'error'
+    : reportLevel === 'auto'
+      ? logLevel
+      : reportLevel;
+  const reportThresholdRank = FAIL_THRESHOLD_RANK[effectiveReportLevel] ?? 0;
+  const visibleMessages = messagesAtOrAboveSeverityThreshold(
+    messages,
+    reportThresholdRank
+  );
   const hasFailingMessages =
     thresholdRank > 0 &&
     messages.some((m) => messageSeverityRank(m) >= thresholdRank);
 
   if (jsonOutput) {
-    const jsonMessages = jsonFull ? messages : visibleMessages;
     process.stdout.write(
-      JSON.stringify({stats, messages: jsonMessages}, null, 2) + '\n'
+      JSON.stringify({stats, messages: visibleMessages}, null, 2) + '\n'
     );
     if (hasFailingMessages) {
       process.exit(1);
@@ -174,15 +183,14 @@ export async function run(ctx: CommandContext<typeof meta>) {
   prompts.log.info('Results:');
   prompts.log.message('', {spacing: 0});
 
-  // Display tool analysis results (severity-filtered by --log-level)
+  // Display tool analysis results (severity-filtered by --quiet / --report-level)
   if (messages.length > 0 && visibleMessages.length === 0) {
-    prompts.log.message(
-      styleText(
-        'dim',
-        `${messages.length} issue(s) below --log-level ${logLevel}; use a lower threshold to see them.`
-      ),
-      {spacing: 0}
-    );
+    const dimHint = quiet
+      ? `${messages.length} issue(s) hidden by --quiet (errors only in output). Omit --quiet or lower --report-level to see them.`
+      : reportLevel === 'auto'
+        ? `${messages.length} issue(s) below --report-level ${effectiveReportLevel} (--report-level auto, same as --log-level); set --report-level to a lower value to see them.`
+        : `${messages.length} issue(s) below --report-level ${effectiveReportLevel}; set --report-level to a lower value to see them.`;
+    prompts.log.message(styleText('dim', dimHint), {spacing: 0});
   } else if (visibleMessages.length > 0) {
     const width = process.stdout?.columns ?? 80;
     const maxContentWidth = Math.max(20, width - 4);

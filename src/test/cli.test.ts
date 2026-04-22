@@ -164,7 +164,7 @@ describe('analyze exit codes', () => {
     expect(code).toBe(0);
     const output = stdout + stderr;
     expect(output).not.toContain('Warnings:');
-    expect(output).toContain('below --log-level error');
+    expect(output).toMatch(/below --report-level error/);
   });
 
   it('with --log-level=warn shows warnings but not suggestions', async () => {
@@ -176,6 +176,17 @@ describe('analyze exit codes', () => {
     const output = stdout + stderr;
     expect(output).toContain('Warnings:');
     expect(output).not.toContain('Suggestions:');
+  });
+
+  it('--quiet hides non-errors like ESLint (default log-level still fails on warnings)', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['analyze', '--quiet'],
+      basicChalkFixture
+    );
+    expect(code).toBe(1);
+    const output = stdout + stderr;
+    expect(output).not.toContain('Warnings:');
+    expect(output).toContain('hidden by --quiet');
   });
 });
 
@@ -222,9 +233,9 @@ describe('analyze --json', () => {
     expect(parsed.messages).toEqual([]);
   });
 
-  it('--json-full includes all messages when --log-level=error', async () => {
+  it('--report-level=info includes all messages when --log-level=error', async () => {
     const {stdout, code} = await runCliProcess(
-      ['analyze', '--json', '--json-full', '--log-level=error'],
+      ['analyze', '--json', '--log-level=error', '--report-level=info'],
       basicChalkFixture
     );
     expect(code).toBe(0);
@@ -238,6 +249,32 @@ describe('analyze --json', () => {
         (m: {severity: string}) => m.severity === 'suggestion'
       )
     ).toBe(true);
+  });
+
+  it('--quiet JSON omits warnings when there are no errors', async () => {
+    const {stdout, code} = await runCliProcess(
+      ['analyze', '--json', '--quiet', '--log-level=error'],
+      basicChalkFixture
+    );
+    expect(code).toBe(0);
+    const parsed = JSON.parse(stdout);
+    expect(parsed.messages).toEqual([]);
+  });
+
+  it('--quiet overrides --report-level=info for JSON messages', async () => {
+    const {stdout, code} = await runCliProcess(
+      [
+        'analyze',
+        '--json',
+        '--quiet',
+        '--log-level=error',
+        '--report-level=info'
+      ],
+      basicChalkFixture
+    );
+    expect(code).toBe(0);
+    const parsed = JSON.parse(stdout);
+    expect(parsed.messages).toEqual([]);
   });
 
   it('JSON with --log-level=warn omits suggestions', async () => {

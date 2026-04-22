@@ -7,7 +7,20 @@ export const meta = {
       choices: ['debug', 'info', 'warn', 'error'],
       default: 'info',
       description:
-        'Which severities are printed (pretty output) and included in JSON messages unless --json-full is set; also the minimum severity for a non-zero exit code (debug | info | warn | error)'
+        'Minimum severity for a non-zero exit code, and enables debug logging when set to debug (debug | info | warn | error)'
+    },
+    quiet: {
+      type: 'boolean',
+      default: false,
+      description:
+        'Only show errors in Results and JSON messages (same idea as ESLint --quiet). Overrides --report-level.'
+    },
+    'report-level': {
+      type: 'enum',
+      choices: ['auto', 'debug', 'info', 'warn', 'error'],
+      default: 'auto',
+      description:
+        'Which severities appear in Results and in JSON messages when not using --quiet. auto: follow --log-level (debug | info | warn | error)'
     },
     categories: {
       type: 'string',
@@ -25,13 +38,7 @@ export const meta = {
       type: 'boolean',
       default: false,
       description:
-        'Output results as JSON to stdout (messages respect --log-level unless --json-full)'
-    },
-    'json-full': {
-      type: 'boolean',
-      default: false,
-      description:
-        'With --json, include every diagnostic in messages regardless of --log-level (exit code still follows --log-level). Ignored without --json.'
+        'Output results as JSON to stdout (messages follow --quiet or resolved --report-level)'
     }
   }
 } as const;
