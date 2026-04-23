@@ -26,6 +26,12 @@ npx @e18e/cli analyze --json
 # Fail CI only on errors, not warnings or suggestions
 npx @e18e/cli analyze --json --log-level error
 
+# Show all findings in JSON, but only fail on errors
+npx @e18e/cli analyze --json --log-level error --report-level info
+
+# ESLint-style quiet mode: only show errors in output
+npx @e18e/cli analyze --quiet
+
 # Narrow replacement suggestions to the "native" manifest category
 npx @e18e/cli analyze --categories native
 
@@ -46,10 +52,12 @@ With a global install, swap `npx @e18e/cli` for `e18e-cli` (same arguments).
 
 | Flag | Description |
 |------|-------------|
-| `--log-level <level>` | `debug`, `info`, `warn`, or `error` (default: `info`). Sets minimum log verbosity **and** the minimum message severity that causes a **non-zero exit** (see [Exit codes](#exit-codes-analyze)). |
+| `--log-level <level>` | `debug`, `info`, `warn`, or `error` (default: `info`). Sets the minimum message severity that causes a **non-zero exit** (see [Exit codes](#exit-codes-analyze)). Also enables debug logging when set to `debug`. |
+| `--quiet` | ESLint-style quiet mode. Only `error` messages appear in Results and JSON `messages`. Overrides `--report-level`. |
+| `--report-level <level>` | `auto`, `debug`, `info`, `warn`, or `error` (default: `auto`). Controls which severities are shown in Results and JSON `messages`. `auto` means "follow `--log-level`." |
 | `--categories <list>` | Replacement manifest scope: `all`, or comma-separated `native`, `preferred`, `micro-utilities` (e.g. `native,preferred`). Invalid values exit with code `1`. |
 | `--manifest <path>` | Extra replacement manifest file(s); can be passed multiple times. |
-| `--json` | Print `{ stats, messages }` as JSON on stdout and skip the interactive UI. Exit code still follows `--log-level` vs message severities. |
+| `--json` | Print `{ stats, messages }` as JSON on stdout and skip the interactive UI. `messages` follow `--quiet` or resolved `--report-level`. Exit code still follows `--log-level` vs message severities. |
 
 ## What the summary metrics mean
 
@@ -70,7 +78,12 @@ Checks are implemented as plugins wired in `report()` (see `src/analyze/report.t
 
 ## Exit codes (`analyze`)
 
-Message severities are `error`, `warning`, and `suggestion`. With **`--json`**, results are always printed; the process exits with **`1`** if any message meets or exceeds the severity implied by `--log-level`:
+Message severities are `error`, `warning`, and `suggestion`. Output visibility and exit behavior are separate:
+
+- **Shown in Results / JSON `messages`**: controlled by `--quiet` or `--report-level` (`auto` follows `--log-level`).
+- **Exit code**: controlled by `--log-level`.
+
+With either normal or JSON output, the process exits with **`1`** if any message meets or exceeds the severity implied by `--log-level`:
 
 | `--log-level` | Fails (exit `1`) when |
 |---------------|------------------------|
