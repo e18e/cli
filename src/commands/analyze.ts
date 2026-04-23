@@ -7,6 +7,7 @@ import {report} from '../index.js';
 import {enableDebug} from '../logger.js';
 import {wrapAnsi} from 'fast-wrap-ansi';
 import {parseCategories} from '../categories.js';
+import type {Message} from '../types.js';
 
 function formatBytes(bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB'];
@@ -33,11 +34,25 @@ const FAIL_THRESHOLD_RANK: Record<string, number> = {
   debug: 0
 };
 
+/** Unknown severities are treated like warnings so they are not silently dropped. */
+function messageSeverityRank(m: Message): number {
+  return SEVERITY_RANK[m.severity] ?? 2;
+}
+
+function messagesAtOrAboveSeverityThreshold(
+  messages: Message[],
+  thresholdRank: number
+): Message[] {
+  return messages.filter((m) => messageSeverityRank(m) >= thresholdRank);
+}
+
 export async function run(ctx: CommandContext<typeof meta>) {
   // Gunshi passes subcommand name as first positional; path is optional second
   const providedPath =
     ctx.positionals.length > 1 ? ctx.positionals[1] : undefined;
   const logLevel = ctx.values['log-level'];
+  const quiet = ctx.values['quiet'];
+  const reportLevel = ctx.values['report-level'];
   const jsonOutput = ctx.values['json'];
   let root: string | undefined;
 
@@ -94,12 +109,24 @@ export async function run(ctx: CommandContext<typeof meta>) {
   });
 
   const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;
+  const effectiveReportLevel = quiet
+    ? 'error'
+    : reportLevel === 'auto'
+      ? logLevel
+      : reportLevel;
+  const reportThresholdRank = FAIL_THRESHOLD_RANK[effectiveReportLevel] ?? 0;
+  const visibleMessages = messagesAtOrAboveSeverityThreshold(
+    messages,
+    reportThresholdRank
+  );
   const hasFailingMessages =
     thresholdRank > 0 &&
-    messages.some((m) => SEVERITY_RANK[m.severity] >= thresholdRank);
+    messages.some((m) => messageSeverityRank(m) >= thresholdRank);
 
   if (jsonOutput) {
-    process.stdout.write(JSON.stringify({stats, messages}, null, 2) + '\n');
+    process.stdout.write(
+      JSON.stringify({stats, messages: visibleMessages}, null, 2) + '\n'
+    );
     if (hasFailingMessages) {
       process.exit(1);
     }
@@ -156,8 +183,15 @@ export async function run(ctx: CommandContext<typeof meta>) {
   prompts.log.info('Results:');
   prompts.log.message('', {spacing: 0});
 
-  // Display tool analysis results
-  if (messages.length > 0) {
+  // Display tool analysis results (severity-filtered by --quiet / --report-level)
+  if (messages.length > 0 && visibleMessages.length === 0) {
+    const dimHint = quiet
+      ? `${messages.length} issue(s) hidden by --quiet (errors only in output). Omit --quiet or lower --report-level to see them.`
+      : reportLevel === 'auto'
+        ? `${messages.length} issue(s) below --report-level ${effectiveReportLevel} (--report-level auto, same as --log-level); set --report-level to a lower value to see them.`
+        : `${messages.length} issue(s) below --report-level ${effectiveReportLevel}; set --report-level to a lower value to see them.`;
+    prompts.log.message(styleText('dim', dimHint), {spacing: 0});
+  } else if (visibleMessages.length > 0) {
     const width = process.stdout?.columns ?? 80;
     const maxContentWidth = Math.max(20, width - 4);
 
@@ -167,9 +201,11 @@ export async function run(ctx: CommandContext<typeof meta>) {
         .map((line, i) => (i === 0 ? `  ${bullet} ${line}` : `    ${line}`))
         .join('\n');
 
-    const errorMessages = messages.filter((m) => m.severity === 'error');
-    const warningMessages = messages.filter((m) => m.severity === 'warning');
-    const suggestionMessages = messages.filter(
+    const errorMessages = visibleMessages.filter((m) => m.severity === 'error');
+    const warningMessages = visibleMessages.filter(
+      (m) => m.severity === 'warning'
+    );
+    const suggestionMessages = visibleMessages.filter(
       (m) => m.severity === 'suggestion'
     );
 
@@ -212,7 +248,7 @@ export async function run(ctx: CommandContext<typeof meta>) {
     const errorCount = errorMessages.length;
     const warningCount = warningMessages.length;
     const suggestionCount = suggestionMessages.length;
-    const fixableCount = messages.filter(
+    const fixableCount = visibleMessages.filter(
       (m) => m.fixableBy === 'migrate'
     ).length;
     const parts: string[] = [];
