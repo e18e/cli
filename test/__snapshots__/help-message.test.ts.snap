@@ -1,0 +1,58 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`--help command > prints the analyze command help 1`] = `
+"[36me18e[39m (cli <version>)
+
+Analyze the project for any warnings or errors
+
+USAGE:
+  cli analyze <OPTIONS>
+
+OPTIONS:
+  --pack [pack]                    Package manager to use for packing (default: auto, choices: auto | npm | yarn | pnpm | bun | none)
+  --log-level [log-level]          Set the log level (debug | info | warn | error) (default: info, choices: debug | info | warn | error)
+  -h, --help                       Display this help message
+  -v, --version                    Display this version
+
+"
+`;
+
+exports[`--help command > prints the migrate command help 1`] = `
+"[36me18e[39m (cli <version>)
+
+Migrate from a package to a more performant alternative.
+
+USAGE:
+  cli migrate <OPTIONS>
+
+OPTIONS:
+  --dry-run                    Don't apply any fixes, only show what would change. (default: false)
+  --interactive                Run in interactive mode. (default: false)
+  --include [include]          Files to migrate (default: **/*.{ts,js})
+  -h, --help                   Display this help message
+  -v, --version                Display this version
+
+"
+`;
+
+exports[`--help command > prints the up to date help command 1`] = `
+"[36me18e[39m (cli <version>)
+
+USAGE:
+  cli [(anonymous)] <OPTIONS>
+  cli <COMMANDS>
+
+COMMANDS:
+  analyze          Analyze the project for any warnings or errors  
+  migrate          Migrate from a package to a more performant alternative.  
+
+For more info, run any command with the \`--help\` flag:
+  cli analyze --help
+  cli migrate --help
+
+OPTIONS:
+  -h, --help             Display this help message
+  -v, --version          Display this version
+
+"
+`;
