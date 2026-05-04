@@ -66,12 +66,12 @@
     "@types/picomatch": "^4.0.3",
     "@types/semver": "^7.7.1",
     "@vitest/coverage-v8": "^4.1.5",
-    "eslint": "^10.2.1",
-    "pkg-pr-new": "^0.0.67",
+    "eslint": "^10.3.0",
+    "pkg-pr-new": "^0.0.70",
     "premove": "^4.0.0",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.0",
+    "typescript-eslint": "^8.59.1",
     "vitest": "^4.1.0"
   }
 }
