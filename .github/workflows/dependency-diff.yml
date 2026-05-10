@@ -1,4 +1,4 @@
-name: Dependency Diff
+name: Dependency Diff (Analyze)
 
 on:
   pull_request:
@@ -8,11 +8,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
-      - name: Create Diff
+      - name: Analyze Dependencies
+        id: analyze
         uses: e18e/action-dependency-diff@5d3c6ac2ad2de2eaca1dc120c5accfd9590764b6 # v1.5.1
+        with:
+          mode: artifact
+      - name: Upload Artifact
+        if: steps.analyze.outputs.artifact-path
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: e18e-diff-result
+          path: ${{ steps.analyze.outputs.artifact-path }}

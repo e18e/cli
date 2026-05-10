@@ -1,0 +1,27 @@
+name: Dependency Diff (Comment)
+
+on:
+  workflow_run:
+    workflows: ['Dependency Diff (Analyze)']
+    types:
+      - completed
+
+jobs:
+  post_comment:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    permissions:
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: e18e-diff-result
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Post Comment
+        uses: e18e/action-dependency-diff@5d3c6ac2ad2de2eaca1dc120c5accfd9590764b6 # v1.5.1
+        with:
+          mode: comment-from-artifact
+          artifact-path: e18e-diff-result.json
