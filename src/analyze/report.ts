@@ -20,11 +20,11 @@ import {runCoreJsAnalysis} from './core-js.js';
 import {runWebFeaturesCodemodsAnalysis} from './web-features-codemods.js';
 
 const plugins: ReportPlugin[] = [
-  runPublint,
-  runReplacements,
+  runCoreJsAnalysis,
   runDependencyAnalysis,
   runDuplicateDependencyAnalysis,
-  runCoreJsAnalysis,
+  runPublint,
+  runReplacements,
   runWebFeaturesCodemodsAnalysis
 ];
 

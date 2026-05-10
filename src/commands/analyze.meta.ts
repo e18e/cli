@@ -37,7 +37,8 @@ export const meta = {
     json: {
       type: 'boolean',
       default: false,
-      description: 'Output results as JSON to stdout'
+      description:
+        'Output results as JSON to stdout (messages follow --quiet or resolved --report-level)'
     },
     src: {
       type: 'string',
