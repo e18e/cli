@@ -155,6 +155,39 @@ describe('analyze exit codes', () => {
     );
     expect(code).toBe(0);
   });
+
+  it('with --log-level=error hides warnings when there are no errors', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['analyze', '--log-level=error'],
+      basicChalkFixture
+    );
+    expect(code).toBe(0);
+    const output = stdout + stderr;
+    expect(output).not.toContain('Warnings:');
+    expect(output).toMatch(/below --report-level error/);
+  });
+
+  it('with --log-level=warn shows warnings but not suggestions', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['analyze', '--log-level=warn'],
+      basicChalkFixture
+    );
+    expect(code).toBe(1);
+    const output = stdout + stderr;
+    expect(output).toContain('Warnings:');
+    expect(output).not.toContain('Suggestions:');
+  });
+
+  it('--quiet hides non-errors like ESLint (default log-level still fails on warnings)', async () => {
+    const {stdout, stderr, code} = await runCliProcess(
+      ['analyze', '--quiet'],
+      basicChalkFixture
+    );
+    expect(code).toBe(1);
+    const output = stdout + stderr;
+    expect(output).not.toContain('Warnings:');
+    expect(output).toContain('hidden by --quiet');
+  });
 });
 
 describe('analyze --json', () => {
@@ -188,6 +221,75 @@ describe('analyze --json', () => {
     expect(code).toBe(1);
     const parsed = JSON.parse(stdout);
     expect(parsed.messages.length).toBeGreaterThan(0);
+  });
+
+  it('filters JSON messages to match --log-level=error', async () => {
+    const {stdout, code} = await runCliProcess(
+      ['analyze', '--json', '--log-level=error'],
+      basicChalkFixture
+    );
+    expect(code).toBe(0);
+    const parsed = JSON.parse(stdout);
+    expect(parsed.messages).toEqual([]);
+  });
+
+  it('--report-level=info includes all messages when --log-level=error', async () => {
+    const {stdout, code} = await runCliProcess(
+      ['analyze', '--json', '--log-level=error', '--report-level=info'],
+      basicChalkFixture
+    );
+    expect(code).toBe(0);
+    const parsed = JSON.parse(stdout);
+    expect(parsed.messages.length).toBeGreaterThanOrEqual(2);
+    expect(
+      parsed.messages.some((m: {severity: string}) => m.severity === 'warning')
+    ).toBe(true);
+    expect(
+      parsed.messages.some(
+        (m: {severity: string}) => m.severity === 'suggestion'
+      )
+    ).toBe(true);
+  });
+
+  it('--quiet JSON omits warnings when there are no errors', async () => {
+    const {stdout, code} = await runCliProcess(
+      ['analyze', '--json', '--quiet', '--log-level=error'],
+      basicChalkFixture
+    );
+    expect(code).toBe(0);
+    const parsed = JSON.parse(stdout);
+    expect(parsed.messages).toEqual([]);
+  });
+
+  it('--quiet overrides --report-level=info for JSON messages', async () => {
+    const {stdout, code} = await runCliProcess(
+      [
+        'analyze',
+        '--json',
+        '--quiet',
+        '--log-level=error',
+        '--report-level=info'
+      ],
+      basicChalkFixture
+    );
+    expect(code).toBe(0);
+    const parsed = JSON.parse(stdout);
+    expect(parsed.messages).toEqual([]);
+  });
+
+  it('JSON with --log-level=warn omits suggestions', async () => {
+    const {stdout, code} = await runCliProcess(
+      ['analyze', '--json', '--log-level=warn'],
+      basicChalkFixture
+    );
+    expect(code).toBe(1);
+    const parsed = JSON.parse(stdout);
+    expect(parsed.messages.length).toBeGreaterThan(0);
+    expect(
+      parsed.messages.every(
+        (m: {severity: string}) => m.severity !== 'suggestion'
+      )
+    ).toBe(true);
   });
 });
 
