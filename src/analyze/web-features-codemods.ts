@@ -1,15 +1,12 @@
 import {glob} from 'tinyglobby';
 import {join, relative} from 'node:path';
-import * as webFeatureCodemodExports from '@e18e/web-features-codemods';
+import * as WebFeatureCodemodExports from '@e18e/web-features-codemods';
+// TODO: change this once CodeMod is exported from @e18e/web-features-codemods
+import type {CodeMod} from '@e18e/web-features-codemods/lib/shared.js';
 import type {AnalysisContext, ReportPluginResult} from '../types.js';
 import {SOURCE_GLOB, SOURCE_IGNORE} from '../utils/source-files.js';
 
-interface WebFeatureCodemod {
-  test(options: {source: string}): boolean;
-  apply(options: {source: string}): string;
-}
-
-function isWebFeatureCodemod(value: unknown): value is WebFeatureCodemod {
+function isWebFeatureCodemod(value: unknown): value is CodeMod {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -20,8 +17,8 @@ function isWebFeatureCodemod(value: unknown): value is WebFeatureCodemod {
   );
 }
 
-const webFeatureCodemods = Object.entries(webFeatureCodemodExports).filter(
-  (entry): entry is [string, WebFeatureCodemod] => isWebFeatureCodemod(entry[1])
+const webFeatureCodemods = Object.entries(WebFeatureCodemodExports).filter(
+  (entry): entry is [string, CodeMod] => isWebFeatureCodemod(entry[1])
 );
 
 export async function runWebFeaturesCodemodsAnalysis(
