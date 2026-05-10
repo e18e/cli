@@ -2,20 +2,12 @@ import {glob} from 'tinyglobby';
 import {join, relative} from 'node:path';
 import * as webFeatureCodemodExports from '@e18e/web-features-codemods';
 import type {AnalysisContext, ReportPluginResult} from '../types.js';
+import {SOURCE_GLOB, SOURCE_IGNORE} from '../utils/source-files.js';
 
 interface WebFeatureCodemod {
   test(options: {source: string}): boolean;
   apply(options: {source: string}): string;
 }
-
-const SOURCE_GLOB = ['**/*.{js,ts,mjs,cjs,jsx,tsx}'];
-const SOURCE_IGNORE = [
-  '**/node_modules/**',
-  '**/dist/**',
-  '**/build/**',
-  '**/coverage/**',
-  '**/lib/**'
-];
 
 function isWebFeatureCodemod(value: unknown): value is WebFeatureCodemod {
   return (

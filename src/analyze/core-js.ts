@@ -2,6 +2,7 @@ import {glob} from 'tinyglobby';
 import {minVersion} from 'semver';
 import {relative, join} from 'path';
 import type {AnalysisContext, ReportPluginResult} from '../types.js';
+import {SOURCE_GLOB, SOURCE_IGNORE} from '../utils/source-files.js';
 
 import coreJsCompat from 'core-js-compat';
 
@@ -11,15 +12,6 @@ const BROAD_IMPORTS = new Set([
   'core-js/actual',
   'core-js/full'
 ]);
-
-const SOURCE_GLOB = ['**/*.{js,ts,mjs,cjs,jsx,tsx}'];
-const SOURCE_IGNORE = [
-  '**/node_modules/**',
-  '**/dist/**',
-  '**/build/**',
-  '**/coverage/**',
-  '**/lib/**'
-];
 
 const IMPORT_RE =
   /(?:import\s+(?:.*\s+from\s+)?|require\s*\()\s*['"]([^'"]+)['"]/g;
