@@ -39,6 +39,12 @@ export const meta = {
       default: false,
       description:
         'Output results as JSON to stdout (messages follow --quiet or resolved --report-level)'
+    },
+    src: {
+      type: 'string',
+      multiple: true,
+      description:
+        'Glob pattern(s) for source files to scan for imports (e.g. "src/**/*.ts"). Defaults to scanning all JS/TS files from the project root.'
     }
   }
 } as const;

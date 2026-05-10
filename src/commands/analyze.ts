@@ -101,10 +101,12 @@ export async function run(ctx: CommandContext<typeof meta>) {
   }
 
   const customManifests = ctx.values['manifest'];
+  const srcDirs = ctx.values['src'];
 
   const {stats, messages} = await report({
     root,
     manifest: customManifests,
+    src: srcDirs,
     categories: parsedCategories
   });
 

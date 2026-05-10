@@ -6,6 +6,7 @@ import type {ParsedCategories} from './categories.js';
 export interface Options {
   root?: string;
   manifest?: string[];
+  src?: string[];
   categories?: ParsedCategories;
 }
 
