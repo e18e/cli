@@ -1,0 +1,45 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`runWebFeaturesCodemodsAnalysis > handles a file with multiple matches 1`] = `
+[
+  {
+    "message": "File "index.js" can use newer web features: arrayAt, exponentiation.",
+    "score": 0,
+    "severity": "suggestion",
+  },
+]
+`;
+
+exports[`runWebFeaturesCodemodsAnalysis > handles a file with no matches 1`] = `[]`;
+
+exports[`runWebFeaturesCodemodsAnalysis > handles a file with one match 1`] = `
+[
+  {
+    "message": "File "index.js" can use newer web features: arrayAt.",
+    "score": 0,
+    "severity": "suggestion",
+  },
+]
+`;
+
+exports[`runWebFeaturesCodemodsAnalysis > handles multiple occurrences of the same match in one file 1`] = `
+[
+  {
+    "message": "File "index.js" can use newer web features: arrayAt.",
+    "score": 0,
+    "severity": "suggestion",
+  },
+]
+`;
+
+exports[`runWebFeaturesCodemodsAnalysis > ignores a file path outside of the root 1`] = `[]`;
+
+exports[`runWebFeaturesCodemodsAnalysis > respects the src option 1`] = `
+[
+  {
+    "message": "File "src/index.js" can use newer web features: arrayAt.",
+    "score": 0,
+    "severity": "suggestion",
+  },
+]
+`;
