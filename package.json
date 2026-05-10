@@ -26,7 +26,8 @@
     "format": "prettier --write src",
     "format:check": "prettier --check src",
     "test": "vitest run --coverage",
-    "prepublishOnly": "npm run test"
+    "prepublishOnly": "npm run test",
+    "generate-fixable-replacements": "node scripts/generate-fixable-replacements.ts"
   },
   "repository": {
     "type": "git",
