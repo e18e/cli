@@ -90,6 +90,41 @@ describe('runWebFeaturesCodemodsAnalysis', () => {
     expect(messages).toMatchSnapshot();
   });
 
+  it('handles multiple occurrences of the same match in one file', async () => {
+    await fs.writeFile(
+      path.join(tempDir, 'index.js'),
+      [
+        'const lastItem = items[items.length - 1];',
+        'const lastValue = values[values.length - 1];'
+      ].join('\n')
+    );
+
+    const {messages} = await runWebFeaturesCodemodsAnalysis(
+      makeContext(tempDir)
+    );
+
+    expect(messages).toMatchSnapshot();
+  });
+
+  it('respects the src option', async () => {
+    await fs.mkdir(path.join(tempDir, 'src'), {recursive: true});
+    await fs.mkdir(path.join(tempDir, 'other'), {recursive: true});
+    await fs.writeFile(
+      path.join(tempDir, 'src', 'index.js'),
+      'const last = items[items.length - 1];\n'
+    );
+    await fs.writeFile(
+      path.join(tempDir, 'other', 'index.js'),
+      'const last = values[values.length - 1];\n'
+    );
+
+    const {messages} = await runWebFeaturesCodemodsAnalysis(
+      makeContext(tempDir, {options: {src: ['src/**/*.js']}})
+    );
+
+    expect(messages).toMatchSnapshot();
+  });
+
   it('ignores a file path outside of the root', async () => {
     const outsideDir = await createTempDir();
     try {
