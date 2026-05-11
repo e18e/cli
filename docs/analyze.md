@@ -2,7 +2,14 @@
 
 [← Back to docs index](../README.md)
 
-Analyzes a package using several built-in checks (publint, replacement suggestions, dependency summary, duplicate versions in the lockfile).
+Analyzes a package using several built-in checks:
+
+- **Publint**: package publishing best practices.
+- **Replacements**: community suggested replacements for your dependencies
+- **Syntax replacements**: scans your source files for code patterns that can be rewritten using newer, built-in web features (via `@e18e/web-features-codemods`).
+- **core-js**: flags broad `core-js` imports and individual polyfills that are unnecessary for your declared Node.js engine range.
+- **Dependency summary**: summary of dependency stats such as install size, direct-dependency counts, and more.
+- **Duplicate dependencies**: detect dependencies that are included multiple times in the dependency tree, which can lead to larger bundle sizes and potential version conflicts.
 
 ## Prerequisites
 
@@ -11,88 +18,47 @@ Analyzes a package using several built-in checks (publint, replacement suggestio
 
 Analysis reads the lockfile and `package.json` together. If no lockfile is found, the CLI errors instead of guessing.
 
-## Examples
+## Usage
 
 ```sh
-# Analyze the current directory (must contain package.json + a supported lockfile)
-npx @e18e/cli analyze
-
-# Analyze a different package root
-npx @e18e/cli analyze ./packages/app
-
-# JSON on stdout for scripts and CI; exit code reflects --log-level vs findings
-npx @e18e/cli analyze --json
-
-# Fail CI only on errors, not warnings or suggestions
-npx @e18e/cli analyze --json --log-level error
-
-# Show all findings in JSON, but only fail on errors
-npx @e18e/cli analyze --json --log-level error --report-level info
-
-# ESLint-style quiet mode: only show errors in output
-npx @e18e/cli analyze --quiet
-
-# Narrow replacement suggestions to the "native" manifest category
-npx @e18e/cli analyze --categories native
-
-# Combine categories
-npx @e18e/cli analyze --categories native,preferred
-
-# Extra replacement manifests (repeat --manifest for each file)
-npx @e18e/cli analyze --manifest ./config/e18e.manifest.json
+npx @e18e/cli analyze [directory]
 ```
 
 With a global install, swap `npx @e18e/cli` for `e18e-cli` (same arguments).
 
-## Optional positional argument
+### Positional argument
 
-- **`[directory]`** — Root of the package to analyze. If omitted, the current working directory is used. Must be a directory (not a file).
+- **`[directory]`**: root of the package to analyze. If omitted, the current working directory is used. Must be a directory (not a file).
 
-## Flags
+### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--log-level <level>` | `debug`, `info`, `warn`, or `error` (default: `info`). Sets the minimum message severity that causes a **non-zero exit** (see [Exit codes](#exit-codes-analyze)). Also enables debug logging when set to `debug`. |
-| `--quiet` | ESLint-style quiet mode. Only `error` messages appear in Results and JSON `messages`. Overrides `--report-level`. |
-| `--report-level <level>` | `auto`, `debug`, `info`, `warn`, or `error` (default: `auto`). Controls which severities are shown in Results and JSON `messages`. `auto` means "follow `--log-level`." |
-| `--categories <list>` | Replacement manifest scope: `all`, or comma-separated `native`, `preferred`, `micro-utilities` (e.g. `native,preferred`). Invalid values exit with code `1`. |
-| `--manifest <path>` | Extra replacement manifest file(s); can be passed multiple times. |
-| `--json` | Print `{ stats, messages }` as JSON on stdout and skip the interactive UI. `messages` follow `--quiet` or resolved `--report-level`. Exit code still follows `--log-level` vs message severities. |
+#### `--log-level <level>`
 
-## What the summary metrics mean
+One of `debug`, `info`, `warn`, or `error` (default: `info`). Sets the minimum message severity that causes a non-zero exit. Also enables debug logging when set to `debug`.
 
-Here’s what each value in the summary represents:
+#### `--quiet`
 
-- **Dependencies (production / development)** — Counts of **direct** dependencies only: keys in `dependencies` and `devDependencies` in `package.json`. This is **not** the number of transitive packages in your install graph.
-- **Install size** — Sum of **file sizes under `node_modules`** for the current install (on-disk footprint). It is **not** a separate “dependency tree node count.”
-- **Duplicate dependency** messages — Packages that appear with **more than one resolved version** in the parsed lockfile, with context about dependents. That reflects lock/install reality, not the direct-dependency counts above.
+ESLint-style quiet mode. Only `error` messages appear in results and JSON `messages`. Overrides `--report-level`.
 
-## What analysis includes
+#### `--report-level <level>`
 
-Checks are implemented as plugins wired in `report()` (see `src/analyze/report.ts`), including:
+One of `auto`, `debug`, `info`, `warn`, or `error` (default: `auto`). Controls which severities are shown in results and JSON `messages`. `auto` means "follow `--log-level`".
 
-- **Publint** — Package publishing best practices.
-- **Replacements** — Suggested swaps from the module-replacements manifests (scoped by `--categories` and optional `--manifest`).
-- **Dependency summary** — Direct dependency counts and install size (as described above).
-- **Duplicate dependencies** — Multiple versions of the same package name in the lockfile.
+#### `--categories <list>`
 
-## Exit codes (`analyze`)
+Replacement manifest scope: `all`, or a comma-separated list of `native`, `preferred`, `micro-utilities` (e.g. `native,preferred`). Invalid values exit with code `1`.
 
-Message severities are `error`, `warning`, and `suggestion`. Output visibility and exit behavior are separate:
+These categories decide which community list to use when suggesting replacements of dependencies. For example, `native` only suggests replacements that are native to the runtime (e.g. Node built-ins and browser APIs), while `preferred` is an opinionated list of alternatives the community prefers.
 
-- **Shown in Results / JSON `messages`**: controlled by `--quiet` or `--report-level` (`auto` follows `--log-level`).
-- **Exit code**: controlled by `--log-level`.
+#### `--manifest <path>`
 
-With either normal or JSON output, the process exits with **`1`** if any message meets or exceeds the severity implied by `--log-level`:
+Extra replacement manifest file(s). Can be passed multiple times.
 
-| `--log-level` | Fails (exit `1`) when |
-|---------------|------------------------|
-| `debug` | Never (for exit purposes; still lists all messages) |
-| `info` | Any `error`, `warning`, or `suggestion` |
-| `warn` | `error` or `warning` |
-| `error` | `error` only |
+These are JSON files with the same format as the built-in replacement manifests. You can read more about the format in the [module-replacements](https://github.com/e18e/module-replacements) repository.
 
-Invalid `--categories` or an invalid analyze path also yields exit code `1`.
+#### `--json`
+
+Print `{ stats, messages }` as JSON on stdout and skip the interactive UI. `messages` follow `--quiet` or the resolved `--report-level`. Exit code still follows `--log-level` vs message severities.
 
 ## Running with `npx`
 
