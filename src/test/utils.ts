@@ -1,6 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
+import type {PackageJsonLike} from '../types.js';
+import type {TargetRuntime} from '../targets/runtime-target.js';
+import {resolveRuntimeTarget} from '../targets/resolve-runtime-target.js';
 
 export interface TestPackage {
   name: string;
@@ -96,4 +99,17 @@ export async function createTestPackageWithDependencies(
     await fs.mkdir(depDir);
     await createTestPackage(depDir, dep);
   }
+}
+
+export function testResolvedRuntimeTarget(
+  root: string,
+  packageFile: PackageJsonLike,
+  overrides?: {runtime?: TargetRuntime; browserslistQuery?: string}
+) {
+  return resolveRuntimeTarget({
+    root,
+    packageFile,
+    runtime: overrides?.runtime,
+    browserslistQuery: overrides?.browserslistQuery
+  });
 }

@@ -2,6 +2,7 @@ import {describe, it, expect} from 'vitest';
 import {runPlugins} from '../plugin-runner.js';
 import type {FileSystem} from '../file-system.js';
 import type {ReportPlugin, Stats, Message, AnalysisContext} from '../types.js';
+import {testResolvedRuntimeTarget} from './utils.js';
 
 const fsMock: FileSystem = {
   getRootDir: async () => '/',
@@ -12,6 +13,9 @@ const fsMock: FileSystem = {
 };
 
 const depCounts = {production: 0, development: 0};
+
+const testPkg = {name: 'test-package', version: '1.0.0' as const};
+const pluginRunnerResolved = testResolvedRuntimeTarget('.', testPkg);
 
 describe('runPlugins', () => {
   it('should aggregate messages and merge stats with extraStats de-dup', async () => {
@@ -69,7 +73,8 @@ describe('runPlugins', () => {
       packageFile: {
         name: 'test-package',
         version: '1.0.0'
-      }
+      },
+      resolvedRuntimeTarget: pluginRunnerResolved
     };
 
     await runPlugins(context, [pluginA, pluginB, pluginC]);
@@ -112,7 +117,8 @@ describe('runPlugins', () => {
       packageFile: {
         name: 'test-package',
         version: '1.0.0'
-      }
+      },
+      resolvedRuntimeTarget: pluginRunnerResolved
     };
 
     const noop: ReportPlugin = async () => ({messages: []});
@@ -159,7 +165,8 @@ describe('runPlugins', () => {
       packageFile: {
         name: 'test-package',
         version: '1.0.0'
-      }
+      },
+      resolvedRuntimeTarget: pluginRunnerResolved
     };
 
     const boom: ReportPlugin = async () => {
@@ -201,7 +208,8 @@ describe('runPlugins', () => {
       packageFile: {
         name: 'test-package',
         version: '1.0.0'
-      }
+      },
+      resolvedRuntimeTarget: pluginRunnerResolved
     };
 
     await runPlugins(context, [onlyMsgs]);
@@ -249,7 +257,8 @@ describe('runPlugins', () => {
       packageFile: {
         name: 'test-package',
         version: '1.0.0'
-      }
+      },
+      resolvedRuntimeTarget: pluginRunnerResolved
     };
 
     await runPlugins(context, [plugin]);
@@ -286,7 +295,8 @@ describe('runPlugins', () => {
       packageFile: {
         name: 'test-package',
         version: '1.0.0'
-      }
+      },
+      resolvedRuntimeTarget: pluginRunnerResolved
     };
 
     await runPlugins(context, []);

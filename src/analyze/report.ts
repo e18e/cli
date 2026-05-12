@@ -18,6 +18,10 @@ import {parse as parseLockfile} from 'lockparse';
 import {runDuplicateDependencyAnalysis} from './duplicate-dependencies.js';
 import {runCoreJsAnalysis} from './core-js.js';
 import {runWebFeaturesCodemodsAnalysis} from './web-features-codemods.js';
+import {
+  resolveRuntimeTarget,
+  formatResolvedRuntimeTargetSummary
+} from '../targets/resolve-runtime-target.js';
 
 const plugins: ReportPlugin[] = [
   runPublint,
@@ -93,6 +97,13 @@ export async function report(options: Options) {
     extraStats: []
   };
 
+  const resolvedRuntimeTarget = resolveRuntimeTarget({
+    root,
+    packageFile,
+    runtime: options?.runtime,
+    browserslistQuery: options?.browserslistQuery
+  });
+
   const context: AnalysisContext = {
     fs: fileSystem,
     root,
@@ -100,9 +111,17 @@ export async function report(options: Options) {
     lockfile: parsedLock,
     stats,
     messages,
-    options
+    options,
+    resolvedRuntimeTarget
   };
   await runPlugins(context, plugins);
+
+  stats.extraStats ??= [];
+  stats.extraStats.push({
+    name: 'analyzeTarget',
+    label: 'Analyze target',
+    value: formatResolvedRuntimeTargetSummary(resolvedRuntimeTarget)
+  });
 
   const info = await computeInfo(fileSystem);
 

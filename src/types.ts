@@ -2,12 +2,18 @@ import type {FileSystem} from './file-system.js';
 import type {Codemod, CodemodOptions} from 'module-replacements-codemods';
 import type {ParsedLockFile} from 'lockparse';
 import type {ParsedCategories} from './categories.js';
+import type {
+  ResolvedRuntimeTarget,
+  TargetRuntime
+} from './targets/runtime-target.js';
 
 export interface Options {
   root?: string;
   manifest?: string[];
   src?: string[];
   categories?: ParsedCategories;
+  runtime?: TargetRuntime;
+  browserslistQuery?: string;
 }
 
 export interface StatLike<T> {
@@ -46,6 +52,7 @@ export interface PackageJsonLike {
     node?: string;
     [engineName: string]: string | undefined;
   };
+  browserslist?: string | string[] | Record<string, string | string[]>;
 }
 
 export interface Replacement {
@@ -72,4 +79,5 @@ export interface AnalysisContext {
   packageFile: PackageJsonLike;
   stats: Stats;
   messages: Message[];
+  resolvedRuntimeTarget: ResolvedRuntimeTarget;
 }

@@ -8,6 +8,7 @@ import {enableDebug} from '../logger.js';
 import {wrapAnsi} from 'fast-wrap-ansi';
 import {parseCategories} from '../categories.js';
 import type {Message} from '../types.js';
+import {parseTargetRuntime} from '../targets/runtime-target.js';
 
 function formatBytes(bytes: number) {
   const units = ['B', 'KB', 'MB', 'GB'];
@@ -79,6 +80,20 @@ export async function run(ctx: CommandContext<typeof meta>) {
     process.exit(1);
   }
 
+  let parsedRuntime: ReturnType<typeof parseTargetRuntime>;
+  try {
+    parsedRuntime = parseTargetRuntime(ctx.values.runtime);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const descriptiveMessage = `Invalid --runtime: ${message}`;
+    if (jsonOutput) {
+      process.stderr.write(`Error: ${descriptiveMessage}\n`);
+    } else {
+      prompts.cancel(descriptiveMessage);
+    }
+    process.exit(1);
+  }
+
   // Path can be a directory (analyze project)
   if (providedPath) {
     let stat: Stats | null;
@@ -102,12 +117,18 @@ export async function run(ctx: CommandContext<typeof meta>) {
 
   const customManifests = ctx.values['manifest'];
   const srcDirs = ctx.values['src'];
+  const browserslistQuery = ctx.values['browserslist-query'];
 
   const {stats, messages} = await report({
     root,
     manifest: customManifests,
     src: srcDirs,
-    categories: parsedCategories
+    categories: parsedCategories,
+    runtime: parsedRuntime,
+    browserslistQuery:
+      typeof browserslistQuery === 'string' && browserslistQuery.trim() !== ''
+        ? browserslistQuery.trim()
+        : undefined
   });
 
   const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;

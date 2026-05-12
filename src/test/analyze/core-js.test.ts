@@ -4,8 +4,12 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {runCoreJsAnalysis} from '../../analyze/core-js.js';
 import {LocalFileSystem} from '../../local-file-system.js';
-import {createTempDir, cleanupTempDir} from '../utils.js';
-import type {AnalysisContext} from '../../types.js';
+import {
+  createTempDir,
+  cleanupTempDir,
+  testResolvedRuntimeTarget
+} from '../utils.js';
+import type {AnalysisContext, PackageJsonLike} from '../../types.js';
 
 const cjsRequire = createRequire(import.meta.url);
 const {compat} = cjsRequire('core-js-compat') as {
@@ -26,17 +30,41 @@ function makeContext(
   tempDir: string,
   overrides: Partial<AnalysisContext> = {}
 ): AnalysisContext {
+  const {
+    resolvedRuntimeTarget: rtOverride,
+    packageFile: pkgOverride,
+    options: optionsOverride,
+    fs: fsOverride,
+    root: rootOverride,
+    messages: messagesOverride,
+    stats: statsOverride,
+    lockfile: lockfileOverride,
+    ...rest
+  } = overrides;
+
+  const packageFile = (pkgOverride ?? {
+    name: 'test-package',
+    version: '1.0.0'
+  }) as PackageJsonLike;
+  const root = rootOverride ?? tempDir;
+  const resolvedRuntimeTarget =
+    rtOverride ??
+    testResolvedRuntimeTarget(root, packageFile, {
+      runtime: optionsOverride?.runtime,
+      browserslistQuery: optionsOverride?.browserslistQuery
+    });
+
   return {
-    fs: new LocalFileSystem(tempDir),
-    root: tempDir,
-    messages: [],
-    stats: {
+    fs: fsOverride ?? new LocalFileSystem(tempDir),
+    root,
+    messages: messagesOverride ?? [],
+    stats: statsOverride ?? {
       name: 'test-package',
       version: '1.0.0',
       dependencyCount: {production: 0, development: 0},
       extraStats: []
     },
-    lockfile: {
+    lockfile: lockfileOverride ?? {
       type: 'npm',
       packages: [],
       root: {
@@ -48,11 +76,10 @@ function makeContext(
         peerDependencies: []
       }
     },
-    packageFile: {
-      name: 'test-package',
-      version: '1.0.0'
-    },
-    ...overrides
+    packageFile,
+    options: optionsOverride,
+    resolvedRuntimeTarget,
+    ...rest
   };
 }
 

@@ -2,6 +2,7 @@ import {describe, it, expect, afterEach, vi, beforeEach} from 'vitest';
 import {runReplacements} from '../analyze/replacements.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import type {AnalysisContext} from '../types.js';
+import {testResolvedRuntimeTarget} from './utils.js';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {dirname} from 'node:path';
@@ -15,9 +16,10 @@ describe('Custom Manifests', () => {
     const testDir = join(__dirname, '../../test/fixtures/fake-modules');
     const fileSystem = new LocalFileSystem(testDir);
 
+    const pkg = {name: 'test-package', version: '1.0.0' as const};
     context = {
       fs: fileSystem,
-      root: '.',
+      root: testDir,
       messages: [],
       stats: {
         name: 'unknown',
@@ -40,10 +42,8 @@ describe('Custom Manifests', () => {
           peerDependencies: []
         }
       },
-      packageFile: {
-        name: 'test-package',
-        version: '1.0.0'
-      }
+      packageFile: pkg,
+      resolvedRuntimeTarget: testResolvedRuntimeTarget(testDir, pkg)
     };
   });
 
