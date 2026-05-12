@@ -1,3 +1,10 @@
+/**
+ * Direct `browserslist` dependency: `loadConfig` here supplies effective query
+ * strings for `ResolvedRuntimeTarget` (and the analyze summary). Replacement
+ * checks use `enginematch` (which also depends on `browserslist`). Keep this
+ * import until `core-js` / compat tooling consumes the same resolved queries
+ * and we can reassess dropping the direct dep.
+ */
 import browserslist from 'browserslist';
 import type {PackageJsonLike} from '../types.js';
 import type {
