@@ -39,7 +39,7 @@ function makeContext(
     });
 
   return {
-    fs: fsOverride ?? new LocalFileSystem(tempDir),
+    fs: fsOverride ?? new LocalFileSystem(root),
     root,
     messages: messagesOverride ?? [],
     stats: statsOverride ?? {
