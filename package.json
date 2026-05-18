@@ -65,16 +65,16 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.6.2",
+    "@types/node": "^25.8.0",
     "@types/picomatch": "^4.0.3",
     "@types/semver": "^7.7.1",
-    "@vitest/coverage-v8": "^4.1.5",
-    "eslint": "^10.3.0",
-    "pkg-pr-new": "^0.0.71",
+    "@vitest/coverage-v8": "^4.1.6",
+    "eslint": "^10.4.0",
+    "pkg-pr-new": "^0.0.73",
     "premove": "^4.0.0",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.2",
+    "typescript-eslint": "^8.59.3",
     "vitest": "^4.1.0"
   }
 }
