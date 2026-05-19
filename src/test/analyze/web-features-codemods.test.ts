@@ -3,11 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {runWebFeaturesCodemodsAnalysis} from '../../analyze/web-features-codemods.js';
 import {LocalFileSystem} from '../../local-file-system.js';
-import {
-  createTempDir,
-  cleanupTempDir,
-  testResolvedRuntimeTarget
-} from '../utils.js';
+import {createTempDir, cleanupTempDir} from '../utils.js';
 import type {AnalysisContext, PackageJsonLike} from '../../types.js';
 
 function makeContext(
@@ -15,7 +11,6 @@ function makeContext(
   overrides: Partial<AnalysisContext> = {}
 ): AnalysisContext {
   const {
-    resolvedRuntimeTarget: rtOverride,
     packageFile: pkgOverride,
     options: optionsOverride,
     fs: fsOverride,
@@ -31,12 +26,6 @@ function makeContext(
     version: '1.0.0'
   }) as PackageJsonLike;
   const root = rootOverride ?? tempDir;
-  const resolvedRuntimeTarget =
-    rtOverride ??
-    testResolvedRuntimeTarget(root, packageFile, {
-      runtime: optionsOverride?.runtime,
-      browserslistQuery: optionsOverride?.browserslistQuery
-    });
 
   return {
     fs: fsOverride ?? new LocalFileSystem(root),
@@ -62,7 +51,6 @@ function makeContext(
     },
     packageFile,
     options: optionsOverride,
-    resolvedRuntimeTarget,
     ...rest
   };
 }

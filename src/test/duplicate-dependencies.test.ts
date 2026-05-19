@@ -1,10 +1,6 @@
 import {describe, it, expect, beforeEach, afterEach} from 'vitest';
 import {LocalFileSystem} from '../local-file-system.js';
-import {
-  createTempDir,
-  cleanupTempDir,
-  testResolvedRuntimeTarget
-} from './utils.js';
+import {createTempDir, cleanupTempDir} from './utils.js';
 import type {AnalysisContext} from '../types.js';
 import {runDuplicateDependencyAnalysis} from '../analyze/duplicate-dependencies.js';
 import {ParsedDependency} from 'lockparse';
@@ -108,11 +104,7 @@ describe('Duplicate Dependency Detection', () => {
       packageFile: {
         name: 'test-package',
         version: '1.0.0'
-      },
-      resolvedRuntimeTarget: testResolvedRuntimeTarget(tempDir, {
-        name: 'test-package',
-        version: '1.0.0'
-      })
+      }
     };
 
     const stats = await runDuplicateDependencyAnalysis(context);
@@ -183,11 +175,7 @@ describe('Duplicate Dependency Detection', () => {
       packageFile: {
         name: 'test-package',
         version: '1.0.0'
-      },
-      resolvedRuntimeTarget: testResolvedRuntimeTarget(tempDir, {
-        name: 'test-package',
-        version: '1.0.0'
-      })
+      }
     };
 
     const stats = await runDuplicateDependencyAnalysis(context);

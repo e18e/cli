@@ -6,7 +6,6 @@ import {
   cleanupTempDir,
   createTestPackage,
   createTestPackageWithDependencies,
-  testResolvedRuntimeTarget,
   type TestPackage
 } from '../utils.js';
 import type {AnalysisContext} from '../../types.js';
@@ -49,11 +48,7 @@ describe('analyzeDependencies (local)', () => {
       packageFile: {
         name: 'test-package',
         version: '1.0.0'
-      },
-      resolvedRuntimeTarget: testResolvedRuntimeTarget(tempDir, {
-        name: 'test-package',
-        version: '1.0.0'
-      })
+      }
     };
   });
 

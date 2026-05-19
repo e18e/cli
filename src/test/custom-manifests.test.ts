@@ -2,7 +2,6 @@ import {describe, it, expect, afterEach, vi, beforeEach} from 'vitest';
 import {runReplacements} from '../analyze/replacements.js';
 import {LocalFileSystem} from '../local-file-system.js';
 import type {AnalysisContext} from '../types.js';
-import {testResolvedRuntimeTarget} from './utils.js';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {dirname} from 'node:path';
@@ -42,8 +41,7 @@ describe('Custom Manifests', () => {
           peerDependencies: []
         }
       },
-      packageFile: pkg,
-      resolvedRuntimeTarget: testResolvedRuntimeTarget(testDir, pkg)
+      packageFile: pkg
     };
   });
 

@@ -45,16 +45,6 @@ export const meta = {
       multiple: true,
       description:
         'Glob pattern(s) for source files to scan for imports (e.g. "src/**/*.ts"). Defaults to scanning all JS/TS files from the project root.'
-    },
-    runtime: {
-      type: 'string',
-      description:
-        'Target runtime for replacement engine matching: any, browser, nodejs, deno, bun, cloudflare. Default: inferred (browser when Browserslist is present, else nodejs).'
-    },
-    'browserslist-query': {
-      type: 'string',
-      description:
-        'Override Browserslist targets (e.g. "baseline widely available"). Overrides project Browserslist config; see https://web.dev/articles/use-baseline-with-browserslist'
     }
   }
 } as const;

@@ -11,7 +11,6 @@ exports[`CLI > should display package report 1`] = `
 [90m│[39m  [36mInstall Size[39m                53.0 B
 [90m│[39m  [36mDependencies[39m                1 (1 production, 0 development)
 [90m│[39m  [36mDuplicate Dependency Count[39m  0
-[90m│[39m  [36mAnalyze target[39m              nodejs (default — no Browserslist or engines.node)
 [90m│[39m
 [34m●[39m  Results:
 [90m│[39m
@@ -34,7 +33,6 @@ exports[`CLI > should run successfully with default options 1`] = `
 [90m│[39m  [36mInstall Size[39m                53.0 B
 [90m│[39m  [36mDependencies[39m                1 (1 production, 0 development)
 [90m│[39m  [36mDuplicate Dependency Count[39m  0
-[90m│[39m  [36mAnalyze target[39m              nodejs (default — no Browserslist or engines.node)
 [90m│[39m
 [34m●[39m  Results:
 [90m│[39m

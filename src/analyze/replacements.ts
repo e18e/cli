@@ -5,12 +5,7 @@ import type {
   KnownUrl
 } from 'module-replacements';
 import {type PackageJson, satisfies} from 'enginematch';
-import type {
-  ReportPluginResult,
-  AnalysisContext,
-  PackageJsonLike
-} from '../types.js';
-import type {ResolvedRuntimeTarget} from '../targets/runtime-target.js';
+import type {ReportPluginResult, AnalysisContext} from '../types.js';
 import {fixableReplacements} from '../commands/fixable-replacements.js';
 import {getPackageJson} from '../utils/package-json.js';
 import {getManifestForCategories} from '../categories.js';
@@ -32,19 +27,8 @@ export function resolveUrl(url: KnownUrl): string {
   }
 }
 
-function getNodejsMinVersion(engines?: EngineConstraint[]): string | undefined {
+function getNodeJSMinVersion(engines?: EngineConstraint[]): string | undefined {
   return engines?.find((e) => e.engine === 'nodejs')?.minVersion;
-}
-
-/** `PackageJson` for [enginematch](https://github.com/43081j/enginematch): effective browserslist from resolver precedence, then manifest. */
-function toEngineMatchPackageJson(
-  packageJson: PackageJsonLike,
-  resolved: ResolvedRuntimeTarget
-): PackageJson {
-  return {
-    engines: packageJson.engines as Record<string, string> | undefined,
-    browserslist: resolved.browserslistQueries ?? packageJson.browserslist
-  };
 }
 
 function findFirstCompatibleReplacement(
@@ -137,10 +121,6 @@ export async function runReplacements(
 
   const fixableByMigrate = new Set(fixableReplacements.map((r) => r.from));
   const enginesNode = packageJson.engines?.node;
-  const pkgForEngines = toEngineMatchPackageJson(
-    packageJson,
-    context.resolvedRuntimeTarget
-  );
 
   for (const name of Object.keys(packageJson.dependencies)) {
     const mapping = allMappings[name];
@@ -151,7 +131,7 @@ export async function runReplacements(
     const firstCompatible = findFirstCompatibleReplacement(
       mapping.replacements,
       allReplacementDefs,
-      pkgForEngines,
+      packageJson as PackageJson,
       context.root
     );
     if (!firstCompatible) {
@@ -170,7 +150,7 @@ export async function runReplacements(
         message = `Module "${name}" can be replaced with inline native syntax. ${firstCompatible.description}.`;
         break;
       case 'native': {
-        const nodeVersion = getNodejsMinVersion(firstCompatible.engines);
+        const nodeVersion = getNodeJSMinVersion(firstCompatible.engines);
         const requires =
           nodeVersion && !enginesNode
             ? ` Required Node >= ${nodeVersion}.`
