@@ -4,40 +4,23 @@ import path from 'node:path';
 import {runWebFeaturesCodemodsAnalysis} from '../../analyze/web-features-codemods.js';
 import {LocalFileSystem} from '../../local-file-system.js';
 import {createTempDir, cleanupTempDir} from '../utils.js';
-import type {AnalysisContext, PackageJsonLike} from '../../types.js';
+import type {AnalysisContext} from '../../types.js';
 
 function makeContext(
   tempDir: string,
   overrides: Partial<AnalysisContext> = {}
 ): AnalysisContext {
-  const {
-    packageFile: pkgOverride,
-    options: optionsOverride,
-    fs: fsOverride,
-    root: rootOverride,
-    messages: messagesOverride,
-    stats: statsOverride,
-    lockfile: lockfileOverride,
-    ...rest
-  } = overrides;
-
-  const packageFile = (pkgOverride ?? {
-    name: 'test-package',
-    version: '1.0.0'
-  }) as PackageJsonLike;
-  const root = rootOverride ?? tempDir;
-
   return {
-    fs: fsOverride ?? new LocalFileSystem(root),
-    root,
-    messages: messagesOverride ?? [],
-    stats: statsOverride ?? {
+    fs: new LocalFileSystem(tempDir),
+    root: tempDir,
+    messages: [],
+    stats: {
       name: 'test-package',
       version: '1.0.0',
       dependencyCount: {production: 0, development: 0},
       extraStats: []
     },
-    lockfile: lockfileOverride ?? {
+    lockfile: {
       type: 'npm',
       packages: [],
       root: {
@@ -49,9 +32,11 @@ function makeContext(
         peerDependencies: []
       }
     },
-    packageFile,
-    options: optionsOverride,
-    ...rest
+    packageFile: {
+      name: 'test-package',
+      version: '1.0.0'
+    },
+    ...overrides
   };
 }
 
