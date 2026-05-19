@@ -4,10 +4,12 @@ import type {
   EngineConstraint,
   KnownUrl
 } from 'module-replacements';
-// enginematch@0.1.3 npm package `main` points at missing `lib/main.js`; use published entry under lib/src (see https://www.npmjs.com/package/enginematch).
-import type {PackageJson} from 'enginematch/lib/src/main.js';
-import {satisfies} from 'enginematch/lib/src/main.js';
-import type {ReportPluginResult, AnalysisContext} from '../types.js';
+import {type PackageJson, satisfies} from 'enginematch';
+import type {
+  ReportPluginResult,
+  AnalysisContext,
+  PackageJsonLike
+} from '../types.js';
 import type {ResolvedRuntimeTarget} from '../targets/runtime-target.js';
 import {fixableReplacements} from '../commands/fixable-replacements.js';
 import {getPackageJson} from '../utils/package-json.js';
@@ -36,7 +38,7 @@ function getNodejsMinVersion(engines?: EngineConstraint[]): string | undefined {
 
 /** `PackageJson` for [enginematch](https://github.com/43081j/enginematch): effective browserslist from resolver precedence, then manifest. */
 function toEngineMatchPackageJson(
-  packageJson: NonNullable<Awaited<ReturnType<typeof getPackageJson>>>,
+  packageJson: PackageJsonLike,
   resolved: ResolvedRuntimeTarget
 ): PackageJson {
   return {
