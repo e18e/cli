@@ -46,7 +46,6 @@ export interface PackageJsonLike {
     node?: string;
     [engineName: string]: string | undefined;
   };
-  browserslist?: string | string[] | Record<string, string | string[]>;
 }
 
 export interface Replacement {

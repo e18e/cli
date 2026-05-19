@@ -175,12 +175,12 @@ describe('runReplacements engine filtering', () => {
   });
 
   it('uses package.json browserslist field to filter a replacement', async () => {
-    const pkg: PackageJsonLike = {
+    const pkg = {
       name: 'test-pkg',
       version: '1.0.0',
       dependencies: {'old-browser-pkg': '1.0.0'},
       browserslist: ['chrome >= 90']
-    };
+    } as PackageJsonLike;
     const result = await runReplacements(
       await setupContext(tempDir, pkg, manifestPath)
     );
