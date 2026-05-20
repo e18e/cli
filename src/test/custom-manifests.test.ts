@@ -15,9 +15,10 @@ describe('Custom Manifests', () => {
     const testDir = join(__dirname, '../../test/fixtures/fake-modules');
     const fileSystem = new LocalFileSystem(testDir);
 
+    const pkg = {name: 'test-package', version: '1.0.0' as const};
     context = {
       fs: fileSystem,
-      root: '.',
+      root: testDir,
       messages: [],
       stats: {
         name: 'unknown',
@@ -40,10 +41,7 @@ describe('Custom Manifests', () => {
           peerDependencies: []
         }
       },
-      packageFile: {
-        name: 'test-package',
-        version: '1.0.0'
-      }
+      packageFile: pkg
     };
   });
 

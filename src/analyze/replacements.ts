@@ -4,17 +4,12 @@ import type {
   EngineConstraint,
   KnownUrl
 } from 'module-replacements';
+import {type PackageJson, satisfies} from 'enginematch';
 import type {ReportPluginResult, AnalysisContext} from '../types.js';
 import {fixableReplacements} from '../commands/fixable-replacements.js';
 import {getPackageJson} from '../utils/package-json.js';
 import {getManifestForCategories} from '../categories.js';
 import {resolve, dirname, basename} from 'node:path';
-import {
-  satisfies as semverSatisfies,
-  ltr as semverLessThan,
-  minVersion,
-  validRange
-} from 'semver';
 import {LocalFileSystem} from '../local-file-system.js';
 
 /**
@@ -32,44 +27,23 @@ export function resolveUrl(url: KnownUrl): string {
   }
 }
 
-function getNodeMinVersion(engines?: EngineConstraint[]): string | undefined {
+function getNodeJSMinVersion(engines?: EngineConstraint[]): string | undefined {
   return engines?.find((e) => e.engine === 'nodejs')?.minVersion;
-}
-
-function isNodeEngineCompatible(
-  requiredNode: string,
-  enginesNode: string
-): boolean {
-  const requiredRange = validRange(requiredNode);
-  const engineRange = validRange(enginesNode);
-
-  if (!requiredRange || !engineRange) {
-    return true;
-  }
-
-  const requiredMin = minVersion(requiredRange);
-  if (!requiredMin) {
-    return true;
-  }
-
-  return (
-    semverLessThan(requiredMin.version, engineRange) ||
-    semverSatisfies(requiredMin.version, engineRange)
-  );
 }
 
 function findFirstCompatibleReplacement(
   replacementIds: string[],
   defs: Record<string, ModuleReplacement>,
-  enginesNode: string | undefined
+  pkg: PackageJson,
+  root: string
 ): ModuleReplacement | undefined {
   for (const id of replacementIds) {
     const replacement = defs[id];
     if (!replacement) continue;
 
-    if (replacement.type === 'native' && enginesNode) {
-      const nodeVersion = getNodeMinVersion(replacement.engines);
-      if (nodeVersion && !isNodeEngineCompatible(nodeVersion, enginesNode)) {
+    const reqs = replacement.engines;
+    if (reqs?.length) {
+      if (!satisfies(pkg, {requirements: reqs, cwd: root})) {
         continue;
       }
     }
@@ -157,7 +131,8 @@ export async function runReplacements(
     const firstCompatible = findFirstCompatibleReplacement(
       mapping.replacements,
       allReplacementDefs,
-      enginesNode
+      packageJson as PackageJson,
+      context.root
     );
     if (!firstCompatible) {
       continue;
@@ -175,7 +150,7 @@ export async function runReplacements(
         message = `Module "${name}" can be replaced with inline native syntax. ${firstCompatible.description}.`;
         break;
       case 'native': {
-        const nodeVersion = getNodeMinVersion(firstCompatible.engines);
+        const nodeVersion = getNodeJSMinVersion(firstCompatible.engines);
         const requires =
           nodeVersion && !enginesNode
             ? ` Required Node >= ${nodeVersion}.`
