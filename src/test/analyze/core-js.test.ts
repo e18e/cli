@@ -211,7 +211,7 @@ describe('runCoreJsAnalysis', () => {
 
     const result = await runCoreJsAnalysis(context);
 
-    expect(result.messages).toHaveLength(0);
+    expect(result.messages).toEqual([]);
   });
 
   it('detects core-js in devDependencies', async () => {
