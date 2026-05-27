@@ -1,6 +1,6 @@
 import {glob} from 'tinyglobby';
-import {minVersion} from 'semver';
 import {relative, join} from 'path';
+import {resolve} from 'enginematch';
 import type {AnalysisContext, ReportPluginResult} from '../types.js';
 import {SOURCE_GLOB, SOURCE_IGNORE} from '../utils/source-files.js';
 
@@ -32,17 +32,11 @@ export async function runCoreJsAnalysis(
     return {messages};
   }
 
-  const nodeRange = pkg.engines?.node;
-  let targetVersion = 'current';
-  if (nodeRange) {
-    const floor = minVersion(nodeRange);
-    if (floor) {
-      targetVersion = floor.version;
-    }
-  }
-
+  const resolvedTargets = resolve(pkg, {
+    cwd: context.root
+  });
   const {list: unnecessaryForTarget} = coreJsCompat.compat({
-    targets: {node: targetVersion},
+    targets: Object.fromEntries(resolvedTargets),
     inverse: true
   });
   const unnecessarySet = new Set(unnecessaryForTarget);
@@ -79,7 +73,7 @@ export async function runCoreJsAnalysis(
           messages.push({
             severity: 'suggestion',
             score: 0,
-            message: `core-js polyfill "${moduleName}" imported in ${filePath} is unnecessary — your Node.js target (>= ${targetVersion}) already supports this natively.`
+            message: `core-js polyfill "${moduleName}" imported in ${filePath} is unnecessary - your target engines already support this natively.`
           });
         }
       }

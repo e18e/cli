@@ -4,8 +4,12 @@ import type {
   EngineConstraint,
   KnownUrl
 } from 'module-replacements';
-import {type PackageJson, satisfies} from 'enginematch';
-import type {ReportPluginResult, AnalysisContext} from '../types.js';
+import {satisfies} from 'enginematch';
+import type {
+  ReportPluginResult,
+  AnalysisContext,
+  PackageJsonLike
+} from '../types.js';
 import {fixableReplacements} from '../commands/fixable-replacements.js';
 import {getPackageJson} from '../utils/package-json.js';
 import {getManifestForCategories} from '../categories.js';
@@ -34,7 +38,7 @@ function getNodeJSMinVersion(engines?: EngineConstraint[]): string | undefined {
 function findFirstCompatibleReplacement(
   replacementIds: string[],
   defs: Record<string, ModuleReplacement>,
-  pkg: PackageJson,
+  pkg: PackageJsonLike,
   root: string
 ): ModuleReplacement | undefined {
   for (const id of replacementIds) {
@@ -131,7 +135,7 @@ export async function runReplacements(
     const firstCompatible = findFirstCompatibleReplacement(
       mapping.replacements,
       allReplacementDefs,
-      packageJson as PackageJson,
+      packageJson,
       context.root
     );
     if (!firstCompatible) {
