@@ -35,12 +35,8 @@ export async function runCoreJsAnalysis(
   const resolvedTargets = resolve(pkg, {
     cwd: context.root
   });
-  const targets: Record<string, string> = {};
-  for (const [target, version] of resolvedTargets.entries()) {
-    targets[target.replaceAll('_', '-')] = version;
-  }
   const {list: unnecessaryForTarget} = coreJsCompat.compat({
-    targets,
+    targets: Object.fromEntries(resolvedTargets),
     inverse: true
   });
   const unnecessarySet = new Set(unnecessaryForTarget);
