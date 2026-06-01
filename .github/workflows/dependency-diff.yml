@@ -15,7 +15,7 @@ jobs:
           fetch-depth: 0
       - name: Analyze Dependencies
         id: analyze
-        uses: e18e/action-dependency-diff@5d3c6ac2ad2de2eaca1dc120c5accfd9590764b6 # v1.5.1
+        uses: e18e/action-dependency-diff@8e9b8c1957ab066d36235a43f4c1ff1522e1bdbc # v1.6.1
         with:
           mode: artifact
       - name: Upload Artifact
