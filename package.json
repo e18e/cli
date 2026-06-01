@@ -46,7 +46,7 @@
   },
   "homepage": "https://github.com/e18e/cli#readme",
   "dependencies": {
-    "@clack/prompts": "^1.4.0",
+    "@clack/prompts": "^1.5.0",
     "@e18e/web-features-codemods": "^0.2.0",
     "@publint/pack": "^0.1.4",
     "core-js-compat": "^3.48.0",
@@ -61,7 +61,7 @@
     "package-manager-detector": "^1.6.0",
     "publint": "^0.3.21",
     "semver": "^7.8.1",
-    "tinyglobby": "^0.2.16"
+    "tinyglobby": "^0.2.17"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
