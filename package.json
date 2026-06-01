@@ -56,7 +56,7 @@
     "gunshi": "^0.32.0",
     "lockparse": "^0.5.2",
     "module-replacements": "^3.0.0-beta.7",
-    "module-replacements-codemods": "^1.2.0",
+    "module-replacements-codemods": "^2.0.0",
     "obug": "^2.1.1",
     "package-manager-detector": "^1.6.0",
     "publint": "^0.3.21",
