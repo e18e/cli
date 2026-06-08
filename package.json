@@ -65,7 +65,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^25.9.1",
+    "@types/node": "^25.9.2",
     "@types/picomatch": "^4.0.3",
     "@types/semver": "^7.7.1",
     "@vitest/coverage-v8": "^4.1.8",
@@ -74,7 +74,7 @@
     "premove": "^4.0.0",
     "prettier": "^3.8.3",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.60.0",
+    "typescript-eslint": "^8.60.1",
     "vitest": "^4.1.0"
   }
 }
