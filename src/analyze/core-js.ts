@@ -22,11 +22,12 @@ export async function runCoreJsAnalysis(
   const messages: ReportPluginResult['messages'] = [];
   const pkg = context.packageFile;
 
+  const productionOnly = context.options?.production ?? false;
   const hasCoreJs =
     'core-js' in (pkg.dependencies ?? {}) ||
-    'core-js' in (pkg.devDependencies ?? {}) ||
+    (!productionOnly && 'core-js' in (pkg.devDependencies ?? {})) ||
     'core-js-pure' in (pkg.dependencies ?? {}) ||
-    'core-js-pure' in (pkg.devDependencies ?? {});
+    (!productionOnly && 'core-js-pure' in (pkg.devDependencies ?? {}));
 
   if (!hasCoreJs) {
     return {messages};

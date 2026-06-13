@@ -112,6 +112,83 @@ describe('Duplicate Dependency Detection', () => {
     expect(stats).toMatchSnapshot();
   });
 
+  it('should exclude dev dependency parents when production flag is set', async () => {
+    const sharedLibv1: ParsedDependency = {
+      name: 'shared-lib',
+      version: '1.0.0',
+      dependencies: [],
+      devDependencies: [],
+      optionalDependencies: [],
+      peerDependencies: []
+    };
+    const sharedLibv2: ParsedDependency = {
+      name: 'shared-lib',
+      version: '2.0.0',
+      dependencies: [],
+      devDependencies: [],
+      optionalDependencies: [],
+      peerDependencies: []
+    };
+    const packageA: ParsedDependency = {
+      name: 'package-a',
+      version: '1.0.0',
+      dependencies: [sharedLibv1],
+      devDependencies: [],
+      peerDependencies: [],
+      optionalDependencies: []
+    };
+    const devPkg: ParsedDependency = {
+      name: 'dev-only-pkg',
+      version: '1.0.0',
+      dependencies: [sharedLibv2],
+      devDependencies: [],
+      peerDependencies: [],
+      optionalDependencies: []
+    };
+    const testPkg: ParsedDependency = {
+      name: 'test-package',
+      version: '1.0.0',
+      dependencies: [packageA],
+      devDependencies: [devPkg],
+      optionalDependencies: [],
+      peerDependencies: []
+    };
+
+    context = {
+      fs: fileSystem,
+      root: '.',
+      messages: [],
+      stats: {
+        name: 'unknown',
+        version: 'unknown',
+        dependencyCount: {production: 0, development: 0},
+        extraStats: []
+      },
+      options: {production: true},
+      lockfile: {
+        type: 'npm',
+        packages: [testPkg, packageA, devPkg, sharedLibv1, sharedLibv2],
+        root: {
+          name: 'root-package',
+          version: '1.0.0',
+          dependencies: [testPkg],
+          devDependencies: [],
+          optionalDependencies: [],
+          peerDependencies: []
+        }
+      },
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0'
+      }
+    };
+
+    const result = await runDuplicateDependencyAnalysis(context);
+    // shared-lib@2.0.0 is only reachable via dev deps, so with --production
+    // only shared-lib@1.0.0 is seen and no duplicate is reported at all
+    expect(result.messages).toHaveLength(0);
+  });
+
   it('should not detect duplicates when there are none', async () => {
     const sharedLibv1: ParsedDependency = {
       name: 'shared-lib',

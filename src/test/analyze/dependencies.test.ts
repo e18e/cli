@@ -200,6 +200,30 @@ describe('analyzeDependencies (local)', () => {
     expect(result.stats?.dependencyCount?.production).toBe(1);
   });
 
+  it('should exclude dev dependencies when production flag is set', async () => {
+    const rootPackage: TestPackage = {
+      name: 'test-package',
+      version: '1.0.0',
+      dependencies: {'prod-package': '1.0.0'},
+      devDependencies: {'dev-package': '1.0.0'}
+    };
+
+    const dependencies: TestPackage[] = [
+      {name: 'prod-package', version: '1.0.0', type: 'commonjs'},
+      {name: 'dev-package', version: '1.0.0', type: 'commonjs'}
+    ];
+
+    context.packageFile.dependencies = {'prod-package': '1.0.0'};
+    context.packageFile.devDependencies = {'dev-package': '1.0.0'};
+    context.options = {production: true};
+
+    await createTestPackageWithDependencies(tempDir, rootPackage, dependencies);
+
+    const result = await runDependencyAnalysis(context);
+    expect(result.stats?.dependencyCount?.production).toBe(1);
+    expect(result.stats?.dependencyCount?.development).toBe(0);
+  });
+
   it('should handle missing node_modules', async () => {
     //update package json on context
     context.packageFile.dependencies = {
