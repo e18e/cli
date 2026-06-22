@@ -3,7 +3,7 @@ import {LocalFileSystem} from '../local-file-system.js';
 import {createTempDir, cleanupTempDir} from './utils.js';
 import type {AnalysisContext} from '../types.js';
 import {runDuplicateDependencyAnalysis} from '../analyze/duplicate-dependencies.js';
-import {ParsedDependency} from 'lockparse';
+import {ParsedDependency, parse as parseLockfile} from 'lockparse';
 
 describe('Duplicate Dependency Detection', () => {
   let tempDir: string;
@@ -186,6 +186,67 @@ describe('Duplicate Dependency Detection', () => {
     const result = await runDuplicateDependencyAnalysis(context);
     // shared-lib@2.0.0 is only reachable via dev deps, so with --production
     // only shared-lib@1.0.0 is seen and no duplicate is reported at all
+    expect(result.messages).toHaveLength(0);
+  });
+
+  it('should exclude dev-only duplicates when production flag is set (real lockfile)', async () => {
+    const lockfileContent = JSON.stringify({
+      name: 'root-package',
+      version: '1.0.0',
+      lockfileVersion: 3,
+      packages: {
+        '': {
+          name: 'root-package',
+          version: '1.0.0',
+          dependencies: {'package-a': '^1.0.0'},
+          devDependencies: {'dev-only-pkg': '^1.0.0'}
+        },
+        'node_modules/package-a': {
+          version: '1.0.0',
+          dependencies: {'shared-lib': '^1.0.0'}
+        },
+        'node_modules/package-a/node_modules/shared-lib': {
+          version: '1.0.0'
+        },
+        'node_modules/dev-only-pkg': {
+          version: '1.0.0',
+          dependencies: {'shared-lib': '^2.0.0'}
+        },
+        'node_modules/dev-only-pkg/node_modules/shared-lib': {
+          version: '2.0.0'
+        }
+      }
+    });
+
+    const lockfile = await parseLockfile(
+      lockfileContent,
+      'package-lock.json',
+      {name: 'root-package', version: '1.0.0'}
+    );
+
+    context = {
+      fs: fileSystem,
+      root: '.',
+      messages: [],
+      stats: {
+        name: 'unknown',
+        version: 'unknown',
+        dependencyCount: {production: 0, development: 0},
+        extraStats: []
+      },
+      options: {production: true},
+      lockfile,
+      packageFile: {
+        name: 'root-package',
+        version: '1.0.0'
+      }
+    };
+
+    const result = await runDuplicateDependencyAnalysis(context);
+    // shared-lib@2.0.0 is only reachable via the dev-only dependency, so
+    // with --production only shared-lib@1.0.0 is seen and no duplicate
+    // is reported. This pins the contract between resolveDuplicateDependencies'
+    // identity-based filtering and lockparse's actual object references.
     expect(result.messages).toHaveLength(0);
   });
 

@@ -56,7 +56,7 @@ function collectProductionReachable(
  * Computes a map of package names to their unique versions using the lock file
  * It returns just the packages with multiple versions
  * @param lockfile
- * @param filter when provided, only packages whose "name@version" key is in this set are considered
+ * @param filter when provided, only packages present in this set (by reference) are considered
  */
 function resolveDuplicateDependencies(
   lockfile: ParsedLockFile,
