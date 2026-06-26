@@ -7,6 +7,7 @@ import {report} from '../index.js';
 import {enableDebug} from '../logger.js';
 import {wrapAnsi} from 'fast-wrap-ansi';
 import {parseCategories} from '../categories.js';
+import {createAnalyzePhasedRunner} from './analyze-progress.js';
 import type {Message} from '../types.js';
 
 function formatBytes(bytes: number) {
@@ -107,7 +108,11 @@ export async function run(ctx: CommandContext<typeof meta>) {
     root,
     manifest: customManifests,
     src: srcDirs,
-    categories: parsedCategories
+    categories: parsedCategories,
+    phased:
+      jsonOutput || !process.stdout.isTTY
+        ? undefined
+        : createAnalyzePhasedRunner()
   });
 
   const thresholdRank = FAIL_THRESHOLD_RANK[logLevel] ?? 0;
