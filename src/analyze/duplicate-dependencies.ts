@@ -1,5 +1,5 @@
 import {styleText} from 'node:util';
-import {ParsedLockFile, traverse, VisitorFn} from 'lockparse';
+import {ParsedDependency, ParsedLockFile, traverse, VisitorFn} from 'lockparse';
 import {AnalysisContext, Message, ReportPluginResult, Stats} from '../types.js';
 
 interface Version {
@@ -20,21 +20,53 @@ export async function runDuplicateDependencyAnalysis(
     throw new Error('No lock file found.');
   }
 
-  const duplicateDependencies = resolveDuplicateDependencies(lockfile);
-  await computeParents(lockfile, duplicateDependencies);
+  const productionOnly = context.options?.production ?? false;
+  const productionReachable = productionOnly
+    ? collectProductionReachable([lockfile.root])
+    : undefined;
+  const duplicateDependencies = resolveDuplicateDependencies(
+    lockfile,
+    productionReachable
+  );
+  await computeParents(lockfile, duplicateDependencies, productionReachable);
   return exportOutput(duplicateDependencies);
+}
+
+/**
+ * BFS over production+optional deps only; returns the Set of reachable
+ * ParsedDependency object references (identity-based, not name@version strings).
+ */
+function collectProductionReachable(
+  roots: ParsedDependency[]
+): Set<ParsedDependency> {
+  const visited = new Set<ParsedDependency>();
+  const queue = [...roots];
+  while (queue.length > 0) {
+    const dep = queue.shift();
+    if (!dep || visited.has(dep)) {
+      continue;
+    }
+    visited.add(dep);
+    queue.push(...dep.dependencies, ...dep.optionalDependencies);
+  }
+  return visited;
 }
 
 /**
  * Computes a map of package names to their unique versions using the lock file
  * It returns just the packages with multiple versions
  * @param lockfile
+ * @param filter when provided, only packages present in this set (by reference) are considered
  */
 function resolveDuplicateDependencies(
-  lockfile: ParsedLockFile
+  lockfile: ParsedLockFile,
+  filter?: Set<ParsedDependency>
 ): Map<string, Version[]> {
   const resolvedDependencies: Map<string, Version[]> = new Map();
   for (const pkg of lockfile.packages) {
+    if (filter && !filter.has(pkg)) {
+      continue;
+    }
     const entry: Version = {
       version: pkg.version,
       parents: []
@@ -70,10 +102,14 @@ function resolveDuplicateDependencies(
  */
 async function computeParents(
   lockfile: ParsedLockFile,
-  duplicateDependencies: Map<string, Version[]>
+  duplicateDependencies: Map<string, Version[]>,
+  productionReachable: Set<ParsedDependency> | undefined
 ) {
   const visitorFn: VisitorFn = (node, parent, _path) => {
     if (!duplicateDependencies.has(node.name) || !parent) {
+      return;
+    }
+    if (productionReachable && !productionReachable.has(parent)) {
       return;
     }
     const resolvedVersions = duplicateDependencies.get(node.name);
@@ -96,7 +132,7 @@ async function computeParents(
   };
   const visitor = {
     dependency: visitorFn,
-    devDependency: visitorFn,
+    ...(productionReachable ? {} : {devDependency: visitorFn}),
     optionalDependency: visitorFn
   };
 

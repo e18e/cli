@@ -17,7 +17,9 @@ export async function runDependencyAnalysis(
 
   const installSize = await context.fs.getInstallSize();
   const prodDependencies = Object.keys(pkg.dependencies || {}).length;
-  const devDependencies = Object.keys(pkg.devDependencies || {}).length;
+  const devDependencies = context.options?.production
+    ? 0
+    : Object.keys(pkg.devDependencies || {}).length;
 
   const stats: Partial<Stats> = {
     name: pkg.name,

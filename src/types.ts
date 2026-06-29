@@ -8,6 +8,7 @@ export interface Options {
   manifest?: string[];
   src?: string[];
   categories?: ParsedCategories;
+  production?: boolean;
 }
 
 export interface StatLike<T> {

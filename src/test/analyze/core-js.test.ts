@@ -315,6 +315,39 @@ describe('runCoreJsAnalysis', () => {
     expect(result.messages[0]?.message).toContain('src');
   });
 
+  it('skips core-js in devDependencies when production flag is set', async () => {
+    await fs.writeFile(path.join(tempDir, 'index.js'), `import 'core-js';\n`);
+
+    const context = makeContext(tempDir, {
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0',
+        devDependencies: {'core-js': '^3.0.0'}
+      },
+      options: {production: true}
+    });
+
+    const result = await runCoreJsAnalysis(context);
+
+    expect(result.messages).toHaveLength(0);
+  });
+
+  it('still detects core-js in devDependencies when production flag is not set', async () => {
+    await fs.writeFile(path.join(tempDir, 'index.js'), `import 'core-js';\n`);
+
+    const context = makeContext(tempDir, {
+      packageFile: {
+        name: 'test-package',
+        version: '1.0.0',
+        devDependencies: {'core-js': '^3.0.0'}
+      }
+    });
+
+    const result = await runCoreJsAnalysis(context);
+
+    expect(result.messages).toHaveLength(1);
+  });
+
   it('scans multiple src globs when options.src has more than one entry', async () => {
     for (const dir of ['src', 'app']) {
       await fs.mkdir(path.join(tempDir, dir), {recursive: true});
