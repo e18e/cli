@@ -5,6 +5,7 @@ import type {FileSystem} from '../file-system.js';
 import type {
   Options,
   ReportPlugin,
+  ReportPhase,
   Stats,
   Message,
   AnalysisContext
@@ -12,20 +13,48 @@ import type {
 import {runPublint} from './publint.js';
 import {runReplacements} from './replacements.js';
 import {runDependencyAnalysis} from './dependencies.js';
-import {runPlugins} from '../plugin-runner.js';
+import {runPlugin, runPlugins} from '../plugin-runner.js';
 import {getPackageJson, detectLockfile} from '../utils/package-json.js';
 import {parse as parseLockfile} from 'lockparse';
 import {runDuplicateDependencyAnalysis} from './duplicate-dependencies.js';
 import {runCoreJsAnalysis} from './core-js.js';
 import {runWebFeaturesCodemodsAnalysis} from './web-features-codemods.js';
 
-const plugins: ReportPlugin[] = [
-  runPublint,
-  runReplacements,
-  runDependencyAnalysis,
-  runDuplicateDependencyAnalysis,
-  runCoreJsAnalysis,
-  runWebFeaturesCodemodsAnalysis
+export const ANALYSIS_PLUGINS: Array<{
+  id: string;
+  title: string;
+  run: ReportPlugin;
+}> = [
+  {
+    id: 'publint',
+    title: 'Checking package publishing',
+    run: runPublint
+  },
+  {
+    id: 'replacements',
+    title: 'Checking dependency replacements',
+    run: runReplacements
+  },
+  {
+    id: 'dependencies',
+    title: 'Analyzing dependencies',
+    run: runDependencyAnalysis
+  },
+  {
+    id: 'duplicate-dependencies',
+    title: 'Checking duplicate dependencies',
+    run: runDuplicateDependencyAnalysis
+  },
+  {
+    id: 'core-js',
+    title: 'Scanning core-js usage',
+    run: runCoreJsAnalysis
+  },
+  {
+    id: 'web-features',
+    title: 'Scanning source files',
+    run: runWebFeaturesCodemodsAnalysis
+  }
 ];
 
 async function computeInfo(fileSystem: FileSystem) {
@@ -41,7 +70,9 @@ async function computeInfo(fileSystem: FileSystem) {
   };
 }
 
-export async function report(options: Options) {
+async function buildAnalysisContext(
+  options: Options
+): Promise<AnalysisContext> {
   const {root = process.cwd()} = options ?? {};
 
   const messages: Message[] = [];
@@ -93,7 +124,7 @@ export async function report(options: Options) {
     extraStats: []
   };
 
-  const context: AnalysisContext = {
+  return {
     fs: fileSystem,
     root,
     packageFile,
@@ -102,9 +133,62 @@ export async function report(options: Options) {
     messages,
     options
   };
-  await runPlugins(context, plugins);
+}
 
-  const info = await computeInfo(fileSystem);
+async function finalizeReport(context: AnalysisContext) {
+  const info = await computeInfo(context.fs);
 
-  return {info, messages, stats};
+  return {info, messages: context.messages, stats: context.stats};
+}
+
+async function runPhasedReport(
+  options: Options,
+  phased: NonNullable<Options['phased']>
+) {
+  let context: AnalysisContext | undefined;
+  const seenExtra = new Set<string>();
+
+  const phases: ReportPhase[] = [
+    {
+      id: 'setup',
+      title: 'Loading project files',
+      run: async () => {
+        context = await buildAnalysisContext(options);
+        for (const stat of context.stats.extraStats ?? []) {
+          seenExtra.add(stat.name);
+        }
+      }
+    },
+    ...ANALYSIS_PLUGINS.map(({id, title, run}) => ({
+      id,
+      title,
+      run: async () => {
+        if (!context) {
+          throw new Error('Analysis context was not initialized.');
+        }
+        await runPlugin(context, run, seenExtra);
+      }
+    }))
+  ];
+
+  await phased(phases);
+
+  if (!context) {
+    throw new Error('Analysis context was not initialized.');
+  }
+
+  return finalizeReport(context);
+}
+
+export async function report(options: Options) {
+  if (options.phased) {
+    return runPhasedReport(options, options.phased);
+  }
+
+  const context = await buildAnalysisContext(options);
+  await runPlugins(
+    context,
+    ANALYSIS_PLUGINS.map((plugin) => plugin.run)
+  );
+  return finalizeReport(context);
 }

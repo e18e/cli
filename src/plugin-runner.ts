@@ -26,6 +26,20 @@ function updateStats(
   }
 }
 
+export async function runPlugin(
+  context: AnalysisContext,
+  plugin: ReportPlugin,
+  seenExtra: Set<string>
+): Promise<void> {
+  const res = await plugin(context);
+
+  context.messages.push(...res.messages);
+
+  if (res.stats) {
+    updateStats(context.stats, res.stats, seenExtra);
+  }
+}
+
 export async function runPlugins(
   context: AnalysisContext,
   plugins: ReportPlugin[]
@@ -34,12 +48,6 @@ export async function runPlugins(
   const seenExtra = new Set<string>(extraStats.map((s) => s.name));
 
   for (const plugin of plugins) {
-    const res = await plugin(context);
-
-    context.messages.push(...res.messages);
-
-    if (res.stats) {
-      updateStats(context.stats, res.stats, seenExtra);
-    }
+    await runPlugin(context, plugin, seenExtra);
   }
 }

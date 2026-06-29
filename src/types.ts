@@ -3,11 +3,20 @@ import type {Codemod, CodemodOptions} from 'module-replacements-codemods';
 import type {ParsedLockFile} from 'lockparse';
 import type {ParsedCategories} from './categories.js';
 
+export interface ReportPhase {
+  id: string;
+  title: string;
+  run: () => Promise<void>;
+}
+
+export type PhasedRunner = (phases: ReportPhase[]) => Promise<void>;
+
 export interface Options {
   root?: string;
   manifest?: string[];
   src?: string[];
   categories?: ParsedCategories;
+  phased?: PhasedRunner;
 }
 
 export interface StatLike<T> {
