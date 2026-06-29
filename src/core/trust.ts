@@ -13,9 +13,7 @@
  * - `none`: No provenance attestations
  */
 export type ProvenanceStatus =
-  | 'trusted-with-provenance'
-  | 'provenance'
-  | 'none';
+  'trusted-with-provenance' | 'provenance' | 'none';
 
 /**
  * Result of computing the minimum trust level across a set of packages.
