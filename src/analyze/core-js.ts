@@ -65,7 +65,8 @@ export async function runCoreJsAnalysis(
         messages.push({
           severity: 'warning',
           score: 0,
-          message: `Broad core-js import "${specifier}" in ${filePath} loads all polyfills at once. Import only the specific modules you need.`
+          file: filePath,
+          message: `Broad core-js import "${specifier}" loads all polyfills at once. Import only the specific modules you need.`
         });
       } else if (specifier.startsWith('core-js/modules/')) {
         const moduleName = specifier.slice('core-js/modules/'.length);
@@ -73,7 +74,8 @@ export async function runCoreJsAnalysis(
           messages.push({
             severity: 'suggestion',
             score: 0,
-            message: `core-js polyfill "${moduleName}" imported in ${filePath} is unnecessary - your target engines already support this natively.`
+            file: filePath,
+            message: `core-js polyfill "${moduleName}" is unnecessary - your target engines already support this natively.`
           });
         }
       }

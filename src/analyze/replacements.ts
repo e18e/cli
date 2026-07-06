@@ -175,6 +175,7 @@ export async function runReplacements(
     result.messages.push({
       severity: 'warning',
       score: 0,
+      file: 'package.json',
       message,
       ...(fixableBy && {fixableBy})
     });

@@ -312,7 +312,7 @@ describe('runCoreJsAnalysis', () => {
     const result = await runCoreJsAnalysis(context);
 
     expect(result.messages).toHaveLength(1);
-    expect(result.messages[0]?.message).toContain('src');
+    expect(result.messages[0]?.file).toContain('src');
   });
 
   it('scans multiple src globs when options.src has more than one entry', async () => {

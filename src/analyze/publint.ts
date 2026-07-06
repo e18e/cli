@@ -15,6 +15,7 @@ export async function runPublint(
       result.messages.push({
         severity: problem.type,
         score: 0,
+        file: 'package.json',
         message: formatMessage(problem, publintResult.pkg) ?? ''
       });
     }

@@ -197,11 +197,31 @@ export async function run(ctx: CommandContext<typeof meta>) {
     const width = process.stdout?.columns ?? 80;
     const maxContentWidth = Math.max(20, width - 4);
 
-    const formatBulletMessage = (text: string, bullet: string) =>
-      wrapAnsi(text, maxContentWidth)
+    const labels = {
+      error: {text: 'error', color: 'red'},
+      warning: {text: 'warning', color: 'yellow'},
+      suggestion: {text: 'suggestion', color: 'blue'}
+    } as const;
+
+    const labelWidth = Math.max(
+      ...Object.values(labels).map((l) => l.text.length)
+    );
+    // Two leading spaces, then the severity column, then two spaces before text.
+    const gutter = 2 + labelWidth + 2;
+
+    const formatBulletMessage = (
+      text: string,
+      label: (typeof labels)[keyof typeof labels]
+    ) => {
+      const severity = styleText(label.color, label.text.padEnd(labelWidth));
+      const indent = ' '.repeat(gutter);
+      return wrapAnsi(text, maxContentWidth)
         .split('\n')
-        .map((line, i) => (i === 0 ? `  ${bullet} ${line}` : `    ${line}`))
+        .map((line, i) =>
+          i === 0 ? `  ${severity}  ${line}` : `${indent}${line}`
+        )
         .join('\n');
+    };
 
     const errorMessages = visibleMessages.filter((m) => m.severity === 'error');
     const warningMessages = visibleMessages.filter(
@@ -211,38 +231,35 @@ export async function run(ctx: CommandContext<typeof meta>) {
       (m) => m.severity === 'suggestion'
     );
 
-    // Display errors
-    if (errorMessages.length > 0) {
-      prompts.log.message(styleText('red', 'Errors:'), {spacing: 0});
-      for (const msg of errorMessages) {
-        const bullet = styleText('red', '•');
-        prompts.log.message(formatBulletMessage(msg.message, bullet), {
-          spacing: 0
-        });
+    const groups = new Map<string | undefined, Message[]>();
+    for (const msg of visibleMessages) {
+      const existing = groups.get(msg.file);
+      if (existing) {
+        existing.push(msg);
+      } else {
+        groups.set(msg.file, [msg]);
       }
-      prompts.log.message('', {spacing: 0});
     }
+    const sortedGroups = [...groups.entries()].sort(([a], [b]) => {
+      if (a === undefined) return 1;
+      if (b === undefined) return -1;
+      return a.localeCompare(b);
+    });
 
-    // Display warnings
-    if (warningMessages.length > 0) {
-      prompts.log.message(styleText('yellow', 'Warnings:'), {spacing: 0});
-      for (const msg of warningMessages) {
-        const bullet = styleText('yellow', '•');
-        prompts.log.message(formatBulletMessage(msg.message, bullet), {
-          spacing: 0
-        });
-      }
-      prompts.log.message('', {spacing: 0});
-    }
+    const severityOrder = {error: 0, warning: 1, suggestion: 2} as const;
 
-    // Display suggestions
-    if (suggestionMessages.length > 0) {
-      prompts.log.message(styleText('blue', 'Suggestions:'), {spacing: 0});
-      for (const msg of suggestionMessages) {
-        const bullet = styleText('blue', '•');
-        prompts.log.message(formatBulletMessage(msg.message, bullet), {
-          spacing: 0
-        });
+    for (const [file, fileMessages] of sortedGroups) {
+      const group = fileMessages
+        .slice()
+        .sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
+      prompts.log.message(styleText('underline', file ?? 'general'), {
+        spacing: 0
+      });
+      for (const msg of group) {
+        prompts.log.message(
+          formatBulletMessage(msg.message, labels[msg.severity]),
+          {spacing: 0}
+        );
       }
       prompts.log.message('', {spacing: 0});
     }

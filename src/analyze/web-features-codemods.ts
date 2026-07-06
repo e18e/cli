@@ -60,7 +60,8 @@ export async function runWebFeaturesCodemodsAnalysis(
       messages.push({
         severity: 'suggestion',
         score: 0,
-        message: `File "${filePath}" can use newer web features: ${matches.join(', ')}.`
+        file: filePath,
+        message: `Can use newer web features: ${matches.join(', ')}.`
       });
     }
   }

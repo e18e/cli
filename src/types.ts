@@ -33,6 +33,8 @@ export interface Message {
   severity: 'error' | 'warning' | 'suggestion';
   score: number;
   message: string;
+  /** File the message relates to, relative to the project root. */
+  file?: string;
   /** Command that can fix this message (e.g. 'migrate'). */
   fixableBy?: string;
 }
