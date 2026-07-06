@@ -4,7 +4,33 @@ exports[`runWebFeaturesCodemodsAnalysis > handles a file with multiple matches 1
 [
   {
     "file": "index.js",
-    "message": "Can use newer web features: arrayAt, exponentiation.",
+    "message": "Consider using the arrayAt feature here.",
+    "range": {
+      "end": {
+        "column": 36,
+        "line": 0,
+      },
+      "start": {
+        "column": 13,
+        "line": 0,
+      },
+    },
+    "score": 0,
+    "severity": "suggestion",
+  },
+  {
+    "file": "index.js",
+    "message": "Consider using the exponentiation feature here.",
+    "range": {
+      "end": {
+        "column": 34,
+        "line": 1,
+      },
+      "start": {
+        "column": 16,
+        "line": 1,
+      },
+    },
     "score": 0,
     "severity": "suggestion",
   },
@@ -17,7 +43,17 @@ exports[`runWebFeaturesCodemodsAnalysis > handles a file with one match 1`] = `
 [
   {
     "file": "index.js",
-    "message": "Can use newer web features: arrayAt.",
+    "message": "Consider using the arrayAt feature here.",
+    "range": {
+      "end": {
+        "column": 36,
+        "line": 0,
+      },
+      "start": {
+        "column": 13,
+        "line": 0,
+      },
+    },
     "score": 0,
     "severity": "suggestion",
   },
@@ -28,7 +64,17 @@ exports[`runWebFeaturesCodemodsAnalysis > handles multiple occurrences of the sa
 [
   {
     "file": "index.js",
-    "message": "Can use newer web features: arrayAt.",
+    "message": "Consider using the arrayAt feature here.",
+    "range": {
+      "end": {
+        "column": 40,
+        "line": 0,
+      },
+      "start": {
+        "column": 17,
+        "line": 0,
+      },
+    },
     "score": 0,
     "severity": "suggestion",
   },
@@ -41,7 +87,17 @@ exports[`runWebFeaturesCodemodsAnalysis > respects the src option 1`] = `
 [
   {
     "file": "src/index.js",
-    "message": "Can use newer web features: arrayAt.",
+    "message": "Consider using the arrayAt feature here.",
+    "range": {
+      "end": {
+        "column": 36,
+        "line": 0,
+      },
+      "start": {
+        "column": 13,
+        "line": 0,
+      },
+    },
     "score": 0,
     "severity": "suggestion",
   },

@@ -211,15 +211,16 @@ export async function run(ctx: CommandContext<typeof meta>) {
 
     const formatBulletMessage = (
       text: string,
-      label: (typeof labels)[keyof typeof labels]
+      label: (typeof labels)[keyof typeof labels],
+      location = ''
     ) => {
       const severity = styleText(label.color, label.text.padEnd(labelWidth));
-      const indent = ' '.repeat(gutter);
+      const locationCol = location ? `${styleText('dim', location)}  ` : '';
+      const prefix = `  ${locationCol}${severity}  `;
+      const indent = ' '.repeat(gutter + (location ? location.length + 2 : 0));
       return wrapAnsi(text, maxContentWidth)
         .split('\n')
-        .map((line, i) =>
-          i === 0 ? `  ${severity}  ${line}` : `${indent}${line}`
-        )
+        .map((line, i) => (i === 0 ? `${prefix}${line}` : `${indent}${line}`))
         .join('\n');
     };
 
@@ -256,8 +257,11 @@ export async function run(ctx: CommandContext<typeof meta>) {
         spacing: 0
       });
       for (const msg of group) {
+        const location = msg.range
+          ? `${msg.range.start.line + 1}:${msg.range.start.column + 1}`
+          : '';
         prompts.log.message(
-          formatBulletMessage(msg.message, labels[msg.severity]),
+          formatBulletMessage(msg.message, labels[msg.severity], location),
           {spacing: 0}
         );
       }
