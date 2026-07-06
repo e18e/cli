@@ -1,0 +1,6 @@
+{
+  "name": "lazy-esm-cjs",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "main": "./a.js"
+}
