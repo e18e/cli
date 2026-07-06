@@ -163,7 +163,7 @@ describe('analyze exit codes', () => {
     );
     expect(code).toBe(0);
     const output = stdout + stderr;
-    expect(output).not.toContain('Warnings:');
+    expect(output).not.toContain('warning');
     expect(output).toMatch(/below --report-level error/);
   });
 
@@ -174,8 +174,8 @@ describe('analyze exit codes', () => {
     );
     expect(code).toBe(1);
     const output = stdout + stderr;
-    expect(output).toContain('Warnings:');
-    expect(output).not.toContain('Suggestions:');
+    expect(output).toContain('warning');
+    expect(output).not.toContain('suggestion');
   });
 
   it('--quiet hides non-errors like ESLint (default log-level still fails on warnings)', async () => {
@@ -185,7 +185,7 @@ describe('analyze exit codes', () => {
     );
     expect(code).toBe(1);
     const output = stdout + stderr;
-    expect(output).not.toContain('Warnings:');
+    expect(output).not.toContain('warning');
     expect(output).toContain('hidden by --quiet');
   });
 });
