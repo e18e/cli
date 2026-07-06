@@ -45,24 +45,21 @@ export async function runWebFeaturesCodemodsAnalysis(
       continue;
     }
 
-    const matches: string[] = [];
     for (const [name, codemod] of webFeatureCodemods) {
       try {
-        if (codemod.test({source})) {
-          matches.push(name);
+        const testResult = codemod.test({source});
+        if (testResult.hasMatch) {
+          messages.push({
+            severity: 'suggestion',
+            score: 0,
+            file: filePath,
+            message: `Consider using the ${name} feature here.`,
+            range: testResult.range
+          });
         }
       } catch {
         continue;
       }
-    }
-
-    if (matches.length > 0) {
-      messages.push({
-        severity: 'suggestion',
-        score: 0,
-        file: filePath,
-        message: `Can use newer web features: ${matches.join(', ')}.`
-      });
     }
   }
 

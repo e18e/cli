@@ -29,6 +29,16 @@ export interface Stats {
   extraStats?: Stat[];
 }
 
+export interface Position {
+  line: number;
+  column: number;
+}
+
+export interface Range {
+  start: Position;
+  end: Position;
+}
+
 export interface Message {
   severity: 'error' | 'warning' | 'suggestion';
   score: number;
@@ -37,6 +47,7 @@ export interface Message {
   file?: string;
   /** Command that can fix this message (e.g. 'migrate'). */
   fixableBy?: string;
+  range?: Range;
 }
 
 export interface PackageJsonLike {
