@@ -53,7 +53,7 @@
     "enginematch": "^0.2.0",
     "fast-wrap-ansi": "^0.2.2",
     "fdir": "^6.5.0",
-    "gunshi": "^0.35.1",
+    "gunshi": "^0.36.0",
     "lockparse": "^0.5.2",
     "module-replacements": "^3.0.0",
     "module-replacements-codemods": "^2.0.1",
