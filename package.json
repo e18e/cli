@@ -49,7 +49,7 @@
     "@clack/prompts": "^1.7.0",
     "@e18e/web-features-codemods": "^0.3.0",
     "@publint/pack": "^0.1.6",
-    "core-js-compat": "^3.48.0",
+    "core-js-compat": "^3.50.0",
     "enginematch": "^0.2.0",
     "fast-wrap-ansi": "^0.2.2",
     "fdir": "^6.5.0",
@@ -59,7 +59,7 @@
     "module-replacements-codemods": "^2.0.1",
     "obug": "^2.1.4",
     "package-manager-detector": "^1.8.0",
-    "publint": "^0.3.22",
+    "publint": "^0.3.23",
     "semver": "^7.8.5",
     "tinyglobby": "^0.2.17"
   },
