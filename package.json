@@ -73,7 +73,7 @@
     "pkg-pr-new": "^0.0.88",
     "premove": "^4.0.0",
     "prettier": "^3.9.6",
-    "typescript": "^7.0.2",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.67.0",
     "vitest": "^4.1.0"
   }
