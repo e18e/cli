@@ -59,7 +59,7 @@
     "module-replacements-codemods": "^2.0.1",
     "obug": "^3.0.0",
     "package-manager-detector": "^1.8.0",
-    "publint": "^0.3.24",
+    "publint": "^0.3.25",
     "semver": "^7.8.5",
     "tinyglobby": "^0.2.17"
   },
