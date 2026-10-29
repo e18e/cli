@@ -84,7 +84,7 @@ async function loadCustomManifests(
       }
     } catch (error) {
       console.warn(
-        `Warning: Failed to load custom manifest from ${manifestPath}: ${error}`
+        `Warning: Failed to load custom manifest from ${manifestPath}: ${String(error)}`
       );
     }
   }

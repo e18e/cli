@@ -1,54 +1,50 @@
 {
   "name": "@e18e/cli",
   "version": "0.0.1",
-  "type": "module",
   "description": "The official e18e CLI",
-  "bin": {
-    "e18e-cli": "cli.js"
-  },
-  "exports": {
-    ".": {
-      "types": "./lib/index.d.ts",
-      "browser": "./lib/index.js",
-      "default": "./lib/index.js"
-    }
-  },
-  "files": [
-    "lib",
-    "!lib/test"
+  "keywords": [
+    "dependencies",
+    "dependency",
+    "e18e",
+    "publint"
   ],
-  "scripts": {
-    "cli": "node ./lib/cli.js",
-    "clean": "premove lib coverage",
-    "build:js": "npm run clean && tsc",
-    "build": "npm run lint && npm run build:js",
-    "lint": "eslint src",
-    "format": "prettier --write src",
-    "format:check": "prettier --check src",
-    "test": "vitest run --coverage",
-    "prepublishOnly": "npm run test",
-    "generate-fixable-replacements": "node scripts/generate-fixable-replacements.ts"
+  "homepage": "https://github.com/e18e/cli#readme",
+  "bugs": {
+    "url": "https://github.com/e18e/cli/issues"
   },
+  "license": "MIT",
+  "author": "e18e Authors (https://e18e.dev)",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/e18e/cli.git"
   },
-  "keywords": [
-    "e18e",
-    "dependencies",
-    "dependency",
-    "publint"
-  ],
-  "author": "e18e Authors (https://e18e.dev)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/e18e/cli/issues"
+  "bin": {
+    "e18e-cli": "./dist/cli.mjs"
   },
-  "homepage": "https://github.com/e18e/cli#readme",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./cli": "./dist/cli.mjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "cli": "node ./dist/cli.mjs",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "test": "vitest run --coverage",
+    "prepublishOnly": "npm run build && npm test",
+    "generate-fixable-replacements": "node scripts/generate-fixable-replacements.ts"
+  },
   "dependencies": {
     "@clack/prompts": "^1.8.0",
     "@e18e/web-features-codemods": "^0.3.0",
-    "@publint/pack": "^0.1.7",
     "core-js-compat": "^3.51.0",
     "enginematch": "^0.2.0",
     "fast-wrap-ansi": "^0.2.2",
@@ -58,23 +54,22 @@
     "module-replacements": "^3.4.0",
     "module-replacements-codemods": "^2.0.1",
     "obug": "^3.0.0",
-    "package-manager-detector": "^1.9.0",
     "publint": "^0.3.25",
-    "semver": "^7.8.5",
     "tinyglobby": "^0.2.17"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@arethetypeswrong/core": "^0.18.5",
     "@types/node": "^26.6.5",
-    "@types/picomatch": "^4.0.3",
-    "@types/semver": "^7.8.0",
     "@vitest/coverage-v8": "^5.0.5",
-    "eslint": "^10.13.0",
+    "oxfmt": "^0.75.0",
+    "oxlint": "^1.90.0",
+    "oxlint-tsgolint": "^7.0.2005",
     "pkg-pr-new": "^0.0.91",
-    "premove": "^4.0.0",
-    "prettier": "^3.9.10",
-    "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "typescript-eslint": "^8.72.0",
+    "tsdown": "^0.23.3",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

@@ -71,7 +71,7 @@ export async function runPublint(
       });
     }
   } catch (error) {
-    console.error(`Failed to run publint: ${error}`);
+    console.error(`Failed to run publint: ${String(error)}`);
   }
 
   return result;

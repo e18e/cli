@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import {createRequire} from 'node:module';
 import {cli, define, lazy, type LazyCommand} from 'gunshi';
 import {styleText} from 'node:util';
@@ -32,7 +33,7 @@ const subCommands = new Map<string, LazyCommand<any>>([
 const args = process.argv.slice(2);
 const isJsonMode = args[0] === 'analyze' && args.includes('--json');
 
-cli(args, defaultCommand, {
+await cli(args, defaultCommand, {
   name: 'cli',
   version,
   description: `${styleText('cyan', 'e18e')}`,
