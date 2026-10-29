@@ -1,8 +1,10 @@
-import {glob} from 'tinyglobby';
 import {join, relative} from 'node:path';
+
 import * as WebFeatureCodemodExports from '@e18e/web-features-codemods';
 // TODO: change this once CodeMod is exported from @e18e/web-features-codemods
 import type {CodeMod} from '@e18e/web-features-codemods/lib/shared.js';
+import {glob} from 'tinyglobby';
+
 import type {AnalysisContext, ReportPluginResult} from '../types.js';
 import {SOURCE_GLOB, SOURCE_IGNORE} from '../utils/source-files.js';
 

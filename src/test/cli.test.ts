@@ -80,7 +80,7 @@ function runCliProcess(
   cwd?: string
 ): Promise<{stdout: string; stderr: string; code: number | null}> {
   return new Promise((resolve) => {
-    const cliPath = path.resolve(__dirname, '../../lib/cli.js');
+    const cliPath = path.resolve(__dirname, '../../dist/cli.mjs');
     const proc = spawn('node', [cliPath, ...args], {
       env: process.env,
       cwd: cwd || process.cwd()

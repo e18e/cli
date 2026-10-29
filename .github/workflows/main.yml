@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20.x, 22.x, 24.x]
+        node-version: [22.x, 24.x, 26.x]
       fail-fast: false
     steps:
       - name: Checkout
@@ -25,6 +25,8 @@ jobs:
         run: npm run format:check
       - name: Lint
         run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
       - name: Build
         run: npm run build
       - name: Test

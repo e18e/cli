@@ -10,7 +10,8 @@ function getReplacementTarget(moduleName: string): string {
   const mapping = all.mappings[moduleName];
   if (!mapping?.replacements?.length) return moduleName;
 
-  const firstId = mapping.replacements[0]!;
+  const firstId = mapping.replacements[0];
+  if (firstId === undefined) return moduleName;
   const replacement = all.replacements[firstId];
   if (!replacement) return firstId;
 
@@ -45,7 +46,7 @@ async function generateFixableReplacements() {
   const outputPath = join(
     __dirname,
     '..',
-    'lib/commands',
+    'src/commands',
     'fixable-replacements.ts'
   );
   await writeFile(outputPath, newCode);

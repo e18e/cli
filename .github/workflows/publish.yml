@@ -15,11 +15,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 20
+          node-version: 22.x
       - name: Install Dependencies
         run: npm ci
       - name: Lint
         run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
       - name: Build
         run: npm run build
       - name: Test
@@ -50,6 +52,6 @@ jobs:
         env:
           TAG_NAME: ${{ github.ref_name }}
       - run: npm stage publish --provenance --access public --tag next
-        if: "github.event.release.prerelease"
+        if: 'github.event.release.prerelease'
       - run: npm stage publish --provenance --access public
-        if: "!github.event.release.prerelease"
+        if: '!github.event.release.prerelease'

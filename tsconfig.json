@@ -1,19 +1,21 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
+    "target": "esnext",
+    "lib": ["es2023"],
+    "moduleDetection": "force",
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "types": ["node"],
     "declaration": true,
-    "outDir": "./lib",
-    "rootDir": "./src",
+    "emitDeclarationOnly": true,
+    "esModuleInterop": true,
     "isolatedModules": true,
-    "forceConsistentCasingInFileNames": true,
+    "verbatimModuleSyntax": true,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "skipLibCheck": true
   },
-  "include": [
-    "src/**/*.ts"
-  ]
+  "include": ["src", "scripts", "*.config.ts"]
 }

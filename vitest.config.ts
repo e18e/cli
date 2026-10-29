@@ -1,17 +1,12 @@
-import { defineConfig } from 'vitest/config'
+import {defineConfig} from 'vitest/config';
 
 export default defineConfig({
-  plugins: [
-  ],
+  plugins: [],
   test: {
     env: {
       FORCE_COLOR: '1'
     },
     reporters: 'dot',
-    include: [
-      'packages/**/*.test.ts',
-      'src/**/*.test.ts',
-      'test/**/*.test.ts'
-    ]
+    include: ['packages/**/*.test.ts', 'src/**/*.test.ts', 'test/**/*.test.ts']
   }
-})
+});

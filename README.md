@@ -27,11 +27,11 @@ Command-line options, exit behavior, and fuller examples are in the docs below.
 
 ## Documentation
 
-| Page | Description |
-|------|-------------|
-| [`analyze`](./docs/analyze.md) | Analyze command: examples, flags, metrics, exit codes, what checks run |
-| [`migrate`](./docs/migrate.md) | Migrate command: examples, flags, scope |
-| [Programmatic API](./docs/programmatic-api.md) | Experimental `report()` usage and trust exports (`src/index.ts`) |
+| Page                                           | Description                                                            |
+| ---------------------------------------------- | ---------------------------------------------------------------------- |
+| [`analyze`](./docs/analyze.md)                 | Analyze command: examples, flags, metrics, exit codes, what checks run |
+| [`migrate`](./docs/migrate.md)                 | Migrate command: examples, flags, scope                                |
+| [Programmatic API](./docs/programmatic-api.md) | Experimental `report()` usage and trust exports (`src/index.ts`)       |
 
 ## Contributing
 
