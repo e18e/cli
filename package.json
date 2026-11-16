@@ -68,9 +68,9 @@
     "eslint": "^10.14.0",
     "pkg-pr-new": "^0.0.93",
     "premove": "^4.0.0",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.1",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "typescript-eslint": "^8.72.1",
+    "typescript-eslint": "^8.72.2",
     "vitest": "^5.0.0"
   },
   "engines": {
