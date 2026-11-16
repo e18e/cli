@@ -46,7 +46,7 @@
   },
   "homepage": "https://github.com/e18e/cli#readme",
   "dependencies": {
-    "@clack/prompts": "^1.8.0",
+    "@clack/prompts": "^1.9.0",
     "@e18e/web-features-codemods": "^0.3.0",
     "core-js-compat": "^3.51.0",
     "enginematch": "^0.2.0",
